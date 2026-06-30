@@ -1,0 +1,39 @@
+.enquiry-box {
+  width: 30%;
+}
+
+.enquirefield-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+.agent-detail {
+  margin-bottom: 1rem;
+  color: #9f9f9f;
+}
+
+.plot-details-enq textarea {
+  height: 100px;
+}
+
+.status-loader {
+  width: 55%;
+  /* height: 70%; */
+}
+
+.status-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  /* padding: 1rem 2rem; */
+}
+.status-box h2 {
+  font-size: 20px;
+}
+.status-box p {
+  font-size: 14px;
+  margin: 0;
+}

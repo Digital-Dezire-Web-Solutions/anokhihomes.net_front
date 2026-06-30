@@ -1,0 +1,279 @@
+.admin-panel {
+  /* background: white; */
+  padding: 10px 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-panel button,
+.admin-panel select {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: #9f9f9f;
+  cursor: pointer;
+  border: 1px solid #9f9f9f;
+}
+
+.plot-clear-btn {
+  background-color: #fd5858 !important;
+  border: 1px solid #fd5858 !important;
+  color: white !important;
+}
+
+.finish-btn {
+  background-color: var(--mood-color);
+  color: white;
+  border: 1px solid var(--mood-color);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9;
+}
+
+.modal {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 1.75rem;
+  position: relative;
+  min-width: 30%;
+}
+.modal h3 {
+  margin: 0;
+  padding-bottom: 5px;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #9f9f9f;
+}
+
+.plot-draw {
+  background-color: #fff;
+  position: relative;
+}
+
+.app.dark .modal,
+.app.dark .plot-draw {
+  background: #252528;
+}
+
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.plot-compass {
+  position: absolute;
+  top: 5%;
+  right: 3%;
+  z-index: 5;
+}
+.plot-colors {
+  position: absolute;
+  bottom: 3%;
+  right: 2%;
+  z-index: 5;
+  border: 1px solid #9f9f9f;
+  border-radius: 1.75rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+}
+.plot-colors span {
+  border-radius: 1.75rem;
+  padding: 5px 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.plot-colors span svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.plot-compass img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.tool-row .active {
+  background-color: var(--mood-color);
+  color: white;
+  border: 1px solid var(--mood-color);
+}
+
+.plot-modal .field {
+  display: flex;
+  /* align-items: center; */
+  justify-content: flex-start;
+  gap: 5px;
+  flex-direction: column;
+  width: 100%;
+}
+.plot-modal .user-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6rem;
+  padding-bottom: 1rem;
+}
+
+.plot-modal .field select,
+.plot-modal .field input,
+.plot-modal .field textarea {
+  /* width: 100%; */
+  padding: 10px;
+  margin: 0 0 8px 0;
+  border-radius: 20px;
+  border: 1px solid #bcbcbc2e;
+  background-color: transparent;
+  color: #9f9f9f;
+}
+
+.modal-actions button {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: none;
+  background: var(--mood-color);
+  color: white;
+  cursor: pointer;
+  border: 1px solid var(--mood-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.modal-actions .close-btn {
+  background-color: transparent;
+  color: black;
+  border: none;
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  width: auto;
+}
+
+.btn.sale {
+  background-color: green;
+  border: 1px solid green;
+}
+
+.btn.sold {
+  background-color: red;
+  border: 1px solid red;
+}
+
+.btn.pending {
+  background-color: orange;
+  border: 1px solid orange;
+}
+.btn.hold {
+  background-color: #8c00ff;
+  border: 1px solid #8c00ff;
+}
+
+.bg-tools {
+  display: flex;
+  gap: 10px;
+  /* margin-bottom: 10px; */
+}
+
+.bg-tools input {
+  font-size: 12px;
+}
+
+.btn.complete {
+  background: #22c55e;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+.plot-draw.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #f8fafc;
+  border-radius: 0;
+  padding: 0;
+}
+
+.plot-draw.fullscreen svg {
+  height: calc(100vh - 40px);
+}
+.plot-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.plot-buttons .bg-tools button,
+.plot-buttons .bg-tools input,
+.plot-buttons .upload-btn,
+.plot-buttons .fullscreen-tools button {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: #9f9f9f;
+  cursor: pointer;
+  border: 1px solid #9f9f9f;
+}
+
+.plot-buttons .bg-tools button {
+  background-color: var(--mood-color);
+  color: white;
+  border: 1px solid var(--mood-color);
+}
+
+.plot-buttons .upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.plot-buttons .upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .modal {
+    min-width: 90%;
+  }
+  .plot-draw.card{
+    height: 70dvh !important;
+  }
+  .plot-compass {
+    position: absolute;
+    top: 70%;
+    right: 60%;
+    z-index: 5;
+}
+.plot-colors {
+    bottom: 1%;
+  }
+}

@@ -1,0 +1,38 @@
+/* Navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #000;
+}
+
+.swiper {
+  padding-bottom: 4rem !important;
+}
+
+.swiper-button-prev {
+  left: 90% !important;
+  top: 93% !important;
+}
+
+.swiper-button-next {
+  top: 93% !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  background-color: #fff !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+.swiper-button-prev svg,
+.swiper-button-next svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: black !important;
+}
+
+@media (max-width: 900px) {
+  .swiper-button-prev {
+    left: 70% !important;
+  }
+}

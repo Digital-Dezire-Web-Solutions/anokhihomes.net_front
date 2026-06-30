@@ -1,0 +1,14 @@
+
+.help-ticket-box {
+  position: relative;
+}
+.help-ticket-box span {
+  border-radius: 25px;
+  padding: 5px 10px;
+  background-color: #fdb618;
+  font-size: 12px;
+}
+.help-ticket-box p {
+  margin: 0;
+  color: gray;
+}

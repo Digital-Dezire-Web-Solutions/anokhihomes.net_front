@@ -1,0 +1,19 @@
+.payment-table.table-head,
+.payment-table.table-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1.2fr 1fr 1fr 0.5fr 0.7fr 1fr 60px;
+}
+
+.payment-row {
+    padding: 0 0 1rem 0;
+  border-bottom: 1px solid #9f9f9f;
+}
+
+
+.download-btn svg{
+  border-radius: 1.125rem;
+  border: 1px solid var(--mood-color);
+  padding: 4px;
+  width: 25px;
+  height: 25px;
+}

@@ -1,0 +1,61 @@
+.logs-container {
+  height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Each Log */
+.log-item {
+  display: flex;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+/* Left Timeline */
+.log-left {
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.log-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid;
+  background: transparent;
+  z-index: 2;
+}
+
+.log-line {
+  width: 2px;
+  flex: 1;
+  background: #b5b5b51e;
+  margin-top: 5px;
+}
+
+/* Content */
+.log-content {
+  flex: 1;
+}
+
+.log-content h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.log-content p {
+  margin: 6px 0;
+  color: #9f9f9f;
+}
+
+.log-time {
+  font-size: 13px;
+  color: #9f9f9f;
+}
+
+.link {
+  text-decoration: underline;
+  cursor: pointer;
+}

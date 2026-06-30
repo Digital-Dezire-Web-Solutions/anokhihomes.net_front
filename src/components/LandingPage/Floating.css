@@ -1,0 +1,188 @@
+.floating-box {
+  position: fixed;
+  right: 2%;
+  bottom: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 9999;
+  transition: all 0.4s ease;
+}
+
+.floating-toggle {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  color: var(--mood-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.floating-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Avatar */
+
+.floating-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  animation: breathing 2.5s ease-in-out infinite;
+}
+
+.floating-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background-color: white;
+  box-shadow: 0 0 25px var(--mood-color);
+}
+
+/* Pulsing Ring */
+
+.floating-avatar::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 3px solid var(--mood-color);
+  animation: pulseRing 2s infinite;
+}
+
+.floating-avatar::after {
+  content: "";
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  border: 2px solid var(--mood-color);
+  animation: pulseRing 2s infinite 0.6s;
+}
+
+/* Online Dot */
+
+.online-dot {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 14px;
+  height: 14px;
+  background: #1bd741;
+  border: 3px solid #fff;
+  border-radius: 50%;
+}
+
+/* Name */
+
+.floating-name {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mood-color);
+  background-color: white;
+  border: 1px solid var(--mood-color);
+  padding: 5px 12px;
+  border-radius: 25px;
+  animation: blinkName 1.5s infinite;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
+.floating-name span{
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+
+/* Breathing */
+
+@keyframes breathing {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Ring */
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Blinking Name */
+
+@keyframes blinkName {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    /* opacity: 0.35; */
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 900px) {
+  .floating-box {
+    bottom: 0%;
+  }
+}
+
+@media (max-width: 900px) {
+  .floating-box {
+    bottom: 15px;
+    right: 10px;
+  }
+  /* Hide almost completely */
+  .floating-box.collapsed {
+    transform: translateX(calc(100% - 20px));
+  }
+  .floating-box.collapsed .floating-name {
+    opacity: 0;
+  }
+  .floating-box.collapsed .floating-avatar {
+    animation-play-state: paused;
+  }
+}
+
+/* Desktop */
+
+@media (min-width: 901px) {
+  .floating-toggle {
+    display: none;
+  }
+}

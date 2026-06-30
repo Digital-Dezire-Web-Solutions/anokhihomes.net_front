@@ -1,0 +1,55 @@
+.commission-container {
+  padding: 20px;
+}
+
+.table-head.commission-table,
+.table-row.commission-table {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 60px;
+}
+
+.top-agent {
+  color: gold;
+  font-weight: bold;
+}
+
+.levels-config .level-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.levels-config .level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-config {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+.admin-config .field {
+  width: 100%;
+}
+
+.admin-config-box {
+  margin-bottom: 1rem;
+}
+.admin-config-box input {
+  padding: 10px;
+  margin: 0 0 8px 0;
+  border-radius: 20px;
+  border: 1px solid #bcbcbc2e;
+  background-color: transparent;
+  color: #9f9f9f;
+}
+
+.best-performer-row {
+  background: rgb(255, 240, 155);
+  border-radius: 1.75rem;
+  padding: 10px 12px;
+}

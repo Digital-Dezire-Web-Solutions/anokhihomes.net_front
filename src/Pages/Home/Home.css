@@ -1,0 +1,17 @@
+.about-pages {
+  padding: 3rem 0;
+}
+
+.landing-pages {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem 15px;
+  width: 100%;
+}
+
+@media screen and (min-width: 1200px) {
+  .landing-head,
+  .landing-pages {
+    max-width: 1180px;
+  }
+}

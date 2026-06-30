@@ -1,0 +1,55 @@
+.sitevisit-table.table-row,
+.sitevisit-table.table-head {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 0.7fr 1fr 100px 100px 60px;
+}
+
+.site-visit-approval {
+  border: none !important;
+  cursor: pointer;
+  padding: 5px 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 0.5rem;
+}
+
+.note-preview {
+  margin-top: 10px;
+  width: 120px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: 0.3s;
+  /* margin-bottom: 2rem; */
+}
+
+.note-preview:hover {
+  transform: scale(1.05);
+}
+
+.ss-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:8px;
+}
+
+.ss-tag{
+    background:#eef3ff;
+    color:#234;
+    padding:6px 10px;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+}
+
+.ss-tag span{
+    cursor:pointer;
+    font-weight:bold;
+}

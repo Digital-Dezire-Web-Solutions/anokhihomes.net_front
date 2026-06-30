@@ -1,0 +1,9 @@
+export const TOOLS = {
+  POLYGON: "POLYGON",
+  LINE: "LINE",
+  RECTANGLE: "RECTANGLE",
+  SQUARE: "SQUARE",
+  CIRCLE: "CIRCLE",
+  ERASE: "ERASE",
+//   MEASURE: "MEASURE",
+};

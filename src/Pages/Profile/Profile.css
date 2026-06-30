@@ -1,0 +1,139 @@
+.profile-grid {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.profile-card {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.profile-top {
+  text-align: center;
+}
+.profile-top-avatar {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.avatar-actions {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  border: 1px solid #9f9f9f;
+  border-radius: 25px;
+  padding: 5px 10px 2px 10px;
+}
+.app.dark .avatar-actions {
+  background: #252528;
+}
+.profile-top h3 {
+  margin: 0;
+}
+.profile-top p {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #9f9f9f;
+}
+
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  object-fit: cover;
+  border: 1px solid #9f9f9f;
+}
+
+.profile-sidebar {
+  width: 25%;
+  position: relative;
+}
+
+.profile-main {
+  width: 75%;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-nav {
+  margin-top: 1rem;
+}
+.profile-nav span {
+  cursor: pointer;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.report-box {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.agent-overview {
+  margin-top: 20px;
+}
+
+.referral-header {
+  position: absolute;
+  top: 5%;
+  right: 5%;
+}
+
+.agent-mini-stats h4 {
+  border-bottom: 1px solid #d4d4d4;
+  padding-bottom: 5px;
+  margin-bottom: 0;
+}
+
+.doc-thumbnail {
+  width: 50px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+.doc-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: #999;
+}
+
+.profile-avatar-placeholder svg {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  background-color: #b5b5b51e;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .profile-grid {
+    flex-direction: column;
+  }
+  .profile-sidebar,
+  .profile-main {
+    width: 100%;
+  }
+}

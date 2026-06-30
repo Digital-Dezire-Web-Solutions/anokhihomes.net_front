@@ -1,0 +1,55 @@
+.counter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.counter-bx{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.app.dark .counter-icon svg{
+color: #fff;
+}
+.counter-icon svg{
+font-size: 60px;
+color: #4d4d4d;
+border: 1px solid var(--mood-color);
+border-radius: 50%;
+padding: 10px;
+}
+
+.counter-num h3{
+margin: 0;
+font-size: 40px;
+color: var(--mood-color);
+}
+.counter-num p{
+color: #4d4d4d;
+}
+
+
+@media (max-width: 900px) {
+    .counter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.counter-bx {
+    justify-content: flex-start;
+}
+}
+
+@media (max-width: 768px) {
+  .counter-num{
+    text-align: left;
+  }
+  .counter-num h3 {
+font-size: 30px;
+  }
+}

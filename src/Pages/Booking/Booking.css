@@ -1,0 +1,62 @@
+.booking-table.table-head,
+.booking-table.table-row {
+  display: grid;
+  grid-template-columns: 60px 80px 1fr 140px 140px 140px 140px 60px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.user-card-bottom-left {
+  font-size: 14px;
+}
+
+.user-card-bottom-right {
+  text-align: right;
+  font-size: 14px;
+}
+
+/* .view-box { */
+  /* width: 300px; */
+  /* padding-bottom: 1rem; */
+/* } */
+
+.booking-progress{
+  width: 100%;
+  text-align: center;
+}
+.booking-progress span{
+  font-size: 12px;
+}
+.booking-progress .progress-bar{
+  height: 24px !important;
+  position: relative;
+  margin-top: 5px;
+}
+.booking-progress .progress-fill{
+  background-color: rgb(81, 212, 0);
+}
+.booking-progress .progress-fill span{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+   white-space: nowrap;
+   /* color: white; */
+}
+
+.rating-stars{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0 5px 0;
+}
+
+.rating-stars span svg{
+  width: 50px;
+  height: 50px;
+}
+@media (max-width: 600px) {
+  .view-box {
+    width: 80vw;
+  }
+}

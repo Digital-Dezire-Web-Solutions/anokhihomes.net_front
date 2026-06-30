@@ -1,0 +1,204 @@
+/* CONTENT BOX */
+.contact-container {
+  width: 100%;
+  display: flex;
+  gap: 2rem;
+}
+
+/* LEFT IMAGE */
+.contact-left {
+  width: 50%;
+  position: relative;
+}
+
+.contact-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 1.75rem;
+}
+
+.contact-left-items {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+.contact-left-items .card {
+  width: 100%;
+  gap: 5px;
+  padding: 1rem;
+}
+.contact-left-items .card h5 svg {
+  font-size: 16px;
+}
+.contact-left-items .card h5 {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.contact-left-items .card p {
+  font-size: 12px;
+}
+
+/* RIGHT FORM */
+.contact-right {
+  width: 50%;
+}
+
+.contact-form {
+  /* background: #0a2842; */
+  border-radius: 20px;
+  color: white;
+}
+
+.form-items {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* FORM GROUP */
+.form-group {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  /* color: #222; */
+}
+
+/* INPUTS */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #c9c9c9;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--mood-color);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* BUTTON */
+.contact-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 50px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.contact-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.contact-bottom {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.contact-bottom-box {
+  color: var(--mood-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+}
+.contact-bottom-box svg {
+  font-size: 30px;
+}
+.contact-bottom-box p {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+.contact-bottom-box h5 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.contact-socail-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  top: -1%;
+  right: 0;
+  z-index: 7;
+  background-color: #fafafa;
+  padding: 0.5rem 0.5rem 1rem 1.5rem;
+  border-radius: 0 0 0 1.75rem;
+}
+
+.contact-socail-box a {
+  cursor: pointer;
+  text-decoration: none;
+}
+.contact-socail-box svg {
+  color: var(--mood-color);
+  font-size: 20px;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 900px) {
+  .contact-container {
+    flex-direction: column;
+  }
+
+  .contact-left,
+  .contact-right {
+    width: 100%;
+  }
+  .form-items {
+    flex-direction: column;
+    gap: 0;
+  }
+  .contact-bottom {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  /* .contact-right {
+    padding: 25px;
+  } */
+
+  .contact-right h2 {
+    font-size: 26px;
+  }
+}

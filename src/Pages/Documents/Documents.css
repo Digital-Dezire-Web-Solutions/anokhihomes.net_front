@@ -1,0 +1,67 @@
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 1rem;
+}
+
+.document-item {
+  position: relative;
+  cursor: pointer;
+}
+.document-item img {
+  width: 100%;
+  object-fit: cover;
+  aspect-ratio: 4/5;
+}
+
+.document-item {
+  break-inside: avoid;
+  /* margin-bottom: 1rem; */
+  border-radius: 1.75rem;
+  overflow: hidden;
+  cursor: zoom-in;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.document-item img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 1.75rem;
+  transition: transform 0.4s ease;
+}
+
+.document-item.pdf-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 10px 1rem;
+}
+.document-item.pdf-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.document-item:hover img {
+  transform: scale(1.05);
+}
+
+.pdf-badge {
+  position: absolute;
+  top: 0%;
+  right: 0;
+  background: red;
+  color: white;
+  font-size: 10px;
+  padding: 5px 15px;
+  border-radius: 0 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .document-grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+}

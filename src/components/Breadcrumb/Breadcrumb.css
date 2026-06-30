@@ -1,0 +1,25 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 5px 0 0 0;
+}
+
+.breadcrumb a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: #111827;
+}
+
+.sep {
+  margin: 0 4px;
+}
+
+.app.dark .breadcrumb a {
+  color: #d1d5db;
+}

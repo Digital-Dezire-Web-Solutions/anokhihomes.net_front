@@ -1,0 +1,76 @@
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.overview-grid label {
+  font-size: 12px;
+  color: #777;
+}
+
+.overview-grid p {
+  font-weight: 500;
+}
+
+/* Agent Mini Stats */
+.mini-grid {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.mini-box {
+  background: #f3f4f6;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Permissions */
+.permission-list {
+  margin-top: 20px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 1.75rem;
+  cursor: pointer;
+  background: #b5b5b51e;
+  margin-bottom: 10px;
+}
+
+/* .permission-item.active {
+  background: #e0f2fe;
+} */
+
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Agent Report */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.report-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .report-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

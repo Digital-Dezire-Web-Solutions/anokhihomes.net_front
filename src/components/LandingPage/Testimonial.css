@@ -1,0 +1,44 @@
+.Testimonial-img{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.Testimonial-img img{
+    border-radius: 50%;
+    aspect-ratio: 2/2;
+    width: 10%;
+    height: 100%;
+}
+
+.testimonial-title h3{
+    margin: 0;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+.testimonial-title p{
+    margin: 0;
+    color: #9f9f9f;
+    font-size: 12px;
+}
+
+.Testimonial-details{
+  position: relative;
+}
+.Testimonial-details svg{
+   font-size: 30px;
+   color: #9f9f9f;
+}
+.Testimonial-details .svg-left{
+   position: absolute;
+   top: 0;
+   left: 0;
+}
+.Testimonial-details .svg-right{
+   position: absolute;
+   bottom: 0;
+   right: 0;
+}
+
+.Testimonial-details p{
+    padding: 1rem 2.5rem;
+}

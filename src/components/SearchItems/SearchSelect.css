@@ -1,0 +1,54 @@
+.ss-container {
+  position: relative;
+  width: 100%;
+}
+
+/* .ss-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 1.75rem;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: 0.2s;
+} */
+
+.ss-input:focus {
+  border-color: var(--mood-color);
+}
+
+.ss-dropdown {
+  position: fixed;
+  width: 20%;
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  margin-top: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 10px;
+}
+
+.ss-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 12px;
+  border-radius: 1.25rem;
+}
+
+.ss-item:hover {
+  background: #b5b5b51e;
+}
+
+.no-result {
+  color: #999;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+
+  .ss-dropdown {
+    width: 50%;
+  }
+}
