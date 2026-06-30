@@ -4,21 +4,30 @@ import LBreadcrumb from "../../components/LandingPage/LBreadcrumb";
 import PlotCardUsers from "../../components/Cards/PlotCardUsers";
 import PlotDrawCard from "../../components/Cards/PlotDrawCard";
 import ProjectData from "../Plot/PlotData";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getPlots } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 
-const LandingProjectDetail = ({ data }) => {
-  const { projectId } = useParams();
+const LandingProjectDetail = ({ data, mood, setAlert }) => {
+  const location = useLocation();
+  // console.log(location.state);
+  const projectData = location;
+  const projectName = projectData?.state?.project?.name;
+  const navigate = useNavigate();
+  const projectId = projectData?.state?.project?._id;
+  console.log(projectData, "projectData");
+  console.log(projectId, "projectId");
   const dispatch = useDispatch();
   const { plots } = useSelector((state) => state.app);
 
   useEffect(() => {
     dispatch(getPlots(projectId));
   }, [projectId]);
-  const [project, setProject] = useState(plots);
 
-  if (!project) return <p>Project not found</p>;
+  // console.log(projectId,"projectId")
+  // console.log(plots,"plots")
+
+  if (!plots) return <p>Project not found</p>;
   return (
     <>
       <div className="landing-head-box">
@@ -30,8 +39,13 @@ const LandingProjectDetail = ({ data }) => {
         </div>
       </div>
       <div className="landing-pages">
-        <h2>{project?.name}</h2>
-        <PlotDrawCard data={plots} />
+        <h2>{projectName}</h2>
+        <PlotDrawCard
+          data={plots}
+          mood={mood}
+          setAlert={setAlert}
+          projectId={projectId}
+        />
       </div>
     </>
   );

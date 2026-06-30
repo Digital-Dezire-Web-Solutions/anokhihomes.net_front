@@ -11,7 +11,11 @@ import NiCode from "../../icons/ni-code";
 import NiLink from "../../icons/ni-link";
 import NiUser from "../../icons/ni-user";
 import { useDispatch, useSelector } from "react-redux";
-import { getAccountDetails, getUserById, updateUser } from "../../Redux/Slices/AppSlices";
+import {
+  getAccountDetails,
+  getUserById,
+  updateUser,
+} from "../../Redux/Slices/AppSlices";
 import { uploadImage } from "../LandingSetting/LandingApi";
 import NiEdit from "../../icons/ni-edit";
 import NiDelete from "../../icons/ni-delete";
@@ -24,16 +28,18 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   const { userDetail, userById } = useSelector((state) => state.app);
   useEffect(() => {
     dispatch(getAccountDetails());
-    dispatch(getUserById(userId));
+    if (userId) {
+      dispatch(getUserById(userId));
+    }
   }, []);
-  
+
   let userData = userById;
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [formData, setFormData] = useState()
+  const [formData, setFormData] = useState();
   // console.log(userId, "userId")
-  
+
   /* ================= SAFETY ================= */
-  
+
   useEffect(() => {
     if (!userData) navigate("/dashboard");
   }, [userData, navigate]);
@@ -66,7 +72,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
           data: {
             avatar: upload.url,
           },
-        })
+        }),
       ).unwrap();
       dispatch(getAccountDetails());
       dispatch(getUserById(userData));
@@ -98,7 +104,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
           data: {
             avatar: "",
           },
-        })
+        }),
       ).unwrap();
       dispatch(getAccountDetails());
       dispatch(getUserById(userData));
@@ -247,7 +253,6 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         url: referralLink,
       });
     } else {
-
     }
   };
 
@@ -269,7 +274,6 @@ const Profile = ({ mood, currentUser, setAlert }) => {
           <div className="profile-card card">
             <div className="profile-top">
               <div className="profile-top-avatar">
-
                 {userData?.avatar ? (
                   <img
                     src={userData.avatar}
@@ -281,7 +285,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
                     <NiUser />
                   </div>
                 )}
-                {(isOwnProfile) && (
+                {isOwnProfile && (
                   <div className="avatar-actions">
                     <label className="avatar-upload-btn">
                       {avatarUploading ? "Uploading..." : <NiEdit />}
@@ -311,7 +315,8 @@ const Profile = ({ mood, currentUser, setAlert }) => {
                     ? "Associate"
                     : userData.role === "admin"
                       ? "Admin"
-                      : "Customer"}, {userData.status}
+                      : "Customer"}
+                , {userData.status}
               </p>
               {userData.role === "agent" && (
                 <div className="referral-box">

@@ -257,7 +257,7 @@ export default function PlotCanvas({
   };
 
   const handleWheel = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
     setScale((s) => Math.min(Math.max(0.4, s + delta), 3));
   };

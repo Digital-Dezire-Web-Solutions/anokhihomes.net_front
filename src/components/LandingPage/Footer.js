@@ -10,17 +10,30 @@ import {
 import { AiFillInstagram } from "react-icons/ai";
 import { Link, NavLink } from "react-router-dom";
 import { FaLocationDot, FaXTwitter } from "react-icons/fa6";
-import Logo from "../../Assets/Logo/Anokhi Homes.png";
+import Logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import { MdChevronRight } from "react-icons/md";
+import AdminLogo from "../../Assets/Logo/logo-anokhi-home-parpul.png";
+import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
+import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";
 
-const Footer = ({ data }) => {
+const Footer = ({ data, mood }) => {
   return (
     <footer className="footer">
       {/* TOP */}
       <div className="footer-top landing-pages">
         {/* Company */}
         <div className="footer-col">
-          <img className="footer-logo" src={Logo} alt="" />
+          {mood === "admin" ? (
+            <img className="footer-logo" src={AdminLogo} alt="" />
+          ) : mood === "staff" ? (
+            <img className="footer-logo" src={StaffLogo} alt="" />
+          ) : mood === "agent" ? (
+            <img className="footer-logo" src={AgentLogo} alt="" />
+          ) : (
+            <img className="footer-logo" src={UserLogo} alt="" />
+          )}
+          {/* <img className="footer-logo" src={Logo} alt="" /> */}
           {/* <div className="footer-logo">
                         <Logo />
                     </div> */}
@@ -35,16 +48,24 @@ const Footer = ({ data }) => {
           {/* <h4>Useful Links</h4> */}
           <ul className="footer-navitems">
             <li>
-              <NavLink to="/contact"><MdChevronRight /> Contact Us</NavLink>
+              <NavLink to="/contact">
+                <MdChevronRight /> Contact Us
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/"><MdChevronRight /> Career</NavLink>
+              <NavLink to="/">
+                <MdChevronRight /> Career
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/privacy-policy"><MdChevronRight /> Privacy Policy</NavLink>
+              <NavLink to="/privacy-policy">
+                <MdChevronRight /> Privacy Policy
+              </NavLink>
             </li>
             <li>
-              <NavLink to="/term-condition"><MdChevronRight /> Terms & Conditions</NavLink>
+              <NavLink to="/term-condition">
+                <MdChevronRight /> Terms & Conditions
+              </NavLink>
             </li>
             <li>
               <NavLink to="/cancellation-refund">
@@ -96,7 +117,10 @@ const Footer = ({ data }) => {
         <p>© 2026 Anokhi Homes Private Limited | All rights reserved.</p>
         <p>
           Developed by :{" "}
-          <Link to={"https://digitaldezire.com/"} style={{textDecoration:"none"}}>
+          <Link
+            to={"https://digitaldezire.com/"}
+            style={{ textDecoration: "none" }}
+          >
             <span>Digital Dezire</span>
           </Link>
         </p>

@@ -12,11 +12,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { getCashback, getProjects } from "../../Redux/Slices/AppSlices";
 import Host from "../../Host/Host";
 import axios from "axios";
+import { uploadImage } from "../LandingSetting/LandingApi";
 
 const Projects = ({ mood, setAlert }) => {
   const location = useLocation();
   const plotData = location.state;
-  let plotId  = plotData?._id;
+  let plotId = plotData?._id;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { projects, cashbackData } = useSelector((state) => state.app);
@@ -56,63 +57,107 @@ const Projects = ({ mood, setAlert }) => {
     }
   }, [selectedProject]);
 
+  const handleFileUpload = (file) => {
+    if (!file) return;
+
+    const MAX_SIZE = 20 * 1024 * 1024;
+
+    if (file.size > MAX_SIZE) {
+      setAlert({
+        message: "Image size should not exceed 20 MB",
+        status: "Error",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      image: file,
+    }));
+  };
+
   const handleAddPlots = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
+
       const token = localStorage.getItem("token");
-      
-      await axios.post(
-        `${Host}/api/colony/add`,
-        {
-          ...formData,
-          locationId: plotId,
+
+      let imageUrl = "";
+
+      if (formData.image) {
+        const upload = await uploadImage(formData.image);
+        imageUrl = upload.url;
+      }
+
+      const payload = {
+        name: formData.name,
+        image: imageUrl,
+        area: formData.area,
+        priceRange: formData.priceRange,
+        locationId: plotId,
+      };
+
+      await axios.post(`${Host}/api/colony/add`, payload, {
+        headers: {
+          "auth-token": token,
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            "auth-token": token,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      
+      });
+
       dispatch(getProjects(plotId));
-      
+
       setAlert({
         message: "Project added successfully!",
         status: "Success",
       });
-      
+
       setOpen(false);
-      
+
       setFormData({
         name: "",
         image: "",
-        description: "",
+        area: "",
+        priceRange: "",
       });
-      
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to add project",
         status: "Error",
       });
-      
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
-  
+
   const handleEditPlots = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
+
       const token = localStorage.getItem("token");
-      
+
+      let imageUrl = selectedProject.image;
+
+      if (formData.image instanceof File) {
+        const upload = await uploadImage(formData.image);
+        imageUrl = upload.url;
+      }
+
+      const payload = {
+        name: formData.name,
+        image: imageUrl,
+        area: formData.area,
+        priceRange: formData.priceRange,
+      };
+
       await axios.put(
         `${Host}/api/colony/edit/${selectedProject._id}`,
-        formData,
+        payload,
         {
           headers: {
             "auth-token": token,
@@ -120,61 +165,59 @@ const Projects = ({ mood, setAlert }) => {
           },
         },
       );
-      
+
       dispatch(getProjects(plotId));
-      
+
       setAlert({
         message: "Project updated successfully!",
         status: "Success",
       });
-      
+
       setOpen(false);
-      
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to update project",
         status: "Error",
       });
-      
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
-  
+
   const handleDeleteProject = async (id) => {
     try {
-      setSaving(true)
+      setSaving(true);
       const token = localStorage.getItem("token");
-      
+
       await axios.delete(`${Host}/api/colony/delete/${id}`, {
         headers: {
           "auth-token": token,
         },
       });
-      
+
       dispatch(getProjects(plotId));
-      
+
       setAlert({
         message: "Project deleted successfully!",
         status: "Success",
       });
-      
+
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to delete project",
         status: "Error",
       });
-      
+
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
@@ -292,7 +335,7 @@ const Projects = ({ mood, setAlert }) => {
           />
         </div>
 
-        <div className="field">
+        {/* <div className="field">
           <label>Image</label>
 
           <input
@@ -305,8 +348,28 @@ const Projects = ({ mood, setAlert }) => {
             }
             placeholder="Image"
           />
-        </div>
+        </div> */}
+        <div className="field">
+          <label>Image</label>
 
+          {formData.image && (
+            <img
+              src={
+                formData.image instanceof File
+                  ? URL.createObjectURL(formData.image)
+                  : formData.image
+              }
+              alt="Preview"
+              className="image-preview-full"
+            />
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileUpload(e.target.files[0])}
+          />
+        </div>
         <div className="field">
           <label>Area in sqft</label>
 
@@ -340,7 +403,11 @@ const Projects = ({ mood, setAlert }) => {
 
         <div className="modal-actions">
           <button onClick={isEditMode ? handleEditPlots : handleAddPlots}>
-            {saving ? "Saving...":isEditMode ? "Update Project" : "Add Project"}
+            {saving
+              ? "Saving..."
+              : isEditMode
+                ? "Update Project"
+                : "Add Project"}
           </button>
         </div>
       </AddLocationModal>

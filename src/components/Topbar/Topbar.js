@@ -12,16 +12,23 @@ import AdminLogo from "../../Assets/Logo/logo-anokhi-home-parpul.png";
 import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
 import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";
-import mainLoag from "../../Assets/Logo/Final_pah-logo-green-hq.png"
+import mainLoag from "../../Assets/Logo/Final_pah-logo-green-hq.png";
 import NiUser from "../../icons/ni-user";
 import { useDispatch, useSelector } from "react-redux";
-import { getAccountDetails, getNotifications, getNotificationsCount, readNotification } from "../../Redux/Slices/AppSlices";
+import {
+  getAccountDetails,
+  getNotifications,
+  getNotificationsCount,
+  readNotification,
+} from "../../Redux/Slices/AppSlices";
 import NiDrawr from "../../icons/ni-drawr";
 import Floating from "../LandingPage/Floating";
 
 function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const dispatch = useDispatch();
-  const { userDetail, notificationsCount, notifications } = useSelector((state) => state.app);
+  const { userDetail, notificationsCount, notifications } = useSelector(
+    (state) => state.app,
+  );
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getNotificationsCount());
@@ -68,6 +75,13 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
     dispatch(readNotification(id));
     dispatch(getNotificationsCount());
   };
+
+  const createSlug = (name) =>
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
 
   // console.log(notificationsCount?.unread, "notificationsCount");
 
@@ -116,7 +130,12 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
         >
           <NiBell />
           <span>{notificationsCount?.unread}</span>
-          {openNotif && <NotificationModal notifications={notifications} handleRead={handleRead} />}
+          {openNotif && (
+            <NotificationModal
+              notifications={notifications}
+              handleRead={handleRead}
+            />
+          )}
         </div>
 
         {/* Dark Mode */}
@@ -166,8 +185,8 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
               <div
                 className="pm-item"
                 onClick={() =>
-                  navigate(`/user/${currentUser._id}`, {
-                    state: currentUser,
+                  navigate(`/user/${createSlug(currentUser.name)}`, {
+                    state: currentUser._id,
                   })
                 }
               >
@@ -187,10 +206,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
               >
                 Help and Support
               </div>
-              <div
-                className="pm-item"
-                onClick={() => navigate(`/rating`)}
-              >
+              <div className="pm-item" onClick={() => navigate(`/rating`)}>
                 Rating
               </div>
 

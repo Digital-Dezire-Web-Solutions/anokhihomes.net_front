@@ -54,7 +54,7 @@ const LandingLayout = ({ mood, data }) => {
     <div className="landing-page">
       <Navbar mood={mood} />
       <Outlet />
-      <Footer data={data} />
+      <Footer data={data} mood={mood} />
     </div>
   );
 };
@@ -112,7 +112,11 @@ function App() {
             <Route
               path="/projects/:projectId"
               element={
-                <LandingProjectDetail setAlert={setAlert} data={allColonies} />
+                <LandingProjectDetail
+                  data={allColonies}
+                  mood={mood}
+                  setAlert={setAlert}
+                />
               }
             />
             <Route path="/gallery" element={<Gallery data={landingPage} />} />
@@ -139,7 +143,12 @@ function App() {
           <Route
             path="/signup"
             element={
-              <Signup mood={mood} setAlert={setAlert} setMood={setMood} data={landingPage}/>
+              <Signup
+                mood={mood}
+                setAlert={setAlert}
+                setMood={setMood}
+                data={landingPage}
+              />
             }
           />
           <Route
@@ -179,7 +188,13 @@ function App() {
                       />
                       <Route
                         path="/bookings"
-                        element={<Booking mood={mood} setAlert={setAlert} landingPage={landingPage}/>}
+                        element={
+                          <Booking
+                            mood={mood}
+                            setAlert={setAlert}
+                            landingPage={landingPage}
+                          />
+                        }
                       />
                       <Route
                         path="/offers-discounts"
@@ -207,7 +222,13 @@ function App() {
                       />
                       <Route
                         path="/site-visits"
-                        element={<SiteVisit mood={mood} setAlert={setAlert} landingPage={landingPage}/>}
+                        element={
+                          <SiteVisit
+                            mood={mood}
+                            setAlert={setAlert}
+                            landingPage={landingPage}
+                          />
+                        }
                       />
                       <Route
                         path="/payments"
@@ -259,15 +280,11 @@ function App() {
                       />
                       <Route
                         path="/holdplot"
-                        element={
-                          <HoldPlot mood={mood} setAlert={setAlert} />
-                        }
+                        element={<HoldPlot mood={mood} setAlert={setAlert} />}
                       />
                       <Route
                         path="/rating"
-                        element={
-                          <Rating mood={mood} setAlert={setAlert} />
-                        }
+                        element={<Rating mood={mood} setAlert={setAlert} />}
                       />
                     </Routes>
                   </div>

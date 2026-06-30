@@ -11,6 +11,7 @@ import { getLocation } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import Host from "../../Host/Host";
 import axios from "axios";
+import { uploadImage } from "../LandingSetting/LandingApi";
 
 const PlotList = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -47,59 +48,105 @@ const PlotList = ({ mood, setAlert }) => {
     }
   }, [selectedLocation]);
 
+  const handleFileUpload = (field, file) => {
+    if (!file) return;
+
+    const MAX_SIZE = 20 * 1024 * 1024;
+
+    if (file.size > MAX_SIZE) {
+      setAlert({
+        message: "Image size should not exceed 20 MB",
+        status: "Error",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [field]: file,
+    }));
+  };
+
   const handleAddLocation = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
       const token = localStorage.getItem("token");
-      
-      await axios.post(`${Host}/api/location/add`, formData, {
+      let imageUrl = "";
+      if (formData.image) {
+        const imageUpload = await uploadImage(formData.image);
+        imageUrl = imageUpload.url;
+      }
+
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        image: imageUrl,
+      };
+
+      await axios.post(`${Host}/api/location/add`, payload, {
         headers: {
           "auth-token": token,
           "Content-Type": "application/json",
         },
       });
-      
+
       dispatch(getLocation());
-      
+
       setAlert({
         message: "Location added successfully!",
         status: "Success",
       });
-      
+
       setOpen(false);
-      
+
       setFormData({
         name: "",
         description: "",
         image: "",
       });
-      
+
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to add location",
         status: "Error",
       });
-      
+
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
   const handleEditLocation = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
+
       const token = localStorage.getItem("token");
-      
+
+      let imageUrl = selectedLocation.image;
+
+      if (formData.image instanceof File) {
+        const upload = await uploadImage(formData.image);
+        imageUrl = upload.url;
+      }
+
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        image: imageUrl,
+      };
+
       await axios.put(
         `${Host}/api/location/edit/${selectedLocation._id}`,
-        formData,
+        payload,
         {
           headers: {
             "auth-token": token,
@@ -107,74 +154,69 @@ const PlotList = ({ mood, setAlert }) => {
           },
         },
       );
-      
+
       dispatch(getLocation());
-      
+
       setAlert({
         message: "Location updated successfully!",
         status: "Success",
       });
-      
+
       setOpen(false);
-      
-      setTimeout(() => {
-        setAlert(null);
-      }, 3000);
-      setSaving(false)
+
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to update location",
         status: "Error",
       });
-      
-      setTimeout(() => {
-        setAlert(null);
-      }, 3000);
-      setSaving(false)
+
+      setSaving(false);
     }
   };
-  
+
   const handleDeleteLocation = async (id) => {
     try {
-      setSaving(true)
+      setSaving(true);
       const token = localStorage.getItem("token");
-      
+
       await axios.delete(`${Host}/api/location/delete/${id}`, {
         headers: {
           "auth-token": token,
         },
       });
-      
+
       dispatch(getLocation());
-      
+
       setAlert({
         message: "Location deleted successfully!",
         status: "Success",
       });
-      
+
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
-      
+
       setAlert({
         message: "Failed to delete location",
         status: "Error",
       });
-      
+
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
-  console.log(selectedLocation, "selectedLocation");
-  console.log(formData, "formData");
+  // console.log(selectedLocation, "selectedLocation");
+  // console.log(formData, "formData");
+
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -235,12 +277,30 @@ const PlotList = ({ mood, setAlert }) => {
       >
         <div className="field">
           <label>Image</label>
-          <input
+          {/* <input
             value={formData.image}
             onChange={(e) =>
               setFormData({ ...formData, image: e.target.value })
             }
             placeholder="Image"
+            /> */}
+          {formData.image && typeof formData.image === "string" && (
+            <div className="image-preview-modal">
+              <img
+                src={
+                  formData.image instanceof File
+                    ? URL.createObjectURL(formData.image)
+                    : formData.image
+                }
+                alt="Preview"
+                className="image-preview-full"
+              />
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileUpload("image", e.target.files[0])}
           />
         </div>
         <div className="field">

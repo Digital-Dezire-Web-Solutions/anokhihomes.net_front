@@ -9,10 +9,11 @@ import { polygonArea } from "../PlotDraw/geometry";
 import Host from "../../Host/Host";
 import axios from "axios";
 
-const PlotDrawCard = ({ data, mood, setAlert }) => {
-  const { projectId } = useParams();
+const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
+  // const { projectId } = useParams();
   // console.log(data,"data")
   // const [project, setProject] = useState(null);
+  console.log(projectId,"projectId")
 
   const [tool, setTool] = useState(TOOLS.POLYGON);
   const [plots, setPlots] = useState([]);
