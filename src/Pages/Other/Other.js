@@ -75,7 +75,6 @@ const Other = ({ mood, setAlert }) => {
   }, [selectedUser]);
 
   const filteredData = users
-    ?.filter((item) => item.role !== "admin")
     ?.filter((item) => {
       // Role filter
       const matchesRole =
@@ -227,7 +226,7 @@ const Other = ({ mood, setAlert }) => {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
 
-  // console.log(currentData, "currentData")
+  // console.log(currentData, "item")
 
   return (
     <div className="plot-container user-table-box">
@@ -319,7 +318,7 @@ const Other = ({ mood, setAlert }) => {
               <span>Name</span>
               <span>Referral Id</span>
               <span>Designation</span>
-              <span>Referral By</span>
+              <span>Referred By</span>
               <span>Rating</span>
               <span>Status</span>
               <span>Actions</span>
@@ -351,7 +350,7 @@ const Other = ({ mood, setAlert }) => {
                   {item.name} {item.position && `(${item.position})`}
                 </span>
                 <span>{item?.referralId}</span>
-                <span className="title">{item.role === "agent" ? <>{item.designation}({item.directIncomePercent}%) </> : item.role === "staff" ? <>{item.staffRole?.name}</> : "-"}</span>
+                <span className="title">{(item.role === "agent" || item.role === "admin" ) ? <>{item.designation}({item.directIncomePercent}%) </> : item.role === "staff" ? <>{item.staffRole?.name}</> : "-"}</span>
                 <span className="title">{item?.referredBy?.name || "-"} {item?.referredBy?.referralId && `(${item?.referredBy?.referralId})`}</span>
                 {item.role === "agent" ? <span className="title"><Stars rating={item.overallRating} />({item.overallRating?.toFixed(1)})</span> : "-"}
 

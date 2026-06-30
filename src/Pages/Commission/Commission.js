@@ -30,7 +30,7 @@ const Commission = ({ mood, setAlert }) => {
     }, []);
 
     const commissionData = incomeSummary || [];
-    console.log(commissionData, "commissionData")
+    // console.log(commissionData, "commissionData")
 
     const formatCycleDate = (date) => {
         if (!date) return "-";
