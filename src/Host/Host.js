@@ -1,3 +1,3 @@
-const Host = "https://api.patliputraanokhihomes.com"
+const Host = "http://api.anokhihomes.net"
 // const Host = "http://localhost:8000"
 export default Host;
