@@ -39,7 +39,6 @@ const Management = ({ mood, setAlert }) => {
         return (
           <StaffLeadManagement
             leads={leads}
-            staffType={"marketing"}
             mood={mood}
             setAlert={setAlert}
           />

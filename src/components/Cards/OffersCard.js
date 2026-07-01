@@ -57,7 +57,7 @@ const OffersCard = ({
         </div>
 
         <div className="dots">
-          {mood === "admin" && (
+          {(mood === "admin" || mood === "staff") && (
             <label className="switch">
               <input
                 type="checkbox"
@@ -76,7 +76,7 @@ const OffersCard = ({
             <NiOpenEye />
           </span>
 
-          {mood === "admin" && (
+          {(mood === "admin" || mood === "staff") && (
             <span
               onClick={(e) => {
                 e.stopPropagation();
@@ -107,14 +107,43 @@ const OffersCard = ({
 
       <div className="user-card-bottom">
         <div className="user-card-bottom-left">
-          <p><strong>Description : </strong>{item.description}</p>
-          {isOffer && <p><strong>Price Benefit : </strong>₹{formatCurrency(item.priceValue)}</p>}
-          {isDiscount && <p><strong>Discount :</strong> {formatCurrency(item.amount)} {item.type === "percentage" ? "%" : "₹"}</p>}
-          {!isDiscount && <p><strong>User Type:</strong> {item.userType?.join(", ")}</p>}
-          <p><strong>Offer Type: </strong>{item?.offerType}</p>
-          <p><strong>Offer Value: </strong>{item?.offerValue}</p>
-          <p><strong>Colony: </strong>{item?.colonyId?.name}</p>
-          <p><strong>Start from: </strong>{formatDate(item.startDate)}</p>
+          <p>
+            <strong>Description : </strong>
+            {item.description}
+          </p>
+          {isOffer && (
+            <p>
+              <strong>Price Benefit : </strong>₹
+              {formatCurrency(item.priceValue)}
+            </p>
+          )}
+          {isDiscount && (
+            <p>
+              <strong>Discount :</strong> {formatCurrency(item.amount)}{" "}
+              {item.type === "percentage" ? "%" : "₹"}
+            </p>
+          )}
+          {!isDiscount && (
+            <p>
+              <strong>User Type:</strong> {item.userType?.join(", ")}
+            </p>
+          )}
+          <p>
+            <strong>Offer Type: </strong>
+            {item?.offerType}
+          </p>
+          <p>
+            <strong>Offer Value: </strong>
+            {item?.offerValue}
+          </p>
+          <p>
+            <strong>Colony: </strong>
+            {item?.colonyId?.name}
+          </p>
+          <p>
+            <strong>Start from: </strong>
+            {formatDate(item.startDate)}
+          </p>
           <p>
             <strong>Valid Till:</strong> {formatDate(item.endDate)}
           </p>
@@ -181,7 +210,8 @@ const OffersCard = ({
 
             {isDiscount && (
               <p>
-                {formatCurrency(item.amount)} {item.type === "percentage" ? "%" : "₹"}
+                {formatCurrency(item.amount)}{" "}
+                {item.type === "percentage" ? "%" : "₹"}
               </p>
             )}
 

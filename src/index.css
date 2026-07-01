@@ -15,9 +15,9 @@ body {
 
 .app {
   --mood-color: #a70304; /* default admin */
-  --success-color: #67bb3a;
-  --error-color: #ff4d4f;
-  --warning-color: #f8a32a;
+  --success-color: #a70304;
+  --error-color: #a70304;
+  --warning-color: #a70304;
 }
 
 .mood-admin {
@@ -25,15 +25,15 @@ body {
 }
 
 .mood-agent {
-  --mood-color: #00c0eb;
+  --mood-color: #a70304;
 }
 
 .mood-staff {
-  --mood-color: #67bb3a;
+  --mood-color: #a70304;
 }
 
 .mood-user {
-  --mood-color: #f8a32a;
+  --mood-color: #a70304;
 }
 
 code {

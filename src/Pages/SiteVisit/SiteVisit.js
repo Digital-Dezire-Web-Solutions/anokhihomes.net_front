@@ -46,7 +46,6 @@ const SiteVisit = ({ mood, staffType, setAlert, landingPage }) => {
           <StaffSiteVisit
             siteVisits={siteVisit}
             mood={mood}
-            staffType={"operations"}
             setAlert={setAlert}
             landingPage={landingPage}
           />

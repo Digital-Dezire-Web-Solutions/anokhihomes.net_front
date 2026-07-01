@@ -53,7 +53,7 @@ const CashbackCard = ({
         </div>
 
         <div className="dots">
-          {mood === "admin" && (
+          {(mood === "admin" || mood === "staff") && (
             <label className="switch">
               <input
                 type="checkbox"
@@ -72,7 +72,7 @@ const CashbackCard = ({
             <NiOpenEye />
           </span>
 
-          {mood === "admin" && (
+          {(mood === "admin" || mood === "staff") && (
             <span
               onClick={(e) => {
                 e.stopPropagation();

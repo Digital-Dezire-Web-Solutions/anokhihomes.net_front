@@ -447,7 +447,7 @@ const SiteVisitCard = ({
           <p>{item.visitDate}</p>
         </div>
       </div>
-      {mood === "admin" && (item.status === "approval") && (
+      {(mood === "admin" || mood === "staff") && (item.status === "approval") && (
         <div className="modal-actions">
           <button
             className="site-visit-approval status active"

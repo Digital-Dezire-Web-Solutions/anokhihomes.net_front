@@ -25,7 +25,7 @@ const Payments = ({ mood, staffType, setAlert }) => {
       case "agent":
         return <AgentPayments payment={payment} mood={mood} setAlert={setAlert}/>;
       case "staff":
-        return <StaffPayments payment={payment} mood={mood} staffType={"accounts"} setAlert={setAlert}/>;
+        return <StaffPayments payment={payment} mood={mood} setAlert={setAlert}/>;
       case "user":
         return <UserPayments payment={payment} mood={mood} setAlert={setAlert}/>;
       default:

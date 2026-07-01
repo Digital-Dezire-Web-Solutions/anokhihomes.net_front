@@ -27,9 +27,10 @@ import {
 } from "../../Redux/Slices/AppSlices";
 import NiUser from "../../icons/ni-user";
 import Stars from "../../components/Utils/Stars";
+import UserForm from "../../components/UserForm/UserForm";
 
 const ITEMS_PER_PAGE = 15;
-const Other = ({ mood, setAlert }) => {
+const Other = ({ mood, setAlert, data }) => {
   const dispatch = useDispatch();
   const { users, staffRoles } = useSelector((state) => state.app);
 
@@ -52,7 +53,7 @@ const Other = ({ mood, setAlert }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedDeleteUser, setSelectedDeleteUser] = useState(null);
-  const [referalMsg, setReferralMsg] = useState(null)
+  const [referalMsg, setReferralMsg] = useState(null);
 
   const [formData, setFormData] = useState({
     user: "",
@@ -74,24 +75,23 @@ const Other = ({ mood, setAlert }) => {
     }
   }, [selectedUser]);
 
-  const filteredData = users
-    ?.filter((item) => {
-      // Role filter
-      const matchesRole =
-        filter === "all" || item.role?.toLowerCase() === filter?.toLowerCase();
+  const filteredData = users?.filter((item) => {
+    // Role filter
+    const matchesRole =
+      filter === "all" || item.role?.toLowerCase() === filter?.toLowerCase();
 
-      // Search filter
-      const searchValue = search.toLowerCase();
+    // Search filter
+    const searchValue = search.toLowerCase();
 
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchValue) ||
-        item.email?.toLowerCase().includes(searchValue) ||
-        item.phone?.includes(searchValue) ||
-        item.id.toString().includes(searchValue) ||
-        item.user.toLowerCase().includes(searchValue);
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchValue) ||
+      item.email?.toLowerCase().includes(searchValue) ||
+      item.phone?.includes(searchValue) ||
+      item.id.toString().includes(searchValue) ||
+      item.user.toLowerCase().includes(searchValue);
 
-      return matchesRole && matchesSearch;
-    });
+    return matchesRole && matchesSearch;
+  });
   // reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
@@ -119,7 +119,7 @@ const Other = ({ mood, setAlert }) => {
   }, [setActiveRow]);
 
   const handleAddUser = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const result = await dispatch(addUser(formData)).unwrap();
 
@@ -134,7 +134,7 @@ const Other = ({ mood, setAlert }) => {
         setAlert(null);
       }, 3000);
       setOpen(false);
-      setSaving(false)
+      setSaving(false);
     } catch (error) {
       setAlert({
         message: error.msg || "Failed to create user",
@@ -143,17 +143,17 @@ const Other = ({ mood, setAlert }) => {
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
   const handleEditUser = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       await dispatch(
         updateUser({
           id: formData._id,
           data: formData,
-        })
+        }),
       );
 
       setOpen(false);
@@ -167,42 +167,37 @@ const Other = ({ mood, setAlert }) => {
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (error) {
       console.log(error);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
-  const handleReferralCheck =
-    async (code) => {
-      setFormData((prev) => ({
-        ...prev,
-        referralId: code,
-      }));
-      if (code.length < 9) return;
-      try {
-        const res =
-          await dispatch(getAgentByReferralId(code));
+  const handleReferralCheck = async (code) => {
+    setFormData((prev) => ({
+      ...prev,
+      referralId: code,
+    }));
+    if (code.length < 9) return;
+    try {
+      const res = await dispatch(getAgentByReferralId(code));
 
-        setReferralMsg(res)
-      } catch (error) {
-        setReferralMsg(null)
-      }
-    };
+      setReferralMsg(res);
+    } catch (error) {
+      setReferralMsg(null);
+    }
+  };
 
   const handleStatusToggle = async (item) => {
     try {
-      const status =
-        item.status === "active"
-          ? "inactive"
-          : "active";
+      const status = item.status === "active" ? "inactive" : "active";
 
       await dispatch(
         updateUserStatus({
           id: item._id,
           status,
-        })
+        }),
       );
 
       setAlert({
@@ -350,21 +345,45 @@ const Other = ({ mood, setAlert }) => {
                   {item.name} {item.position && `(${item.position})`}
                 </span>
                 <span>{item?.referralId}</span>
-                <span className="title">{(item.role === "agent" || item.role === "admin" ) ? <>{item.designation}({item.directIncomePercent}%) </> : item.role === "staff" ? <>{item.staffRole?.name}</> : "-"}</span>
-                <span className="title">{item?.referredBy?.name || "-"} {item?.referredBy?.referralId && `(${item?.referredBy?.referralId})`}</span>
-                {item.role === "agent" ? <span className="title"><Stars rating={item.overallRating} />({item.overallRating?.toFixed(1)})</span> : "-"}
+                <span className="title">
+                  {item.role === "agent" || item.role === "admin" ? (
+                    <>
+                      {item.designation}({item.directIncomePercent}%){" "}
+                    </>
+                  ) : item.role === "staff" ? (
+                    <>{item.staffRole?.name}</>
+                  ) : (
+                    "-"
+                  )}
+                </span>
+                <span className="title">
+                  {item?.referredBy?.name || "-"}{" "}
+                  {item?.referredBy?.referralId &&
+                    `(${item?.referredBy?.referralId})`}
+                </span>
+                {item.role === "agent" ? (
+                  <span className="title">
+                    <Stars rating={item.overallRating} />(
+                    {item.overallRating?.toFixed(1)})
+                  </span>
+                ) : (
+                  "-"
+                )}
 
-                {((item.status !== "approval" && mood === "admin" || item.status !== "approval" && mood === "staff") && (
-                  <label className="switch">
-                    <input
-                      type="checkbox"
-                      checked={item.status === "active"}
-                      onChange={() => handleStatusToggle(item)}
-                    />
-                    <span className="slider"></span>
-                  </label>
-                )) || (
-                    <span className={`status ${item.status === "approval" ? "pending" : item.status}`}>
+                {(((item.status !== "approval" && mood === "admin") ||
+                  (item.status !== "approval" && mood === "staff")) && (
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.status === "active"}
+                        onChange={() => handleStatusToggle(item)}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  )) || (
+                    <span
+                      className={`status ${item.status === "approval" ? "pending" : item.status}`}
+                    >
                       {item.status}
                     </span>
                   )}
@@ -417,7 +436,20 @@ const Other = ({ mood, setAlert }) => {
                 <div className="user-card-title">
                   {/* <img src={item.avatar} alt="" /> */}
                   <div className="user-card-detail">
-                    <h4>{item.name} <span className="title">{item.role === "agent" ? <>{item.designation}({item.directIncomePercent}%) </> : item.role === "staff" ? <>({item.staffRole?.name})</> : "-"}</span></h4>
+                    <h4>
+                      {item.name}{" "}
+                      <span className="title">
+                        {item.role === "agent" ? (
+                          <>
+                            {item.designation}({item.directIncomePercent}%){" "}
+                          </>
+                        ) : item.role === "staff" ? (
+                          <>({item.staffRole?.name})</>
+                        ) : (
+                          "-"
+                        )}
+                      </span>
+                    </h4>
                     {/* <p></p> */}
                   </div>
                 </div>
@@ -458,12 +490,12 @@ const Other = ({ mood, setAlert }) => {
                   )}
                 </div>
               </div>
-              {item.role === "agent" &&
+              {item.role === "agent" && (
                 <div className="user-card-bottom">
                   <span>Referal Id </span>
                   <span>{item.referralId}</span>
                 </div>
-              }
+              )}
               <div className="user-card-bottom">
                 <span>
                   {item.role === "staff"
@@ -487,11 +519,12 @@ const Other = ({ mood, setAlert }) => {
                     <span className="slider"></span>
                   </label>
                 )) || (
-                    <span className={`status ${item.status === "approval" ? "pending" : ""}`}>
+                    <span
+                      className={`status ${item.status === "approval" ? "pending" : ""}`}
+                    >
                       {item.status === "approval" && "Pending"}
                     </span>
                   )}
-
               </div>
 
               {/* <div className="user-card-bottom">
@@ -535,146 +568,19 @@ const Other = ({ mood, setAlert }) => {
         onClose={() => setOpen(false)}
         title={isEditMode ? "Edit User" : "Add User"}
       >
-        {/* User Type */}
-        <div className="field">
-          <label>User Type</label>
-          <select
-            value={formData.role}
-            onChange={(e) =>
-              setFormData({ ...formData, role: e.target.value })
-            }
-          >
-            <option value="">Select Type</option>
-            <option value="user">Customer</option>
-            <option value="agent">Associate</option>
-            <option value="staff">Staff</option>
-          </select>
-        </div>
-
-        {/* Common Fields */}
-        {/* {formData.user && ( */}
-        <>
-          <div className="field">
-            <input
-              placeholder="Name (as per Aadhaar) "
-              value={formData.name || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="field">
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="field">
-            <input
-              placeholder="Phone"
-              value={formData.phone || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="field password-field">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={formData.password || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
-            <span
-              className="password-eye"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <NiClosseye /> : <NiOpenEye />}
-            </span>
-          </div>
-        </>
-        {/* )} */}
-
-
-        {/* Agent Only */}
-        {formData.role === "agent" && (
-          <>
-            <div className="field password-field">
-              <input
-                placeholder="Referral Code"
-                value={formData.referralId}
-                onChange={(e) => handleReferralCheck(e.target.value)}
-              />
-            </div>
-            {referalMsg !== null && (
-              referalMsg?.payload?.msg ?
-                <>
-                  <p style={{ color: "red" }}>{referalMsg?.payload?.msg}</p>
-                </>
-                :
-                <>
-                  <p style={{ color: "green" }}>Referred by: {referalMsg?.payload?.name}</p>
-                </>
-
-            )}
-            <div className="plot-modal field">
-              <select
-                value={formData.position}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    position: e.target.value,
-                  })
-                }
-              >
-                <option value="">Select Position</option>
-                <option value="left">Left</option>
-                <option value="right">Right</option>
-              </select>
-            </div>
-          </>
-        )}
-
-        {/* Staff Only */}
-        {formData.role === "staff" && (
-          <div className="field">
-            <select
-              value={formData.staffRole}
-              onChange={(e) =>
-                setFormData({ ...formData, staffRole: e.target.value })
-              }
-            >
-              {staffRoles.map((item) => (
-                <option value={item._id}>{item.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="modal-actions">
-          <button
-            disabled={saving}
-            onClick={() => {
-              if (isEditMode) {
-                handleEditUser();
-              } else {
-                handleAddUser();
-              }
+        <div className="auth-card" style={{ padding: "0" }}>
+          <UserForm
+            mode="admin"
+            setAlert={setAlert}
+            onClose={() => {
               setOpen(false);
             }}
-          >
-            {saving ? "Saving..." : isEditMode ? "Update User" : "Add User"}
-          </button>
+            onSuccess={async (payload) => {
+              await dispatch(addUser(payload)).unwrap();
+              dispatch(getUser());
+            }}
+            data={data}
+          />
         </div>
       </AddLocationModal>
       <DeleteModal open={deleteOpen} onClose={() => setDeleteOpen(false)}>
@@ -685,9 +591,7 @@ const Other = ({ mood, setAlert }) => {
               e.stopPropagation();
 
               try {
-                await dispatch(
-                  deleteUser(selectedDeleteUser._id)
-                );
+                await dispatch(deleteUser(selectedDeleteUser._id));
 
                 setDeleteOpen(false);
 

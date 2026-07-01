@@ -1,9 +1,10 @@
 import NiPayments from "../../icons/ni-payments";
 import DashboardCard from "../Cards/DashboardCard";
+import Charts from "../Dashboard/Charts";
 import { formatCurrency } from "../Utils/FormatCurrency";
 import PaymentTable from "./PaymentTable";
 
-const StaffPayments = ({ payment, mood, staffType, setAlert }) => {
+const StaffPayments = ({ payment, mood, setAlert }) => {
   const totalCollection = payment?.reduce((sum, p) => sum + (p.amount || 0), 0);
 
   const now = new Date();
@@ -43,60 +44,67 @@ const StaffPayments = ({ payment, mood, staffType, setAlert }) => {
   const overdue = payment
     ?.filter((p) => p.status === "rejected")
     .reduce((sum, p) => sum + (p.amount || 0), 0);
+
   return (
     <div className="dashboard-wrapper">
-      {staffType === "accounts" && (
-        <>
-          <div className="dashboard-grid">
-            <DashboardCard
-              title="Total Collection"
-              value={`₹${formatCurrency(totalCollection)}`}
-              icons={<NiPayments />}
-            />
+      {/* ================= STATS ================= */}
+      <div className="dashboard-grid">
+        <DashboardCard
+          title="Total Collection"
+          value={`₹${formatCurrency(totalCollection)}`}
+          icons={<NiPayments />}
+        />
 
-            <DashboardCard
-              title="This Month"
-              value={`₹${formatCurrency(thisMonthCollection)}`}
-              icons={<NiPayments />}
-            />
+        <DashboardCard
+          title="This Month"
+          value={`₹${formatCurrency(thisMonthCollection)}`}
+          icons={<NiPayments />}
+        />
 
-            {/* <DashboardCard
-                    title="Pending Dues"
-                    value={`₹${pendingDues.toLocaleString()}`}
-                    icons={<NiPayments />}
-                  /> */}
+        {/* <DashboardCard
+          title="Pending Dues"
+          value={`₹${pendingDues.toLocaleString()}`}
+          icons={<NiPayments />}
+        /> */}
 
-            <DashboardCard
-              title="Overdue"
-              value={`₹${formatCurrency(overdue)}`}
-              icons={<NiPayments />}
-            />
+        <DashboardCard
+          title="Overdue"
+          value={`₹${formatCurrency(overdue)}`}
+          icons={<NiPayments />}
+        />
 
-            <DashboardCard
-              title="Today's Collection"
-              value={`₹${formatCurrency(todaysCollection)}`}
-              icons={<NiPayments />}
-            />
+        <DashboardCard
+          title="Today's Collection"
+          value={`₹${formatCurrency(todaysCollection)}`}
+          icons={<NiPayments />}
+        />
 
-            <DashboardCard
-              title="Pending Approval"
-              value={pendingApproval}
-              icons={<NiPayments />}
-            />
-          </div>
-          <h4>Payments</h4>
-          <PaymentTable
-            data={payment}
-            actions={["Add Payment", "Verify", "Generate Receipt"]}
-          />
-        </>
-      )}
-
-      {(staffType === "marketing" || staffType === "operations") && (
-        <>
-          <PaymentTable data={payment} mood={mood} setAlert={setAlert} />
-        </>
-      )}
+        <DashboardCard
+          title="Pending Approval"
+          value={pendingApproval}
+          icons={<NiPayments />}
+        />
+      </div>
+      <h4>Payments</h4>
+      <PaymentTable data={payment} mood={mood} setAlert={setAlert} />
+      <h4>Collection Trend</h4>
+      <div className="card">
+        <Charts
+          title="Collection Trend"
+          data={[
+            { month: "Monday", revenue: 200000 },
+            { month: "Tuesday", revenue: 350000 },
+            { month: "Wednesday", revenue: 300000 },
+            { month: "Thursday", revenue: 250000 },
+            { month: "Friday", revenue: 300000 },
+            { month: "Saturday", revenue: 350000 },
+            { month: "Sunday", revenue: 400000 },
+          ]}
+          dataKey="revenue"
+          setAlert={setAlert}
+        />
+        {/* Filters */}
+      </div>
     </div>
   );
 };

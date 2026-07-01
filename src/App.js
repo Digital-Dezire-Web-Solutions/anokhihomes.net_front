@@ -193,7 +193,7 @@ function App() {
                       />
                       <Route
                         path="/user"
-                        element={<Other mood={mood} setAlert={setAlert} />}
+                        element={<Other mood={mood} setAlert={setAlert} data={landingPage}/>}
                       />
                       <Route
                         path="/bookings"

@@ -170,7 +170,7 @@ const PaymentCard = ({
           {item.paymentMode !== "cash" && <p>{item.transactionId}</p>}
         </div>
       </div>
-      {mood === "admin" && item.status === "pending" && (
+      {(mood === "admin" || mood === "staff") && item.status === "pending" && (
         <div className="modal-actions">
           <button
             className="site-visit-approval status active"

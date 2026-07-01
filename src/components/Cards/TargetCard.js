@@ -65,7 +65,7 @@ const TargetCard = ({
             <NiOpenEye />
           </span> */}
 
-          {mood === "admin" && (
+          {(mood === "admin" || mood === "staff") && (
             <span
               onClick={(e) => {
                 e.stopPropagation();
