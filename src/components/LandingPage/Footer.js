@@ -12,7 +12,7 @@ import { Link, NavLink } from "react-router-dom";
 import { FaLocationDot, FaXTwitter } from "react-icons/fa6";
 import Logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import { MdChevronRight } from "react-icons/md";
-import AdminLogo from "../../Assets/Logo/logo-anokhi-home-parpul.png";
+import AdminLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
 import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";

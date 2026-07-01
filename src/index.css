@@ -14,14 +14,14 @@ body {
 }
 
 .app {
-  --mood-color: #b832b8; /* default admin */
+  --mood-color: #a70304; /* default admin */
   --success-color: #67bb3a;
   --error-color: #ff4d4f;
   --warning-color: #f8a32a;
 }
 
 .mood-admin {
-  --mood-color: #b832b8;
+  --mood-color: #a70304;
 }
 
 .mood-agent {
@@ -404,7 +404,7 @@ body {
 
 .app.dark .auth-card .role-admin:hover,
 .auth-card .role-admin:hover {
-  background: #b832b8;
+  background: #a70304;
   color: #fff;
 }
 .app.dark .auth-card .role-agent:hover,

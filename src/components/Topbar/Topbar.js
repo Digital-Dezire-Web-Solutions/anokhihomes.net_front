@@ -8,11 +8,10 @@ import { useNavigate } from "react-router-dom";
 import NotificationModal from "../Modals/NotificationModal";
 import SearchModal from "../Modals/SearchModal";
 import MainLogo from "../../icons/MainLogo";
-import AdminLogo from "../../Assets/Logo/logo-anokhi-home-parpul.png";
+import AdminLogo from "../../Assets/Logo/logo-anokhi-homes.png";
 import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
 import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";
-import mainLoag from "../../Assets/Logo/Final_pah-logo-green-hq.png";
 import NiUser from "../../icons/ni-user";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -94,7 +93,11 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
         <span className="logo">
           {/* <MainLogo /> */}
           {mood === "admin" ? (
-            <img className="topbar-nav-logo" src={AdminLogo} alt="" />
+            dark === true ? (
+              <img className="topbar-nav-logo" src={StaffLogo} alt="" />
+            ) : (
+              <img className="topbar-nav-logo" src={AdminLogo} alt="" />
+            )
           ) : mood === "staff" ? (
             <img className="topbar-nav-logo" src={StaffLogo} alt="" />
           ) : mood === "agent" ? (

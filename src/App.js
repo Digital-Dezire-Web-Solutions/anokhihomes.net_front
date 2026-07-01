@@ -49,12 +49,12 @@ import { getAllColonies, getLandingPage } from "./Redux/Slices/AppSlices";
 import HoldPlot from "./Pages/HoldPlot/HoldPlot";
 import Rating from "./Pages/Rating/Rating";
 
-const LandingLayout = ({ mood, data }) => {
+const LandingLayout = ({ dark, mood, data, setMood }) => {
   return (
     <div className="landing-page">
-      <Navbar mood={mood} />
+      <Navbar dark={dark} mood={mood} setMood={setMood} />
       <Outlet />
-      <Footer data={data} mood={mood} />
+      <Footer dark={dark} data={data} mood={mood} />
     </div>
   );
 };
@@ -97,7 +97,16 @@ function App() {
       <div className={`app ${dark ? "dark" : ""} mood-${mood}`}>
         <Alert item={alert} />
         <Routes>
-          <Route element={<LandingLayout mood={mood} data={landingPage} />}>
+          <Route
+            element={
+              <LandingLayout
+                dark={dark}
+                mood={mood}
+                data={landingPage}
+                setMood={setMood}
+              />
+            }
+          >
             <Route
               path="/"
               element={<Home data={landingPage} allColonies={allColonies} />}

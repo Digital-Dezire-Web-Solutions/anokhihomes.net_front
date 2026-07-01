@@ -1,7 +1,7 @@
 import { ChartNoAxesGantt, LogIn, X } from "lucide-react";
 import "./Navbar.css";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NiDashboardOutline from "../../icons/ni-dashboard-outline";
 import NiAbout from "../../icons/ni-about";
 import NiProjects from "../../icons/ni-projects";
@@ -9,27 +9,48 @@ import NiGallery from "../../icons/ni-gallery";
 import NiContact from "../../icons/ni-contact";
 import svgss from "../../Assets/icons/Construction crane-cuate.svg";
 import MainLogo from "../../icons/MainLogo";
-import AdminLogo from "../../Assets/Logo/logo-anokhi-home-parpul.png";
+import AdminLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
 import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";
 import NiDocuments from "../../icons/ni-documents";
 import Floating from "./Floating";
+import { getAccountDetails } from "../../Redux/Slices/AppSlices";
+import { useDispatch, useSelector } from "react-redux";
 
-const Navbar = ({ mood }) => {
+const Navbar = ({ dark, mood, setMood }) => {
+  const dispatch = useDispatch();
+  const { userDetail } = useSelector((state) => state.app);
   const navigate = useNavigate();
   const [navActive, setNavActive] = useState(false);
   const handleToggleNav = () => {
     setNavActive(true);
-    console.log("clicked");
+    // console.log("clicked");
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(getAccountDetails());
+    }
+  }, []);
+  useEffect(() => {
+    if (userDetail) {
+      setMood(userDetail?.role);
+    }
+  }, [userDetail]);
+
   return (
     <nav className="nav">
       <div className="nav-left">
         {/* <h1>ANOKHI HOMES</h1> */}
         {/* <img className="nav-logo" src={AdminLogo} alt="" /> */}
         {mood === "admin" ? (
-          <img className="nav-logo" src={AdminLogo} alt="" />
+          dark === true ? (
+            <img className="nav-logo" src={StaffLogo} alt="" />
+          ) : (
+            <img className="nav-logo" src={AdminLogo} alt="" />
+          )
         ) : mood === "staff" ? (
           <img className="nav-logo" src={StaffLogo} alt="" />
         ) : mood === "agent" ? (
