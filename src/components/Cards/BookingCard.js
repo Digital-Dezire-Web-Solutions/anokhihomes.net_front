@@ -278,15 +278,21 @@ const BookingCard = ({
 
       // 🔥 validations
       if (!formData.paymentType) {
-        return setAlert({ message: "Select payment type", status: "Error" });
+        return;
+        setAlert({ message: "Select payment type", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (!formData.mode) {
-        return setAlert({ message: "Select payment mode", status: "Error" });
+        return;
+        setAlert({ message: "Select payment mode", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (!formData.amount) {
-        return setAlert({ message: "Enter amount", status: "Error" });
+        return;
+        setAlert({ message: "Enter amount", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (
@@ -297,6 +303,7 @@ const BookingCard = ({
           message: "Transaction ID required",
           status: "Error",
         });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       const payload = {

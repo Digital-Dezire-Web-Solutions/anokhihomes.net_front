@@ -147,6 +147,7 @@ const ManagementCard = ({
         message: err.response?.data?.message || "Something went wrong",
         status: "Error",
       });
+      setTimeout(() => setAlert(null), 3000);
       setSaving(false);
     }
   };
@@ -186,6 +187,7 @@ const ManagementCard = ({
         message: err.response?.data?.message || "Failed to add note",
         status: "Error",
       });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -209,10 +211,12 @@ const ManagementCard = ({
       dispatch(getLeads());
       setSaving(false);
       setAlert({ message: "Note updated", status: "Success" });
+      setTimeout(() => setAlert(null), 3000);
     } catch (err) {
       setSaving(false);
       console.error(err);
       setAlert({ message: "Edit failed", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -232,9 +236,11 @@ const ManagementCard = ({
       setNotes(res.data.lead.notes);
       dispatch(getLeads());
       setAlert({ message: "Note deleted", status: "Success" });
+      setTimeout(() => setAlert(null), 3000);
     } catch (err) {
       console.error(err);
       setAlert({ message: "Delete failed", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -270,6 +276,7 @@ const ManagementCard = ({
         message: err.response?.data?.message || "Failed",
         status: "Error",
       });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -342,6 +349,7 @@ const ManagementCard = ({
         message: err.response?.data?.message || "Request failed",
         status: "Error",
       });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 

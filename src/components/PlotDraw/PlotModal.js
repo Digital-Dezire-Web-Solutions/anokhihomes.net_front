@@ -16,7 +16,14 @@ const PLOT_TYPES = [
   "NOT_FOR_SALE",
 ];
 
-const PlotModal = ({ plot, onClose, mood, updatePlot, setAlert, projectId }) => {
+const PlotModal = ({
+  plot,
+  onClose,
+  mood,
+  updatePlot,
+  setAlert,
+  projectId,
+}) => {
   const isAdmin = mood === "admin";
 
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
@@ -84,7 +91,7 @@ const PlotModal = ({ plot, onClose, mood, updatePlot, setAlert, projectId }) => 
       message: "Hold Request Submitted",
       status: "Success",
     });
-
+    setTimeout(() => setAlert(null), 3000);
     onClose();
   };
 
@@ -347,10 +354,7 @@ const PlotModal = ({ plot, onClose, mood, updatePlot, setAlert, projectId }) => 
           className="modal-bg enquiry-modal"
           onClick={() => setShowHoldModal(false)}
         >
-          <div
-            className="modal"
-            onClick={() => setShowHoldModal(false)}
-          >
+          <div className="modal" onClick={() => setShowHoldModal(false)}>
             <HoldPlotModal
               projectId={projectId}
               plot={plot}

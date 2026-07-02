@@ -240,11 +240,13 @@ const SiteVisitCard = ({
 
       if (!selectedPlot) {
         setAlert({ message: "Please select plot", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
 
       if (!formData.requestAmount) {
         setAlert({ message: "Enter request amount", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
 
@@ -253,6 +255,7 @@ const SiteVisitCard = ({
           message: "Please accept terms & conditions",
           status: "Error",
         });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
 
@@ -616,6 +619,7 @@ const SiteVisitCard = ({
                   message: "Please select complete visit date & time",
                   status: "Error",
                 });
+                setTimeout(() => setAlert(null), 3000);
                 return;
               }
 
@@ -624,6 +628,7 @@ const SiteVisitCard = ({
                   message: "Note is required",
                   status: "Error",
                 });
+                setTimeout(() => setAlert(null), 3000);
                 return;
               }
 
@@ -665,6 +670,7 @@ const SiteVisitCard = ({
                   message: "Note is required",
                   status: "Error",
                 });
+                setTimeout(() => setAlert(null), 3000);
                 return;
               }
 

@@ -125,11 +125,13 @@ const Booking = ({ mood, setAlert }) => {
       
       if (!selectedPlot) {
         setAlert({ message: "Please select plot", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
       
       if (!formData.requestAmount) {
         setAlert({ message: "Enter request amount", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
       
@@ -138,6 +140,7 @@ const Booking = ({ mood, setAlert }) => {
           message: "Please accept terms & conditions",
           status: "Error",
         });
+        setTimeout(() => setAlert(null), 3000);
         return;
       }
       

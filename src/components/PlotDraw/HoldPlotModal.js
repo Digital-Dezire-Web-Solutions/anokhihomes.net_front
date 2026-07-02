@@ -40,6 +40,7 @@ export default function HoldPlotModal({
         message: "Select Customer",
         status: "Error",
       });
+      setTimeout(() => setAlert(null), 3000);
       return;
     }
     const token = localStorage.getItem("token");

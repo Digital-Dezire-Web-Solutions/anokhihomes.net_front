@@ -129,6 +129,7 @@ const DataTable = ({ data, mood, setAlert }) => {
       });
       // console.log(res.data);
       setAlert({ message: "Lead added successfully!", status: "Success" });
+      setTimeout(() => setAlert(null), 3000);
       setOpen(false);
       setFormData({
         customerId: "",

@@ -51,10 +51,12 @@ const RenderFormFields = ({ actionType, formData, setFormData, setAlert }) => {
         phone: "",
         email: "",
       });
+      setTimeout(() => setAlert(null), 3000);
       // dispatch(getLeads());
     } catch (err) {
       console.error(err);
       setAlert({ message: "Failed to add lead", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
     } finally {
       setTimeout(() => setAlert(null), 5000);
     }

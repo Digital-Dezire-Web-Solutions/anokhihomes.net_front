@@ -161,6 +161,7 @@ const PlotList = ({ mood, setAlert }) => {
         message: "Location updated successfully!",
         status: "Success",
       });
+      setTimeout(() => setAlert(null), 3000);
 
       setOpen(false);
 
@@ -172,7 +173,7 @@ const PlotList = ({ mood, setAlert }) => {
         message: "Failed to update location",
         status: "Error",
       });
-
+      setTimeout(() => setAlert(null), 3000);
       setSaving(false);
     }
   };

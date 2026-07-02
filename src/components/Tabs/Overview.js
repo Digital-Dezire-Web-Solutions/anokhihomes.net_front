@@ -1373,6 +1373,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                   message: "Password must be at least 6 characters",
                   status: "Error",
                 });
+                setTimeout(() => setAlert(null), 3000);
               }
 
               if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -1380,6 +1381,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                   message: "Passwords do not match",
                   status: "Error",
                 });
+                setTimeout(() => setAlert(null), 3000);
               }
 
               setConfirmPasswordModal(true);

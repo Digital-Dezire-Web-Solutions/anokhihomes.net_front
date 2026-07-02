@@ -23,7 +23,6 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     dispatch(getBooking());
   }, []);
 
-
   // console.log(data,"data")
 
   const [search, setSearch] = useState("");
@@ -84,21 +83,24 @@ const PaymentTable = ({ data, mood, setAlert }) => {
 
   // console.log(selectedBooking, "selectedBooking");
   const handleAddPayments = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
       // 🔥 validations
       if (!formData.paymentType) {
         return setAlert({ message: "Select payment type", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (!formData.mode) {
         return setAlert({ message: "Select payment mode", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (!formData.amount) {
         return setAlert({ message: "Enter amount", status: "Error" });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       if (
@@ -109,6 +111,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
           message: "Transaction ID required",
           status: "Error",
         });
+        setTimeout(() => setAlert(null), 3000);
       }
 
       const payload = {
@@ -119,7 +122,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
         transactionId: formData.transactionId || "",
       };
 
-      console.log(payload, "payload")
+      console.log(payload, "payload");
 
       await axios.post(`${Host}/api/payment/add`, payload, {
         headers: {
@@ -140,7 +143,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       setOpen(false);
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.error(err);
       setAlert({
@@ -149,7 +152,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       });
       setOpen(false);
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
@@ -208,16 +211,18 @@ const PaymentTable = ({ data, mood, setAlert }) => {
         {paginated.length === 0 ? (
           <p>No Payment Found</p>
         ) : (
-          paginated?.reverse().map((item) => (
-            <PaymentCard
-              item={item}
-              setSelectedPayment={setSelectedPayment}
-              setIsEditMode={setIsEditMode}
-              setOpen={setOpen}
-              mood={mood}
-              setAlert={setAlert}
-            />
-          ))
+          paginated
+            ?.reverse()
+            .map((item) => (
+              <PaymentCard
+                item={item}
+                setSelectedPayment={setSelectedPayment}
+                setIsEditMode={setIsEditMode}
+                setOpen={setOpen}
+                mood={mood}
+                setAlert={setAlert}
+              />
+            ))
         )}
       </div>
       <div className="pagination">
@@ -267,7 +272,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
                 plotArea: selected.plotArea,
                 requestAmount: selected.requestAmount,
                 totalAmount: selected.finalAmount,
-                amountPaid: selected.amountPaid
+                amountPaid: selected.amountPaid,
               });
             }}
             displayKey="sitevisitId"
@@ -290,13 +295,37 @@ const PaymentTable = ({ data, mood, setAlert }) => {
         </div>
         {selectedBooking && (
           <>
-            <div className="payment-details" style={{ border: "1px solid #d4d4d4", borderRadius: "1.75rem", padding: "1rem 1rem 0 1rem", marginBottom: "1rem" }}>
+            <div
+              className="payment-details"
+              style={{
+                border: "1px solid #d4d4d4",
+                borderRadius: "1.75rem",
+                padding: "1rem 1rem 0 1rem",
+                marginBottom: "1rem",
+              }}
+            >
               <span>Booking Details</span>
-              <p>Customer :- <small>{formData?.customer?.name} ({formData?.customer?.phone})</small></p>
-              <p>Plot Price / sqft :- <small>{formatCurrency(formData?.pricePerSqft)}/sqft</small></p>
-              <p>Request Price / sqft :- <small>{formatCurrency(formData?.requestAmount)}/sqft</small></p>
-              <p>Plot Area :- <small>{formatCurrency(formData?.plotArea)}</small></p>
-              <p>Total Amount :- <small>{formatCurrency(formData?.totalAmount)}</small></p>
+              <p>
+                Customer :-{" "}
+                <small>
+                  {formData?.customer?.name} ({formData?.customer?.phone})
+                </small>
+              </p>
+              <p>
+                Plot Price / sqft :-{" "}
+                <small>{formatCurrency(formData?.pricePerSqft)}/sqft</small>
+              </p>
+              <p>
+                Request Price / sqft :-{" "}
+                <small>{formatCurrency(formData?.requestAmount)}/sqft</small>
+              </p>
+              <p>
+                Plot Area :- <small>{formatCurrency(formData?.plotArea)}</small>
+              </p>
+              <p>
+                Total Amount :-{" "}
+                <small>{formatCurrency(formData?.totalAmount)}</small>
+              </p>
             </div>
           </>
         )}
@@ -376,19 +405,19 @@ const PaymentTable = ({ data, mood, setAlert }) => {
           formData.mode === "cash" ||
           formData.mode === "cheque" ||
           formData.mode === "bank") && (
-            <div className="field">
-              <label>Attachment *</label>
-              <input
-                type="file"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    attachment: e.target.files[0],
-                  })
-                }
-              />
-            </div>
-          )}
+          <div className="field">
+            <label>Attachment *</label>
+            <input
+              type="file"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  attachment: e.target.files[0],
+                })
+              }
+            />
+          </div>
+        )}
         <p>Notes : 35% cancellation charges</p>
         {/* <div className="modal-actions">
                 <button onClick={handleAddPayment}>Add Payment</button>
@@ -404,7 +433,11 @@ const PaymentTable = ({ data, mood, setAlert }) => {
               setOpen(false);
             }}
           >
-            {saving ? "Saving..." : isEditMode ? "Update Payment" : "Add Payment"}
+            {saving
+              ? "Saving..."
+              : isEditMode
+                ? "Update Payment"
+                : "Add Payment"}
           </button>
         </div>
       </AddLocationModal>
