@@ -359,6 +359,8 @@ body {
   border-radius: 20px;
   box-shadow: 0 10px 25px #00000010;
   text-align: center;
+  max-height: 90vh;
+  overflow: auto;
 }
 
 .auth-header {

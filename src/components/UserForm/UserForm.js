@@ -15,6 +15,7 @@ import {
 } from "../../Redux/Slices/AppSlices";
 
 import Host from "../../Host/Host";
+import { ChevronLeft } from "lucide-react";
 
 const UserForm = ({
   mode = "signup",
@@ -235,7 +236,18 @@ const UserForm = ({
 
   return (
     <div>
-      {mode === "admin" && (
+      {mode === "signup" && (
+        <div className="auth-header">
+          {step !== 1 && role === "agent" && (
+            <ChevronLeft
+              className="back-button"
+              onClick={() => setStep(step - 1)}
+            />
+          )}
+          <h2>{role === "agent" ? "Associate Signup" : "Signup"}</h2>
+        </div>
+      )}
+      {(mode === "admin" || mode === "staff") && (
         <div className="field">
           <label>User Type</label>
 
@@ -257,7 +269,22 @@ const UserForm = ({
       )}
 
       {(currentRole === "agent" || currentRole === "staff") && step <= 4 && (
-        <p>Step {step} of 4</p>
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {step !== 1 && mode !== "signup" && (
+            <ChevronLeft
+              className="back-button"
+              onClick={() => setStep(step - 1)}
+            />
+          )}
+          <p>Step {step} of 4</p>
+        </div>
       )}
 
       {(currentRole === "user" || step === 1) && (
@@ -391,6 +418,11 @@ const UserForm = ({
           >
             {currentRole === "user" ? "Register" : "Next"}
           </button>
+          {mode === "signup" && (
+            <p className="auth-footer">
+              Already have account? <Link to="/login">Sign in</Link>
+            </p>
+          )}
         </form>
       )}
       {step === 2 && (

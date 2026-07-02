@@ -286,7 +286,7 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
   return (
     <div className="auth-bg">
       <div className="auth-card">
-        <div className="auth-header">
+        {/* <div className="auth-header">
           {step !== 1 && mood === "agent" && (
             <ChevronLeft
               className="back-button"
@@ -294,7 +294,7 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
             />
           )}
           <h2>{mood === "agent" ? "Associate Signup" : "Signup"}</h2>
-        </div>
+        </div> */}
         <UserForm
           mode="signup"
           role={mood}

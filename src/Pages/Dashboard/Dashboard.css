@@ -238,6 +238,36 @@
   color: white !important;
   gap: 5px !important;
 }
+.dashboard.danger svg,
+.danger {
+  background-color: color-mix(
+    in oklab,
+    var(--error-color) 20%,
+    transparent
+  ) !important;
+  color: var(--error-color) !important;
+  gap: 5px !important;
+}
+.dashboard.success svg,
+.success {
+  background-color: color-mix(
+    in oklab,
+    var(--success-color) 20%,
+    transparent
+  ) !important;
+  color: var(--success-color) !important;
+  gap: 5px !important;
+}
+.dashboard.warning svg,
+.warning {
+  background-color: color-mix(
+    in oklab,
+    var(--warning-color) 20%,
+    transparent
+  ) !important;
+  color: var(--warning-color) !important;
+  gap: 5px !important;
+}
 
 .booking-grid {
   display: grid;

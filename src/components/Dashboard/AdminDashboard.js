@@ -121,15 +121,15 @@ const AdminDashboard = () => {
           <h6 style={{ margin: "1.5rem 0 .5rem 0" }}>System Alerts</h6>
           <div className="dashboard-alerts ">
             <ul>
-              <li className="alert-items danger card">
+              <li className="dashboard alert-items danger card">
                 {" "}
                 <NiCross /> 0 Plots on hold expiring soon
               </li>
-              <li className="alert-items warning card">
+              <li className="dashboard alert-items warning card">
                 {" "}
                 <NiInfo /> 0 Overdue payments
               </li>
-              <li className="alert-items success card">
+              <li className="dashboard alert-items success card">
                 <NiTick /> 0 Unassigned leads
               </li>
             </ul>
