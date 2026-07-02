@@ -3,7 +3,7 @@
   top: -100%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 8;
+  z-index: 12;
   transition: all 0.5s ease;
 }
 .Alert.active {

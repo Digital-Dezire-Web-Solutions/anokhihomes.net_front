@@ -310,6 +310,13 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
             });
 
             const result = await res.json();
+            setAlert({
+              message: "Account created successfully",
+              status: "Success",
+            });
+            setTimeout(() => {
+              setAlert(null);
+            }, 3000);
 
             if (!res.ok) {
               throw new Error(result.msg);
@@ -317,10 +324,8 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
 
             if (mood === "user") {
               localStorage.setItem("token", result.token);
-
+              console.log("this 2");
               navigate("/dashboard");
-            } else {
-              setStep(5);
             }
           }}
         />

@@ -577,6 +577,13 @@ const Other = ({ mood, setAlert, data }) => {
             }}
             onSuccess={async (payload) => {
               await dispatch(addUser(payload)).unwrap();
+              setAlert({
+                message: "Account created successfully",
+                status: "Success",
+              });
+              setTimeout(() => {
+      setAlert(null);
+    }, 3000);
               dispatch(getUser());
             }}
             data={data}

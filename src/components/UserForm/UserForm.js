@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
@@ -24,10 +24,10 @@ const UserForm = ({
   onSuccess,
   onClose,
 }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { rankData, staffRoles } = useSelector((state) => state.app);
+  const { staffRoles } = useSelector((state) => state.app);
   useEffect(() => {
-    dispatch(getRank());
     dispatch(getStaffRoles());
   }, []);
   const [step, setStep] = useState(1);
@@ -76,7 +76,7 @@ const UserForm = ({
       ...prev,
       referralId: code,
     }));
-    if (code.length < 9) return;
+    if (code.length < 8) return;
     try {
       const res = await dispatch(getAgentByReferralId(code));
 
@@ -194,6 +194,10 @@ const UserForm = ({
       };
 
       await onSuccess(payload);
+      if (role !== "user" && mode === "signup") {
+        setStep(5);
+      }
+
       setSaving(false);
       setFormData({
         name: "",
@@ -219,7 +223,7 @@ const UserForm = ({
         isEmailVerified: false,
       });
 
-      setStep(1);
+      // setStep(1);
       setAcceptedTerms(false);
       setHasScrolledToBottom(false);
       onClose?.();
@@ -230,7 +234,7 @@ const UserForm = ({
   };
 
   return (
-    <div >
+    <div>
       {mode === "admin" && (
         <div className="field">
           <label>User Type</label>
@@ -252,7 +256,7 @@ const UserForm = ({
         </div>
       )}
 
-      {(currentRole === "agent" || currentRole === "staff") && (
+      {(currentRole === "agent" || currentRole === "staff") && step <= 4 && (
         <p>Step {step} of 4</p>
       )}
 
@@ -704,6 +708,27 @@ const UserForm = ({
                 : "Create User"}
           </button>
         </form>
+      )}
+      {step === 5 && (
+        <div className="approval-success">
+          <div className="approval-icon">
+            <NiTick />
+          </div>
+
+          <h2>Account Created Successfully</h2>
+
+          <p>Your account has been created successfully.</p>
+
+          <p>
+            Your account is currently <strong>under approval</strong>. Once it
+            has been reviewed and approved by the administrator, you will
+            receive a confirmation email.
+          </p>
+
+          <button className={`role-${role}`} onClick={() => navigate("/")}>
+            Go to Home
+          </button>
+        </div>
       )}
     </div>
   );

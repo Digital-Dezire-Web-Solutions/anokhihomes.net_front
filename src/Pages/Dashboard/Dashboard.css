@@ -200,7 +200,7 @@
 .dashboard-alerts .alert-items svg {
   width: 35px;
   height: 35px;
-  color: var(--mood-color);
+  color: white !important;
   background-color: color-mix(in oklab, var(--mood-color) 10%, transparent);
   border-radius: 1.5rem;
   padding: 10px;
@@ -209,30 +209,33 @@
 .danger {
   background-color: color-mix(
     in oklab,
-    var(--error-color) 10%,
+    var(--error-color) 100%,
     transparent
   ) !important;
-  color: var(--error-color) !important;
+  /* color: var(--error-color) !important; */
+  color: white !important;
   gap: 5px !important;
 }
 .success svg,
 .success {
   background-color: color-mix(
     in oklab,
-    var(--success-color) 10%,
+    var(--success-color) 100%,
     transparent
   ) !important;
-  color: var(--success-color) !important;
+  /* color: var(--success-color) !important; */
+  color: white !important;
   gap: 5px !important;
 }
 .warning svg,
 .warning {
   background-color: color-mix(
     in oklab,
-    var(--warning-color) 10%,
+    var(--warning-color) 100%,
     transparent
   ) !important;
-  color: var(--warning-color) !important;
+  /* color: var(--warning-color) !important; */
+  color: white !important;
   gap: 5px !important;
 }
 
