@@ -48,6 +48,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllColonies, getLandingPage } from "./Redux/Slices/AppSlices";
 import HoldPlot from "./Pages/HoldPlot/HoldPlot";
 import Rating from "./Pages/Rating/Rating";
+import Delete from "./Pages/Delete/Delete";
 
 const LandingLayout = ({ dark, mood, data, setMood }) => {
   return (
@@ -137,6 +138,10 @@ function App() {
             <Route
               path="/privacy-policy"
               element={<PrivacyPolicy data={landingPage} />}
+            />
+            <Route
+              path="/delete-account"
+              element={<Delete setAlert={setAlert} />}
             />
             <Route
               path="/term-condition"

@@ -92,19 +92,19 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
         </button>
         <span className="logo">
           {/* <MainLogo /> */}
-          {mood === "admin" ? (
-            dark === true ? (
+          {dark === true ? (
               <img className="topbar-nav-logo" src={StaffLogo} alt="" />
             ) : (
               <img className="topbar-nav-logo" src={AdminLogo} alt="" />
             )
-          ) : mood === "staff" ? (
-            <img className="topbar-nav-logo" src={StaffLogo} alt="" />
-          ) : mood === "agent" ? (
-            <img className="topbar-nav-logo" src={AgentLogo} alt="" />
-          ) : (
-            <img className="topbar-nav-logo" src={UserLogo} alt="" />
-          )}
+          }
+          {/* //  : mood === "staff" ? (
+          //   <img className="topbar-nav-logo" src={StaffLogo} alt="" />
+          // ) : mood === "agent" ? (
+          //   <img className="topbar-nav-logo" src={AgentLogo} alt="" />
+          // ) : (
+          //   <img className="topbar-nav-logo" src={UserLogo} alt="" />
+          // )} */}
           {/* <img className="topbar-nav-logo" src={mainLoag} alt="" /> */}
         </span>
       </div>

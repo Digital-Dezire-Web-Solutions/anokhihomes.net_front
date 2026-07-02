@@ -24,15 +24,16 @@ const Footer = ({ data, mood }) => {
       <div className="footer-top landing-pages">
         {/* Company */}
         <div className="footer-col">
-          {mood === "admin" ? (
-            <img className="footer-logo" src={AdminLogo} alt="" />
-          ) : mood === "staff" ? (
+          <img className="footer-logo" src={AdminLogo} alt="" />
+          {/* {mood === "admin" && (
+          )} */}
+          {/* : mood === "staff" ? (
             <img className="footer-logo" src={StaffLogo} alt="" />
           ) : mood === "agent" ? (
             <img className="footer-logo" src={AgentLogo} alt="" />
           ) : (
             <img className="footer-logo" src={UserLogo} alt="" />
-          )}
+          )} */}
           {/* <img className="footer-logo" src={Logo} alt="" /> */}
           {/* <div className="footer-logo">
                         <Logo />

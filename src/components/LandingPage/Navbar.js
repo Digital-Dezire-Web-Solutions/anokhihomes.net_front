@@ -45,19 +45,18 @@ const Navbar = ({ dark, mood, setMood }) => {
       <div className="nav-left">
         {/* <h1>ANOKHI HOMES</h1> */}
         {/* <img className="nav-logo" src={AdminLogo} alt="" /> */}
-        {mood === "admin" ? (
-          dark === true ? (
-            <img className="nav-logo" src={StaffLogo} alt="" />
-          ) : (
-            <img className="nav-logo" src={AdminLogo} alt="" />
-          )
-        ) : mood === "staff" ? (
+        {dark === true ? (
           <img className="nav-logo" src={StaffLogo} alt="" />
-        ) : mood === "agent" ? (
-          <img className="nav-logo" src={AgentLogo} alt="" />
         ) : (
-          <img className="nav-logo" src={UserLogo} alt="" />
+          <img className="nav-logo" src={AdminLogo} alt="" />
         )}
+        {/* // ) : mood === "staff" ? (
+        //   <img className="nav-logo" src={StaffLogo} alt="" />
+        // ) : mood === "agent" ? (
+        //   <img className="nav-logo" src={AgentLogo} alt="" />
+        // ) : (
+        //   <img className="nav-logo" src={UserLogo} alt="" />
+        // )} */}
         {/* <MainLogo/> */}
       </div>
       <div className={`nav-center ${navActive ? "active" : ""}`}>

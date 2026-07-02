@@ -1,6 +1,7 @@
 import React from "react";
 import LBreadcrumb from "../../components/LandingPage/LBreadcrumb";
 import PolicyData from "../../components/Data/PolicyData";
+import { Link } from "react-router-dom";
 
 const PrivacyPolicy = ({ data }) => {
   // console.log(data.policies, "policies");
@@ -21,6 +22,21 @@ const PrivacyPolicy = ({ data }) => {
             {section.content && <p>{section.content}</p>}
           </div>
         ))}
+        <p>
+          If you wish to permanently delete your account and all associated
+          data, you can submit an account deletion request by visiting our{" "}
+          <Link
+            to="/delete-account"
+            style={{
+              color: "var(--mood-color)",
+              fontWeight: "600",
+              textDecoration: "underline",
+            }}
+          >
+            Account Deletion Request
+          </Link>
+          .
+        </p>
       </div>
     </>
   );
