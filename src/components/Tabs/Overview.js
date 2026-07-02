@@ -6,7 +6,12 @@ import DeleteModal from "../Modals/DeleteModal";
 import AddLocationModal from "../Modals/AddLocationModal";
 import formatDate from "../DateFormate/DateFormate";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUserApproval, updateUser, getRank, getStaffRoles } from "../../Redux/Slices/AppSlices";
+import {
+  updateUserApproval,
+  updateUser,
+  getRank,
+  getStaffRoles,
+} from "../../Redux/Slices/AppSlices";
 import NiEdit from "../../icons/ni-edit";
 import { X } from "lucide-react";
 import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
@@ -45,7 +50,6 @@ const Overview = ({ userData, mood, setAlert }) => {
     confirmPassword: "",
   });
 
-
   const ALL_PERMISSIONS = [
     // Lead
     { key: "lead.view", label: "View Leads" },
@@ -81,9 +85,9 @@ const Overview = ({ userData, mood, setAlert }) => {
   ];
 
   useEffect(() => {
-    setLocalUser("")
+    setLocalUser("");
     setSelectedLevel(localUser?.level || "");
-    setLocalUser(userData)
+    setLocalUser(userData);
   }, [userData]);
 
   useEffect(() => {
@@ -93,13 +97,12 @@ const Overview = ({ userData, mood, setAlert }) => {
           item._id ===
           (typeof localUser.staffRole === "object"
             ? localUser.staffRole._id
-            : localUser.staffRole)
+            : localUser.staffRole),
       );
 
       setStaffPermissions(role || null);
     }
   }, [localUser, staffRoles]);
-
 
   const [editData, setEditData] = useState({
     panNumber: localUser?.panNumber || "",
@@ -151,7 +154,7 @@ const Overview = ({ userData, mood, setAlert }) => {
   if (!localUser) return null;
 
   const handleApprove = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const result = await dispatch(
         updateUserApproval({
@@ -172,7 +175,7 @@ const Overview = ({ userData, mood, setAlert }) => {
           setAlert(null);
         }, 3000);
       }
-      setSaving(false)
+      setSaving(false);
     } catch (error) {
       console.log(error);
 
@@ -183,12 +186,12 @@ const Overview = ({ userData, mood, setAlert }) => {
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
   const handleReject = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const result = await dispatch(
         updateUserApproval({
@@ -212,7 +215,7 @@ const Overview = ({ userData, mood, setAlert }) => {
           setAlert(null);
         }, 3000);
       }
-      setSaving(false)
+      setSaving(false);
     } catch (error) {
       console.log(error);
 
@@ -223,7 +226,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
@@ -240,7 +243,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       let panPhotoUrl = "";
       let aadharPhotoUrl = "";
       let nomineeAadharPhotoUrl = "";
-      console.log(editData, "editData")
+      console.log(editData, "editData");
       if (editData.panPhoto instanceof File) {
         const panUpload = await uploadImage(editData.panPhoto);
         panPhotoUrl = panUpload.url;
@@ -252,14 +255,12 @@ const Overview = ({ userData, mood, setAlert }) => {
       }
 
       if (editData.nomineeAadharPhoto instanceof File) {
-        const nomineeUpload = await uploadImage(
-          editData.nomineeAadharPhoto
-        );
+        const nomineeUpload = await uploadImage(editData.nomineeAadharPhoto);
         nomineeAadharPhotoUrl = nomineeUpload.url;
       }
-      console.log(panPhotoUrl, "panUpload")
-      console.log(aadharPhotoUrl, "aadharPhotoUrl")
-      console.log(nomineeAadharPhotoUrl, "nomineeAadharPhotoUrl")
+      console.log(panPhotoUrl, "panUpload");
+      console.log(aadharPhotoUrl, "aadharPhotoUrl");
+      console.log(nomineeAadharPhotoUrl, "nomineeAadharPhotoUrl");
       const payload = {
         ...editData,
 
@@ -281,12 +282,12 @@ const Overview = ({ userData, mood, setAlert }) => {
             ? editData.nomineeAadharPhoto
             : localUser.nomineeAadharPhoto),
       };
-      console.log(payload, "payload2")
+      console.log(payload, "payload2");
       const result = await dispatch(
         updateUser({
           id: localUser._id,
           data: payload,
-        })
+        }),
       ).unwrap();
 
       setLocalUser(result);
@@ -303,7 +304,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       setTimeout(() => {
         setAlert(null);
       }, 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (error) {
       console.log(error);
 
@@ -319,7 +320,7 @@ const Overview = ({ userData, mood, setAlert }) => {
   };
 
   const handleUpdateRank = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -332,7 +333,7 @@ const Overview = ({ userData, mood, setAlert }) => {
           headers: {
             "auth-token": token,
           },
-        }
+        },
       );
 
       setLocalUser(res.data.user);
@@ -345,23 +346,22 @@ const Overview = ({ userData, mood, setAlert }) => {
       setRankOpen(false);
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
 
       setAlert({
-        message:
-          err.response?.data?.msg || "Failed to update designation",
+        message: err.response?.data?.msg || "Failed to update designation",
         status: "Error",
       });
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
   const handleChangePassword = async () => {
-    setSaving(true)
+    setSaving(true);
     if (!passwordData.currentPassword) {
       return setAlert({
         message: "Current password is required",
@@ -382,10 +382,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       }, 3000);
     }
 
-    if (
-      passwordData.newPassword !==
-      passwordData.confirmPassword
-    ) {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
       return setAlert({
         message: "Passwords do not match",
         status: "Error",
@@ -398,15 +395,11 @@ const Overview = ({ userData, mood, setAlert }) => {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.put(
-        `${Host}/api/auth/change-password`,
-        passwordData,
-        {
-          headers: {
-            "auth-token": token,
-          },
-        }
-      );
+      await axios.put(`${Host}/api/auth/change-password`, passwordData, {
+        headers: {
+          "auth-token": token,
+        },
+      });
 
       setAlert({
         message: "Password changed successfully",
@@ -420,21 +413,20 @@ const Overview = ({ userData, mood, setAlert }) => {
       });
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       setAlert({
-        message:
-          err.response?.data?.message || "Failed to change password",
+        message: err.response?.data?.message || "Failed to change password",
         status: "Error",
       });
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
   const handleUpdateStaffRole = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const result = await dispatch(
         updateUser({
@@ -442,12 +434,10 @@ const Overview = ({ userData, mood, setAlert }) => {
           data: {
             staffRole: formData.staffRole,
           },
-        })
+        }),
       ).unwrap();
 
-      const role = staffRoles.find(
-        (item) => item._id === formData.staffRole
-      );
+      const role = staffRoles.find((item) => item._id === formData.staffRole);
 
       setLocalUser({
         ...result,
@@ -462,7 +452,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       });
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.log(err);
       setAlert({
@@ -471,17 +461,16 @@ const Overview = ({ userData, mood, setAlert }) => {
       });
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
-
   const parentRank = rankData.find(
-    (r) => r.designation === localUser.referredBy?.designation
+    (r) => r.designation === localUser.referredBy?.designation,
   );
 
   const allowedRanks = rankData.filter(
-    (rank) => !parentRank || rank.level <= parentRank.level
+    (rank) => !parentRank || rank.level <= parentRank.level,
   );
 
   // console.log(staffPermissions, "staffPermissions")
@@ -507,7 +496,6 @@ const Overview = ({ userData, mood, setAlert }) => {
             <div>
               <label>
                 Designation
-
                 {mood === "admin" && localUser.role === "agent" && (
                   <span
                     style={{ marginLeft: 8, cursor: "pointer" }}
@@ -559,7 +547,9 @@ const Overview = ({ userData, mood, setAlert }) => {
             </div>
             <div>
               <label>Position</label>
-              <p>{localUser.position}</p>
+              <p style={{ textTransform: "capitalize" }}>
+                {localUser.position}
+              </p>
             </div>
           </div>
           {mood === "admin" && localUser.status === "approval" && (
@@ -569,9 +559,13 @@ const Overview = ({ userData, mood, setAlert }) => {
                 className="site-visit-approval status active"
                 onClick={handleApprove}
               >
-                {saving ? "Approving" : <>
-                  <NiTick /> Approve
-                </>}
+                {saving ? (
+                  "Approving"
+                ) : (
+                  <>
+                    <NiTick /> Approve
+                  </>
+                )}
               </button>
 
               <button
@@ -610,7 +604,6 @@ const Overview = ({ userData, mood, setAlert }) => {
                   <label>Designation</label>
                   <p>{localUser.referredBy.designation}</p>
                 </div>
-
               </div>
             </>
           )}
@@ -768,7 +761,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                       onChange={(e) =>
                         setEditData({
                           ...editData,
-                          panPhoto: e.target.files[0]
+                          panPhoto: e.target.files[0],
                         })
                       }
                     />
@@ -781,7 +774,10 @@ const Overview = ({ userData, mood, setAlert }) => {
                       setPreviewImage(localUser?.panPhoto);
                       setPreviewOpen(true);
                     }}
-                    className="doc-thumbnail" src={localUser?.panPhoto} alt="" />
+                    className="doc-thumbnail"
+                    src={localUser?.panPhoto}
+                    alt=""
+                  />
                 </p>
               )}
             </div>
@@ -795,7 +791,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                       onChange={(e) =>
                         setEditData({
                           ...editData,
-                          aadharPhoto: e.target.files[0]
+                          aadharPhoto: e.target.files[0],
                         })
                       }
                     />
@@ -808,15 +804,25 @@ const Overview = ({ userData, mood, setAlert }) => {
                       setPreviewImage(localUser?.aadharPhoto);
                       setPreviewOpen(true);
                     }}
-                    className="doc-thumbnail" src={localUser?.aadharPhoto} alt="" />
+                    className="doc-thumbnail"
+                    src={localUser?.aadharPhoto}
+                    alt=""
+                  />
                 </p>
               )}
             </div>
           </div>
 
           <div className="section-header">
-            <h4>Bank Details
-              {mood === "admin" && (<span onClick={() => setEditBank(!editBank)}> {editBank ? <X /> : <NiEdit />}</span>)}</h4>
+            <h4>
+              Bank Details
+              {mood === "admin" && (
+                <span onClick={() => setEditBank(!editBank)}>
+                  {" "}
+                  {editBank ? <X /> : <NiEdit />}
+                </span>
+              )}
+            </h4>
 
             {/* {(mood === "admin" || mood === "staff") && (
               <button onClick={() => setEditBank(!editBank)}>
@@ -891,7 +897,14 @@ const Overview = ({ userData, mood, setAlert }) => {
           </div>
 
           <div className="section-header">
-            <h4>Nominee Details {mood === "admin" && (<span onClick={() => setEditNominee(!editNominee)}>{editNominee ? <X /> : <NiEdit />}</span>)}</h4>
+            <h4>
+              Nominee Details{" "}
+              {mood === "admin" && (
+                <span onClick={() => setEditNominee(!editNominee)}>
+                  {editNominee ? <X /> : <NiEdit />}
+                </span>
+              )}
+            </h4>
 
             {/* {(mood === "admin" || mood === "staff") && (
               <button onClick={() => setEditNominee(!editNominee)}>
@@ -958,7 +971,9 @@ const Overview = ({ userData, mood, setAlert }) => {
                   </div>
                 </div>
               ) : (
-                <p>{localUser.nomineeRelation}</p>
+                <p style={{ textTransform: "capitalize" }}>
+                  {localUser.nomineeRelation}
+                </p>
               )}
             </div>
 
@@ -992,7 +1007,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                       onChange={(e) =>
                         setEditData({
                           ...editData,
-                          nomineeAadharPhoto: e.target.files[0]
+                          nomineeAadharPhoto: e.target.files[0],
                         })
                       }
                     />
@@ -1007,7 +1022,8 @@ const Overview = ({ userData, mood, setAlert }) => {
                     }}
                     className="doc-thumbnail"
                     src={localUser?.nomineeAadharPhoto}
-                    alt="" />
+                    alt=""
+                  />
                 </p>
               )}
             </div>
@@ -1050,8 +1066,8 @@ const Overview = ({ userData, mood, setAlert }) => {
             </div>
 
             <div>
-              <label>Staff Role
-
+              <label>
+                Staff Role
                 {mood === "admin" && localUser.role === "staff" && (
                   <span
                     style={{ marginLeft: 8, cursor: "pointer" }}
@@ -1098,7 +1114,7 @@ const Overview = ({ userData, mood, setAlert }) => {
           <div className="permission-list">
             {staffPermissions?.permissions?.length ? (
               ALL_PERMISSIONS.filter((item) =>
-                staffPermissions.permissions.includes(item.key)
+                staffPermissions.permissions.includes(item.key),
               ).map((item) => (
                 <div key={item.key} className="permission-item active">
                   {item.label}
@@ -1359,9 +1375,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                 });
               }
 
-              if (
-                passwordData.newPassword !== passwordData.confirmPassword
-              ) {
+              if (passwordData.newPassword !== passwordData.confirmPassword) {
                 return setAlert({
                   message: "Passwords do not match",
                   status: "Error",
