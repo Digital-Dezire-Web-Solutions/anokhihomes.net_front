@@ -194,7 +194,7 @@ function App() {
                     <Routes>
                       <Route
                         path="/dashboard"
-                        element={<Dashboard mood={mood} setAlert={setAlert} />}
+                        element={<Dashboard mood={mood} setAlert={setAlert} data={landingPage}/>}
                       />
                       <Route
                         path="/user"

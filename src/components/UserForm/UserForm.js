@@ -141,9 +141,9 @@ const UserForm = ({
   const canGoStep3 =
     formData.address &&
     formData.panNumber &&
-    formData.panPhoto &&
+    // formData.panPhoto &&
     formData.aadharNumber &&
-    formData.aadharPhoto &&
+    // formData.aadharPhoto &&
     formData.accountNumber &&
     formData.ifsc &&
     formData.isEmailVerified;
@@ -151,8 +151,8 @@ const UserForm = ({
   const canFinish =
     formData.nomineeName &&
     formData.nomineeRelation &&
-    formData.nomineeAadharNumber &&
-    formData.nomineeAadharPhoto;
+    formData.nomineeAadharNumber;
+  // formData.nomineeAadharPhoto;
 
   const isAccountMatch =
     formData.accountNumber &&
@@ -233,6 +233,8 @@ const UserForm = ({
       setSaving(false);
     }
   };
+
+  console.log(currentRole, "currentRole");
 
   return (
     <div>
@@ -413,8 +415,12 @@ const UserForm = ({
             </select>
           )}
           <button
-            type="submit"
-            disabled={currentRole === "agent" ? !canGoStep2 : false}
+            type="submit 1"
+            disabled={
+              currentRole === "agent" || currentRole === ""
+                ? !canGoStep2
+                : false
+            }
           >
             {currentRole === "user" ? "Register" : "Next"}
           </button>

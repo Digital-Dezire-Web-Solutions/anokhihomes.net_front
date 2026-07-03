@@ -12,8 +12,16 @@ import axios from "axios";
 import Host from "../../Host/Host";
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
+import UserForm from "../../components/UserForm/UserForm";
 
-const RenderFormFields = ({ actionType, formData, setFormData, setAlert }) => {
+const RenderFormFields = ({
+  actionType,
+  formData,
+  setFormData,
+  setAlert,
+  data,
+  onClose,
+}) => {
   const dispatch = useDispatch();
   const { users } = useSelector((state) => state.app);
   const [customersList, setCustomersList] = useState([]);
@@ -257,140 +265,28 @@ const RenderFormFields = ({ actionType, formData, setFormData, setAlert }) => {
   switch (actionType) {
     case "Add Associate / Staff / Customer":
       return (
-        <>
-          <div className="field">
-            <label>User Type</label>
-            <select
-              value={formData.role}
-              onChange={(e) =>
-                setFormData({ ...formData, role: e.target.value })
-              }
-            >
-              <option value="">Select Type</option>
-              <option value="user">Customer</option>
-              <option value="agent">Associate</option>
-              <option value="staff">Staff</option>
-            </select>
-          </div>
-
-          {/* Common Fields */}
-          {/* {formData.user && ( */}
-          <>
-            <div className="field">
-              <input
-                placeholder="Name (as per Aadhaar) "
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="field">
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="field">
-              <input
-                placeholder="Phone"
-                value={formData.phone || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="field password-field">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={formData.password || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-              <span
-                className="password-eye"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <NiClosseye /> : <NiOpenEye />}
-              </span>
-            </div>
-          </>
-          {/* )} */}
-
-          {/* Agent Only */}
-          {formData.role === "agent" && (
-            <>
-              <div className="field password-field">
-                <input
-                  placeholder="Referral Code"
-                  value={formData.referralId}
-                  onChange={(e) => handleReferralCheck(e.target.value)}
-                />
-              </div>
-              {referalMsg !== null &&
-                (referalMsg?.payload?.msg ? (
-                  <>
-                    <p style={{ color: "red" }}>{referalMsg?.payload?.msg}</p>
-                  </>
-                ) : (
-                  <>
-                    <p style={{ color: "green" }}>
-                      Referred by: {referalMsg?.payload?.name}
-                    </p>
-                  </>
-                ))}
-              <div className="plot-modal field">
-                <select
-                  value={formData.position}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      position: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select Position</option>
-                  <option value="left">Left</option>
-                  <option value="right">Right</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          {/* Staff Only */}
-          {formData.role === "staff" && (
-            <div className="field">
-              <input
-                placeholder="Department / Role"
-                value={formData.role || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-              />
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="modal-actions">
-            <button
-              onClick={() => {
-                handleAddUser();
-                // setOpen(false);
-              }}
-            >
-              Add User
-            </button>
-          </div>
-        </>
+        <div
+          className="auth-card"
+          style={{ padding: "0", width: "auto", boxShadow: "none" }}
+        >
+          <UserForm
+            mode="admin"
+            setAlert={setAlert}
+            onClose={onClose}
+            onSuccess={async (payload) => {
+              await dispatch(addUser(payload)).unwrap();
+              setAlert({
+                message: "Account created successfully",
+                status: "Success",
+              });
+              setTimeout(() => {
+                setAlert(null);
+              }, 3000);
+              // dispatch(getUser());
+            }}
+            data={data}
+          />
+        </div>
       );
 
     case "Add Project":

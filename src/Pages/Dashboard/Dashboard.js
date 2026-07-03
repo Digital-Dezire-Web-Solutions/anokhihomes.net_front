@@ -15,7 +15,7 @@ import { getAccountDetails, getOffers } from "../../Redux/Slices/AppSlices";
 import formatDate from "../../components/DateFormate/DateFormate";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
 
-const Dashboard = ({ mood, setMood }) => {
+const Dashboard = ({ mood, setMood, data }) => {
   const dispatch = useDispatch();
   const { userDetail, offersData } = useSelector((state) => state.app);
   useEffect(() => {
@@ -43,12 +43,14 @@ const Dashboard = ({ mood, setMood }) => {
     }
   };
 
-  const renderFormFields = ({ actionType, formData, setFormData }) => {
+  const renderFormFields = ({ actionType, formData, setFormData, onClose }) => {
     return (
       <RenderFormFields
         actionType={actionType}
         formData={formData}
         setFormData={setFormData}
+        data={data}
+        onClose={onClose}
       />
     );
   };
@@ -158,8 +160,8 @@ const Dashboard = ({ mood, setMood }) => {
                         {/* Dates */}
                         <div className="offer-dates">
                           <p>
-                            <strong>From:</strong> {formatDate(item.startDate)} to{" "}
-                            {formatDate(item.endDate)} (
+                            <strong>From:</strong> {formatDate(item.startDate)}{" "}
+                            to {formatDate(item.endDate)} (
                             <span className="countdown">
                               {getRemainingDays(item.endDate)}
                             </span>
@@ -209,7 +211,12 @@ const Dashboard = ({ mood, setMood }) => {
         onClose={() => setOpen(false)}
         title={actionType}
       >
-        {renderFormFields({ actionType, formData, setFormData })}
+        {renderFormFields({
+          actionType,
+          formData,
+          setFormData,
+          onClose: () => setOpen(false),
+        })}
         {/* <p style={{ color: "#9f9f9f" }}>
           Simple modal to create or modify item information.
         </p> */}
