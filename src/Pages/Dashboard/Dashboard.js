@@ -15,7 +15,7 @@ import { getAccountDetails, getOffers } from "../../Redux/Slices/AppSlices";
 import formatDate from "../../components/DateFormate/DateFormate";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
 
-const Dashboard = ({ mood, setMood, data }) => {
+const Dashboard = ({ setAlert, mood, data }) => {
   const dispatch = useDispatch();
   const { userDetail, offersData } = useSelector((state) => state.app);
   useEffect(() => {
@@ -43,7 +43,13 @@ const Dashboard = ({ mood, setMood, data }) => {
     }
   };
 
-  const renderFormFields = ({ actionType, formData, setFormData, onClose }) => {
+  const renderFormFields = ({
+    actionType,
+    formData,
+    setFormData,
+    onClose,
+    setAlert,
+  }) => {
     return (
       <RenderFormFields
         actionType={actionType}
@@ -51,6 +57,7 @@ const Dashboard = ({ mood, setMood, data }) => {
         setFormData={setFormData}
         data={data}
         onClose={onClose}
+        setAlert={setAlert}
       />
     );
   };
@@ -216,6 +223,7 @@ const Dashboard = ({ mood, setMood, data }) => {
           formData,
           setFormData,
           onClose: () => setOpen(false),
+          setAlert,
         })}
         {/* <p style={{ color: "#9f9f9f" }}>
           Simple modal to create or modify item information.

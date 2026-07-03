@@ -35,6 +35,7 @@ const UserForm = ({
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [referalMsg, setReferralMsg] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const termsRef = useRef(null);
@@ -230,6 +231,7 @@ const UserForm = ({
       onClose?.();
     } catch (err) {
       console.log(err);
+      setErrorMsg(err);
       setSaving(false);
     }
   };
@@ -358,6 +360,7 @@ const UserForm = ({
               {showPassword ? <NiClosseye /> : <NiOpenEye />}
             </span>
           </div>
+          {errorMsg && <p style={{color:"red"}}>{errorMsg?.msg}</p>}
           {currentRole === "agent" && (
             <>
               <input
@@ -417,7 +420,7 @@ const UserForm = ({
           <button
             type="submit 1"
             disabled={
-              currentRole === "agent" || currentRole === ""
+              currentRole === "agent" || currentRole === "" || currentRole === undefined
                 ? !canGoStep2
                 : false
             }
