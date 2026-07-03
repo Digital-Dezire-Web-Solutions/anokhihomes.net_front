@@ -70,6 +70,8 @@ const NotificationModal = ({ notifications, handleRead }) => {
     };
 
 
+    // console.log(notifications,"notifications")
+
     return (
         <div className="notif-modal">
             <h3>Notifications</h3>
@@ -96,6 +98,7 @@ const NotificationModal = ({ notifications, handleRead }) => {
                                 {item.type === "booking" && <NiBooking />}
                                 {item.type === "payment" && <NiPayments />}
                                 {item.type === "rating" && <NiStar />}
+                                {item.type === "system" && <NiUser />}
                                 {item.type === "payout" && <NiPayments />}
                                 {item.type === "matching_income" && <NiTeams />}
                                 {item.type === "royalty_income" && <NiUser />}

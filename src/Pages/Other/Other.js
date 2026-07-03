@@ -568,7 +568,7 @@ const Other = ({ mood, setAlert, data }) => {
         onClose={() => setOpen(false)}
         title={isEditMode ? "Edit User" : "Add User"}
       >
-        <div className="auth-card" style={{ padding: "0" }}>
+        <div className="auth-card" style={{ padding: "0", width:"auto", boxShadow: "none" }}>
           <UserForm
             mode="admin"
             setAlert={setAlert}
@@ -582,8 +582,8 @@ const Other = ({ mood, setAlert, data }) => {
                 status: "Success",
               });
               setTimeout(() => {
-      setAlert(null);
-    }, 3000);
+                setAlert(null);
+              }, 3000);
               dispatch(getUser());
             }}
             data={data}

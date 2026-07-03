@@ -29,7 +29,8 @@
 
 .dashboard-card h4 {
   font-weight: 500;
-  color: #9f9f9f;
+  /* color: #9f9f9f; */
+  /* color: black; */
   margin: 0 !important;
   padding-bottom: 10px;
   font-size: 14px;

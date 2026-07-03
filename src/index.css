@@ -87,9 +87,13 @@ body {
   display: block;
   padding: 10px 14px;
   border-radius: 1.125rem;
-  color: #9f9f9f;
+  color: black;
+  /* color: #9f9f9f; */
   text-decoration: none;
   margin-bottom: 3px;
+}
+.app.dark .menu {
+  color: #fff;
 }
 .menu:hover {
   background: #f1e7f5;

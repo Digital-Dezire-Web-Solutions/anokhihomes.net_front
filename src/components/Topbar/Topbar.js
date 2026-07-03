@@ -22,6 +22,8 @@ import {
 } from "../../Redux/Slices/AppSlices";
 import NiDrawr from "../../icons/ni-drawr";
 import Floating from "../LandingPage/Floating";
+import { LuChartNoAxesGantt, LuX } from "react-icons/lu";
+import PosterView from "./PosterView";
 
 function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const dispatch = useDispatch();
@@ -38,7 +40,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const profileRef = useRef();
   const notifRef = useRef();
 
@@ -93,11 +95,10 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
         <span className="logo">
           {/* <MainLogo /> */}
           {dark === true ? (
-              <img className="topbar-nav-logo" src={StaffLogo} alt="" />
-            ) : (
-              <img className="topbar-nav-logo" src={AdminLogo} alt="" />
-            )
-          }
+            <img className="topbar-nav-logo" src={StaffLogo} alt="" />
+          ) : (
+            <img className="topbar-nav-logo" src={AdminLogo} alt="" />
+          )}
           {/* //  : mood === "staff" ? (
           //   <img className="topbar-nav-logo" src={StaffLogo} alt="" />
           // ) : mood === "agent" ? (
@@ -220,6 +221,24 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
           )}
         </div>
         {mood !== "admin" && <Floating />}
+        <div className="floating-menu-btn" onClick={() => setSidebarOpen(true)}>
+          <span>Offers & Bonenza</span>
+        </div>
+        <div
+          className={`sidebar-overlay ${sidebarOpen ? "active" : ""}`}
+          onClick={() => setSidebarOpen(false)}
+        >
+          <div className="sidebar-popup" onClick={(e) => e.stopPropagation()}>
+            <LuX
+              className="sidebar-close"
+              onClick={() => setSidebarOpen(false)}
+            />
+
+            <div className="sidebar-content">
+              <PosterView />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
