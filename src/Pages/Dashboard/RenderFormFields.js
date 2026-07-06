@@ -449,7 +449,7 @@ const RenderFormFields = ({
               <div className="field">
                 <SearchSelect
                   label="Customer Name"
-                  placeholder="Search name or number"
+                  placeholder="Search Customer by Name or Number"
                   options={customersList}
                   value={selectedCustomer}
                   onChange={(selected) => {
@@ -542,7 +542,7 @@ const RenderFormFields = ({
           <div className="field">
             <SearchSelect
               label="Customer Name"
-              placeholder="Search name or number"
+              placeholder="Search Customer by Name or Number"
               options={customers}
               value={selectedCustomer}
               onChange={(selected) => {

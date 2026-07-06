@@ -11,10 +11,11 @@
   padding: 2.5rem 15px 1rem 15px;
   width: 100%;
   margin-top: 4rem;
+  overflow: hidden;
 }
 
 .landing-top {
-  height: 26vh;
+  height: 31vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,8 +46,8 @@
 
 .landing-head .breadcrumb {
   position: absolute;
-  top: 19%;
-  left: 70%;
+  top: 18%;
+  left: 78%;
   z-index: 7;
   font-size: 18px;
   font-weight: 600;
@@ -69,7 +70,7 @@
         margin-top: 3rem;
     }
     .landing-head .breadcrumb {
-        top: 75%;
+        top: 78%;
         left: 5%;
         font-size: 12px;
     }

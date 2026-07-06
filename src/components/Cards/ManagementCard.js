@@ -668,7 +668,7 @@ const ManagementCard = ({
                   <div className="field">
                     <SearchSelect
                       label=""
-                      placeholder="Search name or number"
+                      placeholder="Search Associate by Name or Number"
                       options={agentsList}
                       value={selectedAgent}
                       onChange={(selected) => {
@@ -739,7 +739,7 @@ const ManagementCard = ({
                   <div className="field">
                     <SearchSelect
                       label=""
-                      placeholder="Search name or number"
+                      placeholder="Search Associate by Name or Number"
                       options={agentsList}
                       value={selectedAgent}
                       onChange={(selected) => {

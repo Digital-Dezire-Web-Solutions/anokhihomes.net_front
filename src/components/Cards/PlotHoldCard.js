@@ -12,7 +12,6 @@ import formatDate from "../DateFormate/DateFormate";
 import NiCross from "../../icons/ni-cross";
 import NiTick from "../../icons/ni-tick";
 import ViewModal from "../Modals/ViewModal";
-import SearchSelect from "../SearchItems/SearchSelect";
 import { formatCurrency } from "../Utils/FormatCurrency";
 
 const PlotHoldCard = ({ item, mood, setAlert }) => {

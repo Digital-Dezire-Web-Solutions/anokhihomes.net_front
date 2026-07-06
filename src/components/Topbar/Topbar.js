@@ -69,6 +69,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
 
   const handleLogout = () => {
     navigate("/");
+    setMood(" ")
     localStorage.removeItem("token");
   };
 

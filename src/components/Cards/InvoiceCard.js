@@ -16,9 +16,6 @@ import { formatCurrency } from "../Utils/FormatCurrency";
 
 const InvoiceCard = ({
   item,
-  setSelectedPayment,
-  setIsEditMode,
-  setOpen,
   mood,
   dashboard,
   setAlert,

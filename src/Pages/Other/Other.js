@@ -399,14 +399,14 @@ const Other = ({ mood, setAlert, data }) => {
                     <NiOpenEye />
                   </span>
 
-                  <span
+                  {/* <span
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveRow(activeRow === item._id ? null : item._id);
                     }}
                   >
                     <NiDots />
-                  </span>
+                  </span> */}
 
                   {activeRow === item._id && (
                     <ActionModal

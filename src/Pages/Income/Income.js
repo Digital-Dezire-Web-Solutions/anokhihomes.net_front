@@ -8,12 +8,18 @@ import { useDispatch, useSelector } from "react-redux";
 import NiSearch from "../../icons/ni-search";
 import InvoiceCard from "../../components/Cards/InvoiceCard";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
+import formatDate from "../../components/DateFormate/DateFormate";
+import "./Income.css";
+import NiOpenEye from "../../icons/ni-openEye";
+import ViewModal from "../../components/Modals/ViewModal";
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
   const { userDetail, incomeHistory } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [viewOpen, setViewOpen] = useState(false);
+  const [selectedIncome, setSelectedIncome] = useState(null);
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
   const [designationFilter, setDesignationFilter] = useState("");
@@ -213,22 +219,75 @@ const Income = ({ mood, setAlert }) => {
               </select>
             </div>
           </div>
-          <div className="user-card-box">
-            {paginated?.length === 0 ? (
-              <p>No Income Found</p>
-            ) : (
-              paginated?.reverse()?.map((item) => (
-                <InvoiceCard
-                  item={item}
-                  // setSelectedPayment={setSelectedPayment}
-                  // setIsEditMode={setIsEditMode}
-                  // setOpen={setOpen}
-                  mood={mood}
-                  setAlert={setAlert}
-                />
-              ))
-            )}
-          </div>
+          {mood === "admin" ? (
+            <div className="card table-box">
+              <div className="table income-table">
+                <div className="table-head">
+                  <span>S.No</span>
+                  <span>Date</span>
+                  <span>Name</span>
+                  <span>Income Type</span>
+                  <span>Amount</span>
+                  <span>From</span>
+                  <span>Status</span>
+                  <span>Action</span>
+                </div>
+
+                {paginated?.length === 0 ? (
+                  <div className="table-row">
+                    <span>No Income Found</span>
+                  </div>
+                ) : (
+                  paginated?.map((item, index) => (
+                    <div className="table-row" key={item._id}>
+                      <span>{index + 1}</span>
+                      <span>{formatDate(item.createdAt)}</span>
+                      <span>{item.user?.name} ({item.user?.referralId})</span>
+                      <span>
+                        {item.type
+                          ?.replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </span>
+                      <span>₹{formatCurrency(item.amount)}</span>
+                      <span>{item?.type !== "referal_income" ?
+                        `${item?.payment?.customer?.name} (${item?.payment?.customer?.referralId})` || "-" :
+                        `${item?.fromUser?.name} (${item?.fromUser?.referralId})`}</span>
+                      <span
+                        className={`status ${item.status === "credited" ? "active" : "pending"
+                          }`}
+                      >
+                        {item.status}
+                      </span>
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedIncome(item);
+                          setViewOpen(true);
+                        }}
+                      >
+                        <NiOpenEye />
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="user-card-box">
+              {paginated?.length === 0 ? (
+                <p>No Income Found</p>
+              ) : (
+                paginated?.map((item) => (
+                  <InvoiceCard
+                    key={item._id}
+                    item={item}
+                    mood={mood}
+                    setAlert={setAlert}
+                  />
+                ))
+              )}
+            </div>
+          )}
           <div className="pagination">
             <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
               Prev
@@ -252,6 +311,154 @@ const Income = ({ mood, setAlert }) => {
             </button>
           </div>
         </div>
+        <ViewModal
+          open={viewOpen}
+          onClose={() => {
+            setViewOpen(false);
+            setSelectedIncome(null);
+          }}
+          title={selectedIncome?.type}
+        >
+          {selectedIncome &&
+            <>
+              <div className="user-card-bottom view-box">
+                <div className="user-card-bottom-left">
+                  <p>Date</p>
+                  <p>Income Type</p>
+                  <p>Amount</p>
+                </div>
+                <div className="user-card-bottom-right">
+                  <p>{formatDate(selectedIncome?.createdAt)}</p>
+                  <p style={{ textTransform: "capitalize" }}>{selectedIncome?.type}</p>
+                  <p>₹{formatCurrency(selectedIncome.amount)}</p>
+                </div>
+              </div>
+              <div className={`report-view-box-right active`}>
+                <div className="payment-details">
+
+                  {selectedIncome?.type !== "referal_income" && (
+                    <>
+                      <h5>Payment Details</h5>
+
+                      <p>
+                        <strong>Name:</strong> {selectedIncome?.payment?.customer?.name || "-"}
+                      </p>
+
+                      <p>
+                        <strong>Phone:</strong>{" "}
+                        {selectedIncome?.payment?.customer?.phone || "-"}
+                      </p>
+
+                      <p>
+                        <strong>Email:</strong>{" "}
+                        {selectedIncome?.payment?.customer?.email || "-"}
+                      </p>
+                      <p>
+                        <strong>Amount:</strong> ₹{formatCurrency(selectedIncome?.payment?.amount || 0)}
+                      </p>
+                      <p>
+                        <strong>Payment Mode:</strong>{" "}
+                        {selectedIncome?.payment?.paymentMode || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Payment Type:</strong>{" "}
+                        {selectedIncome?.payment?.paymentType || "N/A"}
+                      </p>
+
+                      {/* <hr /> */}
+
+                      <h5>Approved By</h5>
+
+                      <p>
+                        <strong>Name:</strong>{" "}
+                        {selectedIncome?.payment?.approvedBy?.name || "-"}
+                      </p>
+
+                      <p>
+                        <strong>Phone:</strong>{" "}
+                        {selectedIncome?.payment?.approvedBy?.phone || "-"}
+                      </p>
+
+                      <p>
+                        <strong>Email:</strong>{" "}
+                        {selectedIncome?.payment?.approvedBy?.email || "-"}
+                      </p>
+
+                      <hr />
+
+                      <p>
+                        <strong>Business Amount:</strong> ₹{formatCurrency(selectedIncome?.businessAmount || 0)}
+                      </p>
+
+                      <p>
+                        <strong>Income %:</strong> {selectedIncome?.percentage || 0}%
+                      </p>
+
+                      <p>
+                        <strong>Income Earned:</strong> ₹{formatCurrency(selectedIncome?.amount || 0)}
+                      </p>
+                    </>
+                  )}
+
+                  {selectedIncome?.type === "referal_income" && (
+                    <>
+                      <h5>From User</h5>
+
+                      <p>
+                        <strong>Name:</strong> {selectedIncome?.fromUser?.name}
+                      </p>
+
+                      <p>
+                        <strong>Designation:</strong> {selectedIncome?.fromUser?.designation}
+                      </p>
+
+                      <p>
+                        <strong>Email:</strong> {selectedIncome?.fromUser?.email}
+                      </p>
+
+                      <p>
+                        <strong>Phone:</strong> {selectedIncome?.fromUser?.phone}
+                      </p>
+
+                      <p>
+                        <strong>Referral ID:</strong> {selectedIncome?.fromUser?.referralId}
+                      </p>
+
+                      {/* <hr /> */}
+
+                      <h5>User Details</h5>
+
+                      <p>
+                        <strong>Name:</strong> {selectedIncome?.user?.name}
+                      </p>
+
+                      <p>
+                        <strong>Designation:</strong> {selectedIncome?.user?.designation}
+                      </p>
+
+                      <p>
+                        <strong>Email:</strong> {selectedIncome?.user?.email}
+                      </p>
+
+                      <p>
+                        <strong>Phone:</strong> {selectedIncome?.user?.phone}
+                      </p>
+
+                      <p>
+                        <strong>Referral ID:</strong> {selectedIncome?.user?.referralId}
+                      </p>
+
+                      {selectedIncome?.level && (
+                        <p>
+                          <strong>Level:</strong> {selectedIncome.level}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </>}
+        </ViewModal>
       </div>
     </div>
   );

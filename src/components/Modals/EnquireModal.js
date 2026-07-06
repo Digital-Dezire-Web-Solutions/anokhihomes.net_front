@@ -132,7 +132,7 @@ const EnquireModal = ({
             <div className="field">
               <SearchSelect
                 label="Customer Name"
-                placeholder="Search name or number"
+                placeholder="Search Customer by Name or Number"
                 options={usersRole}
                 value={selectedCustomer}
                 onChange={(selected) => {

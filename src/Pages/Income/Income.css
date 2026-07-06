@@ -1,0 +1,4 @@
+.table.income-table .table-head ,
+.table.income-table .table-row {
+    grid-template-columns: 40px 100px 1fr 180px 120px 1fr 100px 60px;
+}

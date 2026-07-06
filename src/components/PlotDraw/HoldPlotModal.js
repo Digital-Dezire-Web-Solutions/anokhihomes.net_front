@@ -81,7 +81,7 @@ export default function HoldPlotModal({
       <div className="field">
         <SearchSelect
           label="Customer"
-          placeholder="Search Customer"
+          placeholder="Search Customer by Name or Number"
           options={usersRole}
           value={customer}
           onChange={setCustomer}

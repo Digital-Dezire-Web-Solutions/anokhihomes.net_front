@@ -263,8 +263,8 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
       >
         <div className="field">
           <SearchSelect
-            label="Lead"
-            placeholder="Search name or number"
+            label="Leads Customer"
+            placeholder="Search Customer by Name or Number"
             options={leads}
             value={selectedCustomer}
             onChange={(selected) => {
@@ -290,7 +290,7 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
           <input
             value={selectedCustomer?.name}
             readOnly
-            placeholder="Phone Number"
+            placeholder="Name"
           />
         </div>
         <div className="field">
@@ -347,7 +347,7 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
           <div className="field">
             <SearchSelect
               label="Associate"
-              placeholder="Search name or number"
+              placeholder="Search Associate by Name or Number"
               options={usersRole}
               value={selectedAgent}
               onChange={(selected) => {

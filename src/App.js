@@ -50,33 +50,25 @@ import HoldPlot from "./Pages/HoldPlot/HoldPlot";
 import Rating from "./Pages/Rating/Rating";
 import Delete from "./Pages/Delete/Delete";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]); // Runs every time the route changes
+
+  return null;
+}
 const LandingLayout = ({ dark, mood, data, setMood }) => {
   return (
     <div className="landing-page">
+      <ScrollToTop />
       <Navbar dark={dark} mood={mood} setMood={setMood} />
       <Outlet />
       <Footer dark={dark} data={data} mood={mood} />
     </div>
   );
 };
-
-function ScrollToTop() {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      const page = document.querySelector(".page-wrap");
-
-      if (page) {
-        page.scrollTop = 0;
-      }
-
-      window.scrollTo(0, 0);
-    });
-  }, [pathname]);
-
-  return null;
-}
 
 function App() {
   const dispatch = useDispatch();
@@ -89,12 +81,11 @@ function App() {
 
   const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mood, setMood] = useState("staff");
+  const [mood, setMood] = useState("");
   const [alert, setAlert] = useState(null);
 
   return (
     <BrowserRouter>
-      <ScrollToTop />
       <div className={`app ${dark ? "dark" : ""} mood-${mood}`}>
         <Alert item={alert} />
         <Routes>
@@ -194,11 +185,23 @@ function App() {
                     <Routes>
                       <Route
                         path="/dashboard"
-                        element={<Dashboard mood={mood} setAlert={setAlert} data={landingPage}/>}
+                        element={
+                          <Dashboard
+                            mood={mood}
+                            setAlert={setAlert}
+                            data={landingPage}
+                          />
+                        }
                       />
                       <Route
                         path="/user"
-                        element={<Other mood={mood} setAlert={setAlert} data={landingPage}/>}
+                        element={
+                          <Other
+                            mood={mood}
+                            setAlert={setAlert}
+                            data={landingPage}
+                          />
+                        }
                       />
                       <Route
                         path="/bookings"

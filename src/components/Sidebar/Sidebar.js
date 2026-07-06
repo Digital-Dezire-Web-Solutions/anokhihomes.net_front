@@ -123,18 +123,28 @@ function Sidebar({ closeMobile, mood }) {
           <div className="footer-col">
             {/* <h4>Follow Us</h4> */}
             <div className="social-icons">
-              <Link><FaFacebook /></Link>
-              <Link><AiFillInstagram /></Link>
-              <Link><FaLinkedin /></Link>
-              <Link><FaXTwitter /></Link>
+              <Link>
+                <FaFacebook />
+              </Link>
+              <Link>
+                <AiFillInstagram />
+              </Link>
+              <Link>
+                <FaLinkedin />
+              </Link>
+              <Link>
+                <FaXTwitter />
+              </Link>
             </div>
           </div>
         )}
       </div>
-      <NavLink to="/settings" className="menu single" onClick={handleClick}>
-        <NiSetting />
-        {!collapsed && "Settings"}
-      </NavLink>
+      {mood === "admin" && (
+        <NavLink to="/settings" className="menu single" onClick={handleClick}>
+          <NiSetting />
+          {!collapsed && "Settings"}
+        </NavLink>
+      )}
       <p className="menu dev-by">Dev. By:- Digital Dezire </p>
     </div>
   );

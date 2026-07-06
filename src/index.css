@@ -49,6 +49,16 @@ body {
 .app {
   /* display: flex; */
   background: #fafafa;
+  /* height: 100vh; */
+  /* position: fixed; */
+  width: 100%;
+}
+.app.mood-admin,
+.app.mood-agent,
+.app.mood-staff,
+.app.mood-user{
+  /* display: flex; */
+  background: #fafafa;
   height: 100vh;
   position: fixed;
   width: 100%;

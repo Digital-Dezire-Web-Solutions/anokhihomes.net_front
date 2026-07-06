@@ -7,7 +7,7 @@ import AddLocationModal from "../../components/Modals/AddLocationModal";
 import NiSearch from "../../icons/ni-search";
 import BookingCard from "../../components/Cards/BookingCard";
 import BookingData from "../../components/Data/BookingData";
-import SearchSelect from "../../components/SearchItems/SearchSelect";
+// import SearchSelect from "../../components/SearchItems/SearchSelect";
 import CancellationPolicy from "../../components/Policies/CancellationPolicy";
 import { useDispatch, useSelector } from "react-redux";
 import {

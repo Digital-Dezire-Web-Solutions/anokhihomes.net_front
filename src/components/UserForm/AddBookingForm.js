@@ -136,8 +136,8 @@ const AddBookingForm = ({
     <>
       <div className="field">
         <SearchSelect
-          label="Site Visit"
-          placeholder="Search name or number"
+          label="Site Visit Customer"
+          placeholder="Search Customer by Name or Number"
           options={siteVisitOptions}
           value={selectedCustomer}
           onChange={(selected) => {
@@ -168,7 +168,7 @@ const AddBookingForm = ({
         <input
           value={selectedCustomer?.customer?.name}
           readOnly
-          placeholder="Phone Number"
+          placeholder="Name"
         />
       </div>
       <div className="field">
@@ -231,7 +231,7 @@ const AddBookingForm = ({
 
       <div className="field">
         <label>
-          Price Request in sq.ft
+          Price Request in sqft
           <small style={{ fontSize: "12px", color: "green" }}>
             ₹
             {formatCurrency(
@@ -241,7 +241,7 @@ const AddBookingForm = ({
         </label>
         <input
           type="number"
-          placeholder="Price request in sq.ft"
+          placeholder="Price Request in sqft"
           value={formData.requestAmount || ""}
           onChange={(e) =>
             setFormData({ ...formData, requestAmount: e.target.value })
