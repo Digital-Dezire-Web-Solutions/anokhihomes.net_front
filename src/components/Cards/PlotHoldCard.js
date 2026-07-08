@@ -111,7 +111,7 @@ const PlotHoldCard = ({ item, mood, setAlert }) => {
         return;
       }
 
-      console.log(formData, "formData");
+      // console.log(formData, "formData");
       const res = await axios.post(
         `${Host}/api/booking/add`,
         {

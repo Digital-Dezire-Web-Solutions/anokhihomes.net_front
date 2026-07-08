@@ -23,7 +23,8 @@ const Income = ({ mood, setAlert }) => {
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
   const [designationFilter, setDesignationFilter] = useState("");
-
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
@@ -46,9 +47,31 @@ const Income = ({ mood, setAlert }) => {
       const matchStatus =
         statusFilter === "" || income?.status === statusFilter;
 
-      return matchSearch && matchDesignation && matchStatus;
+      const incomeDate = new Date(income.createdAt);
+
+      const matchFrom =
+        !fromDate || incomeDate >= new Date(fromDate);
+
+      const matchTo =
+        !toDate ||
+        incomeDate <= new Date(`${toDate}T23:59:59`);
+
+      return (
+        matchSearch &&
+        matchDesignation &&
+        matchStatus &&
+        matchFrom &&
+        matchTo
+      );
     });
-  }, [search, designationFilter, statusFilter, incomeHistory]);
+  }, [
+    search,
+    designationFilter,
+    statusFilter,
+    fromDate,
+    toDate,
+    incomeHistory,
+  ]);
 
   const totalPages = Math.ceil(filtered?.length / ITEMS_PER_PAGE);
   const paginated = filtered?.slice(
@@ -218,6 +241,29 @@ const Income = ({ mood, setAlert }) => {
                 <option value="failed">Failed</option>
               </select>
             </div>
+            <div className="searchItem">
+              <label>From</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+
+            <div className="searchItem">
+              <label>To</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
           </div>
           {mood === "admin" ? (
             <div className="card table-box">
@@ -234,7 +280,7 @@ const Income = ({ mood, setAlert }) => {
                 </div>
 
                 {paginated?.length === 0 ? (
-                  <div className="table-row">
+                  <div>
                     <span>No Income Found</span>
                   </div>
                 ) : (

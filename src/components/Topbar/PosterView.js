@@ -15,7 +15,7 @@ const PosterView = () => {
     useEffect(() => {
         const seen = sessionStorage.getItem("welcomePopup");
 
-        console.log(seen, "seen2")
+        // console.log(seen, "seen2")
         if (!seen) {
             console.log(seen, "seen")
             setShowWelcomePopup(true);
@@ -44,7 +44,7 @@ const PosterView = () => {
 
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [activeIndex]);
-    console.log(showWelcomePopup, "showWelcomePopup")
+    // console.log(showWelcomePopup, "showWelcomePopup")
 
     return (
         <>

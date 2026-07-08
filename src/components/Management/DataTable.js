@@ -25,7 +25,8 @@ const DataTable = ({ data, mood, setAlert }) => {
   const [agentsList, setAgentsList] = useState([]);
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [saving, setSaving] = useState(false);
-
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   useEffect(() => {
     dispatch(getUser());
   }, [dispatch]);
@@ -96,10 +97,14 @@ const DataTable = ({ data, mood, setAlert }) => {
       const matchesStatus =
         statusFilter === "" || lead?.status === statusFilter;
       const matchesAgent = agentFilter === "" || lead?.agent === agentFilter;
-      const matchesDate = dateFilter === "" || lead?.date === dateFilter;
-      return matchesSearch && matchesStatus && matchesAgent && matchesDate;
+      const matchFrom = !fromDate || lead >= new Date(fromDate);
+
+      const matchTo = !toDate || lead <= new Date(`${toDate}T23:59:59`);
+      return (
+        matchesSearch && matchesStatus && matchesAgent && matchFrom && matchTo
+      );
     });
-  }, [search, statusFilter, agentFilter, dateFilter, data]);
+  }, [search, statusFilter, agentFilter, fromDate, toDate, data]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -310,21 +315,24 @@ const DataTable = ({ data, mood, setAlert }) => {
         </div>
 
         <div className="searchItem">
+          <label>From</label>
           <input
             type="date"
-            value={dateFilter}
+            value={fromDate}
             onChange={(e) => {
-              setDateFilter(e.target.value);
+              setFromDate(e.target.value);
               setPage(1);
             }}
           />
         </div>
+
         <div className="searchItem">
+          <label>To</label>
           <input
             type="date"
-            value={dateFilter}
+            value={toDate}
             onChange={(e) => {
-              setDateFilter(e.target.value);
+              setToDate(e.target.value);
               setPage(1);
             }}
           />

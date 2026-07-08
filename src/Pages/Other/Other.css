@@ -55,7 +55,7 @@
   width: 1200px;
   min-width: 1200px;
   max-height: 87%;
-  overflow: auto;
+  /* overflow: auto; */
 }
 
 .table-head,

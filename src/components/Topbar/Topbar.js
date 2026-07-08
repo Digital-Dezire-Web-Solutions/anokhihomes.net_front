@@ -69,7 +69,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
 
   const handleLogout = () => {
     navigate("/");
-    setMood(" ")
+    setMood(" ");
     localStorage.removeItem("token");
   };
 
@@ -221,10 +221,17 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
             </div>
           )}
         </div>
-        {mood !== "admin" && <Floating />}
-        <div className="floating-menu-btn" onClick={() => setSidebarOpen(true)}>
-          <span>Offers & Bonenza</span>
-        </div>
+        {mood !== "admin" && (
+          <>
+            <Floating />
+            <div
+              className="floating-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <span>Offers & Bonenza</span>
+            </div>
+          </>
+        )}
         <div
           className={`sidebar-overlay ${sidebarOpen ? "active" : ""}`}
           onClick={() => setSidebarOpen(false)}

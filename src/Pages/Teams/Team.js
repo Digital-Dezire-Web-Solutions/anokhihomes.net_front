@@ -13,11 +13,8 @@ import { formatCurrency } from "../../components/Utils/FormatCurrency";
 
 const Teams = () => {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
-
   const { userDetail, teamTree } = useSelector((state) => state.app);
-
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -25,58 +22,28 @@ const Teams = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      userDetail?.role === "admin" &&
-      userDetail?.referralId
-    ) {
-      dispatch(
-        getTeamTree(userDetail.referralId)
-      );
-    }
+    if (!userDetail?.referralId) return;
+    dispatch(getTeamTree(userDetail.referralId));
   }, [userDetail]);
-
-  /* =================================
-     ADMIN SEARCH DATA
-  ================================= */
-
-  const currentData =
-    userDetail?.role === "admin"
-      ? teamTree
-      : userDetail;
-
-  /* =================================
-     TEAM DATA
-  ================================= */
-
+  const currentData = teamTree;
   const leftTeam = currentData?.leftChildren || [];
-
   const rightTeam = currentData?.rightChildren || [];
-
   const allTeam = [...leftTeam, ...rightTeam];
-
   const [activeTab, setActiveTab] = useState("all");
 
   const getVisibleTeam = () => {
     if (activeTab === "left") return leftTeam;
-
     if (activeTab === "right") return rightTeam;
-
     return allTeam;
   };
 
   const visibleTeam = getVisibleTeam();
-
-  /* =================================
-     SEARCH TEAM
-  ================================= */
-
   const handleSearch = () => {
     if (!search) return;
-
     dispatch(getTeamTree(search));
   };
 
-  console.log(currentData, "currentData")
+  // console.log(currentData, "currentData");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -85,10 +52,6 @@ const Teams = () => {
 
           <Breadcrumb />
         </div>
-
-        {/* =================================
-            ADMIN SEARCH
-        ================================= */}
 
         {userDetail?.role === "admin" && (
           <div className="page-tools">
@@ -105,13 +68,8 @@ const Teams = () => {
               </button>
             </div>
           </div>
-
         )}
       </div>
-
-      {/* =================================
-          SEARCHED USER INFO
-      ================================= */}
       <div className="dashboard-box">
         <div className="dashboard-box-left">
           {currentData && (
@@ -121,17 +79,14 @@ const Teams = () => {
                   <div className="user-card-name">
                     <h4 style={{ textTransform: "capitalize" }}>
                       {currentData.name}
-                      <span
-                        className="status "
-                      >
-                        {currentData.referralId}
-                      </span>
+                      <span className="status ">{currentData.referralId}</span>
                     </h4>
                   </div>
                 </div>
                 <div className="dots">
                   <span>
-                    {currentData.designation} ({currentData.directIncomePercent}%)
+                    {currentData.designation} ({currentData.directIncomePercent}
+                    %)
                   </span>
                 </div>
               </div>
@@ -141,7 +96,9 @@ const Teams = () => {
                     <strong>Phone:</strong> {currentData.phone}
                   </p>
                   <p style={{ textTransform: "capitalize" }}>
-                    <strong>Referred By:</strong> {currentData?.referredBy?.referralId || "N/A"} ({currentData?.position || "N/A"})
+                    <strong>Referred By:</strong>{" "}
+                    {currentData?.referredBy?.referralId || "N/A"} (
+                    {currentData?.position || "N/A"})
                   </p>
                   <p>
                     <strong>Left Team:</strong> {leftTeam.length || 0}
@@ -152,23 +109,26 @@ const Teams = () => {
                   <p>
                     <strong>Status:</strong> {currentData.status}
                   </p>
-
                 </div>
                 <div className="user-card-bottom-right">
                   <p>
-                    <strong>Wallet:</strong> ₹{formatCurrency(currentData.wallet || 0)}
+                    <strong>Wallet:</strong> ₹
+                    {formatCurrency(currentData.wallet || 0)}
                   </p>
                   <p>
-                    <strong>Total Income:</strong> ₹{formatCurrency(currentData.totalIncome || 0)}
+                    <strong>Total Income:</strong> ₹
+                    {formatCurrency(currentData.totalIncome || 0)}
                   </p>
                   <p>
                     <strong>Right Team:</strong> {rightTeam.length || 0}
                   </p>
                   <p>
-                    <strong>Self Business:</strong> ₹{formatCurrency(currentData.selfBusiness || 0)}
+                    <strong>Self Business:</strong> ₹
+                    {formatCurrency(currentData.selfBusiness || 0)}
                   </p>
                   <p>
-                    <strong>Total Withdraw:</strong> ₹{formatCurrency(currentData.totalWithdraw || 0)}
+                    <strong>Total Withdraw:</strong> ₹
+                    {formatCurrency(currentData.totalWithdraw || 0)}
                   </p>
                 </div>
               </div>
@@ -177,8 +137,7 @@ const Teams = () => {
         </div>
         <div className="dashboard-box-right">
           {/* <h6>Stats</h6> */}
-          <div
-            className="dashboard-box-item card">
+          <div className="dashboard-box-item card">
             <div className="dashboard-box-item-left">
               <NiTeams />
             </div>
@@ -187,8 +146,7 @@ const Teams = () => {
               <p>₹{formatCurrency(currentData?.leftBusiness || 0)}</p>
             </div>
           </div>
-          <div
-            className="dashboard-box-item card">
+          <div className="dashboard-box-item card">
             <div className="dashboard-box-item-left">
               <NiTeams />
             </div>
@@ -197,8 +155,7 @@ const Teams = () => {
               <p>₹{formatCurrency(currentData?.rightBusiness || 0)}</p>
             </div>
           </div>
-          <div
-            className="dashboard-box-item card">
+          <div className="dashboard-box-item card">
             <div className="dashboard-box-item-left">
               <NiPayments />
             </div>
@@ -210,89 +167,8 @@ const Teams = () => {
         </div>
       </div>
 
-
       <div className="dashboard-wrapper">
-
-
-        {/* <div className="filter-grid page-tools table-filters">
-          <span>Team</span>
-          <div className="page-toggle">
-            <span
-              className={activeTab === "all" ? "active" : ""}
-              onClick={() => setActiveTab("all")}
-            >
-              All
-            </span>
-
-            <span
-              className={activeTab === "left" ? "active" : ""}
-              onClick={() => setActiveTab("left")}
-            >
-              Left
-            </span>
-
-            <span
-              className={activeTab === "right" ? "active" : ""}
-              onClick={() => setActiveTab("right")}
-            >
-              Right
-            </span>
-          </div>
-        </div> */}
-
-        {/* =================================
-            TEAM LIST
-        ================================= */}
-
-        {/* <div className="team-list-container"> */}
-        {/* {visibleTeam.length === 0 ? (
-            <p>No Team Found</p>
-          ) : (
-            <>
-              <div className="card">
-                <div className="team-table table-head">
-                  <span>Level</span>
-
-                  <span>Name</span>
-
-                  <span>Phone</span>
-
-                  <span>Designation</span>
-
-                  <span>Referral ID</span>
-
-                  <span>Wallet</span>
-
-                  <span>Income</span>
-                </div>
-
-                {visibleTeam.map((member) => (
-                  <div key={member._id} className="team-table table-row">
-                    <span>{member.level}</span>
-
-                    <span>{member.name}</span>
-
-                    <span>{member.phone}</span>
-
-                    <span>
-                      {member.designation} ({member.directIncomePercent}
-                      %)
-                    </span>
-
-                    <span>{member.referralId}</span>
-
-                    <span>₹{member.wallet}</span>
-
-                    <span>₹{member.totalIncome}</span>
-                  </div>
-                ))}
-              </div>
-
-            </>
-          )} */}
-        <h4>
-          Team Hierarchy
-        </h4>
+        <h4>Team Hierarchy</h4>
         <div className=" team-tree-container">
           {currentData ? (
             <TeamNode member={currentData} />

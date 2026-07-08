@@ -858,6 +858,17 @@ export const updateStaffRole = createAsyncThunk(
   },
 );
 
+export const getPayout = createAsyncThunk("app/getPayout", async () => {
+  const res = await fetch(`${Host}/api/payout`, {
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": getToken(),
+    },
+  });
+
+  return await res.json();
+});
+
 export const addPayoutPayment = createAsyncThunk(
   "app/addPayoutPayment",
   async ({ payoutId, formData }) => {
@@ -874,6 +885,27 @@ export const addPayoutPayment = createAsyncThunk(
     return res.data;
   },
 );
+
+export const getExpense = createAsyncThunk("app/getExpense", async () => {
+  const res = await fetch(`${Host}/api/expense`, {
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": getToken(),
+    },
+  });
+
+  return await res.json();
+});
+export const getLedger = createAsyncThunk("app/getLedger", async () => {
+  const res = await fetch(`${Host}/api/account/ledger`, {
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": getToken(),
+    },
+  });
+
+  return await res.json();
+});
 
 // ========================
 // 🔥 Slice
@@ -905,6 +937,9 @@ const appSlice = createSlice({
     notifications: [],
     notificationsCount: [],
     staffRoles: [],
+    expense: [],
+    ledger: [],
+    payout: [],
     paymentTerms: null,
     loading: false,
     error: null,
@@ -1078,6 +1113,17 @@ const appSlice = createSlice({
         state.staffRoles = state.staffRoles.map((i) =>
           i._id === action.payload._id ? action.payload : i,
         );
+      })
+      .addCase(getExpense.fulfilled, (state, action) => {
+        state.expense = action.payload;
+      })
+
+      .addCase(getLedger.fulfilled, (state, action) => {
+        state.ledger = action.payload;
+      })
+
+      .addCase(getPayout.fulfilled, (state, action) => {
+        state.payout = action.payload;
       })
       // LOADING (optional global)
       .addMatcher(

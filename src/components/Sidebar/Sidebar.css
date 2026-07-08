@@ -8,6 +8,10 @@
   width: 90px;
 }
 
+.sidebar-scroll-items{
+  height: 70vh;
+  overflow: auto;
+}
 .collapse-btn {
   text-align: center;
   cursor: pointer;
@@ -23,12 +27,12 @@
   margin-bottom: 6px;
   cursor: pointer;
 }
-.menu-parent span{
- display: flex;
-    align-items: center;
-    gap: 5px;
+.menu-parent span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
-.menu-parent.active{
+.menu-parent.active {
   background: #b5b5b51e;
   color: var(--mood-color);
   font-weight: 600;
@@ -53,7 +57,6 @@
   }
 }
 
-
 .menu {
   display: flex;
   align-items: center;
@@ -72,7 +75,7 @@
 .single {
   margin-top: 8px;
 }
-.dev-by{
+.dev-by {
   position: absolute;
   bottom: 1%;
   padding-bottom: 0;
@@ -93,13 +96,49 @@
   width: 80%;
 }
 
-.side-more-items{
+.side-more-items {
   position: absolute;
   bottom: 11%;
   width: 80%;
 }
 .side-more-items .social-icons a {
   background-color: #b5b5b51e;
+}
+
+.sidebar-group {
+  width: 100%;
+}
+
+.dropdown-menu {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  gap: 4px;
+}
+
+.submenu-item:hover {
+  background: #f5f5f5;
+}
+
+.submenu-item.active {
+  background: var(--mood-light);
+  color: var(--mood-color);
+  font-weight: 600;
 }
 
 @media (max-width: 900px) {

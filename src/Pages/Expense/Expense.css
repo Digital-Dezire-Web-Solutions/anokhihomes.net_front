@@ -1,0 +1,4 @@
+.table.expense-table .table-head ,
+.table.expense-table .table-row {
+    grid-template-columns: 50px 120px 220px 1fr 1fr 120px 120px 80px;
+}

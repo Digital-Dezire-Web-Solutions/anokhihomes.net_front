@@ -34,6 +34,7 @@
 .ss-tags{
     display:flex;
     flex-wrap:wrap;
+    flex-direction: column;
     gap:8px;
     margin-bottom:8px;
 }
@@ -45,11 +46,13 @@
     border-radius:20px;
     display:flex;
     align-items:center;
+    justify-content: space-between;
     gap:8px;
     font-size:13px;
 }
 
 .ss-tag span{
     cursor:pointer;
-    font-weight:bold;
+    /* font-weight:bold; */
+    font-size: 18px;
 }

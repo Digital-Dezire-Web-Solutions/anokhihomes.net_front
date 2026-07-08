@@ -34,6 +34,8 @@ const PaymentTable = ({ data, mood, setAlert }) => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     if (selectedPayment) {
@@ -46,17 +48,24 @@ const PaymentTable = ({ data, mood, setAlert }) => {
   // console.log(booking, "booking");
 
   const filtered = useMemo(() => {
-    return data?.filter((payment) => {
+    return (data || []).filter((payment) => {
       const matchSearch =
         payment?.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-        payment?.customer?.phone.includes(search);
+        payment?.customer?.phone?.includes(search);
 
       const matchStatus =
         statusFilter === "" || payment.status === statusFilter;
 
-      return matchSearch && matchStatus;
+      // Use paymentDate if available, otherwise createdAt
+      const paymentDate = new Date(payment.paymentDate || payment.createdAt);
+
+      const matchFrom = !fromDate || paymentDate >= new Date(fromDate);
+
+      const matchTo = !toDate || paymentDate <= new Date(`${toDate}T23:59:59`);
+
+      return matchSearch && matchStatus && matchFrom && matchTo;
     });
-  }, [search, statusFilter, data]);
+  }, [data, search, statusFilter, fromDate, toDate]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice(
@@ -197,12 +206,27 @@ const PaymentTable = ({ data, mood, setAlert }) => {
           </select>
         </div>
         <div className="searchItem">
+          <label>From</label>
+
           <input
             type="date"
-            // value={dateFilter}
+            value={fromDate}
             onChange={(e) => {
-              // setDateFilter(e.target.value);
-              // setPage(1);
+              setFromDate(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
+        <div className="searchItem">
+          <label>To</label>
+
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => {
+              setToDate(e.target.value);
+              setPage(1);
             }}
           />
         </div>

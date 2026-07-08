@@ -76,6 +76,10 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
+.app.dark .sidebar-popup{
+  background-color: #252528;
+}
+
 .sidebar-overlay.active .sidebar-popup {
   transform: translateX(0);
 }

@@ -24,7 +24,7 @@ const ProjectCards = ({
       .trim()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-      console.log(p,"p")
+      // console.log(p,"p")
 
   return (
     <>

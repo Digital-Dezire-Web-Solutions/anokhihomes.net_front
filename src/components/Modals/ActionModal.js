@@ -27,14 +27,14 @@ const ActionModal = ({ onClose, onEdit, onDelete, item }) => {
             >
                 <NiEdit /> Edit
             </span>
-            {/* <span
+            <span
                 onClick={() => {
                     onDelete(item);
                     onClose();
                 }}
             >
                 <NiDelete /> Delete
-            </span> */}
+            </span>
         </div>
     );
 };

@@ -4,9 +4,12 @@
 
 .table-head.commission-table,
 .table-row.commission-table {
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 60px;
+  grid-template-columns: 150px 150px 100px 100px 100px 100px 100px 100px 100px 100px 100px 100px 100px 100px 100px 80px 60px;
 }
 
+.table.commission-table-box {
+  width: 1750px;
+}
 .top-agent {
   color: gold;
   font-weight: bold;
@@ -48,8 +51,8 @@
   color: #9f9f9f;
 }
 
-.best-performer-row {
+/* .best-performer-row {
   background: rgb(255, 240, 155);
   border-radius: 1.75rem;
   padding: 10px 12px;
-}
+} */

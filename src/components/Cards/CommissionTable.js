@@ -9,6 +9,10 @@ import {
   getIncomeSummary,
 } from "../../Redux/Slices/AppSlices";
 import { useDispatch } from "react-redux";
+import formatDate from "../DateFormate/DateFormate";
+import axios from "axios";
+import Host from "../../Host/Host";
+import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
 
 const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -16,104 +20,91 @@ const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("summary");
   const [formData, setFormData] = useState({});
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [fromDate, setFromDate] = useState("");
 
-  const handleAddPayment = async () => {
-    setSaving(true);
+  console.log(item, "item");
+  const handleFileUpload = (field, file) => {
+    if (!file) return;
+
+    const MAX_SIZE = 20 * 1024 * 1024;
+
+    if (file.size > MAX_SIZE) {
+      setAlert({
+        message: "Image size should not exceed 20 MB",
+        status: "Error",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [field]: file,
+    }));
+  };
+
+  const handlePay = async () => {
     try {
-      if (!item.nextPayout) {
-        setAlert({
-          status: "Error",
-          message: "No payout available.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
+      setSaving(true);
+
+      const token = localStorage.getItem("token");
+
+      let attachment = "";
+      if (formData.attachment) {
+        const upload = await uploadImage(formData.attachment);
+        attachment = upload.url;
       }
 
-      if (!formData.mode) {
-        setAlert({
-          status: "Error",
-          message: "Please select payment mode.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
-      if (!formData.amount || Number(formData.amount) <= 0) {
-        setAlert({
-          status: "Error",
-          message: "Enter valid amount.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
-      if (Number(formData.amount) > item.nextPayout.balance) {
-        setAlert({
-          status: "Error",
-          message: "Amount exceeds remaining balance.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
-      if (
-        (formData.mode === "upi" || formData.mode === "bank") &&
-        !formData.transactionId
-      ) {
-        setAlert({
-          status: "Error",
-          message: "Transaction ID is required.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
-      if (!formData.attachment) {
-        setAlert({
-          status: "Error",
-          message: "Please upload payment proof.",
-        });
-        setTimeout(() => setAlert(null), 3000);
-        return;
-      }
-
-      const body = new FormData();
-
-      body.append("amount", formData.amount);
-      body.append("paymentMode", formData.mode);
-      body.append("transactionId", formData.transactionId || "");
-
-      body.append("attachment", formData.attachment);
-
-      await dispatch(
-        addPayoutPayment({
-          payoutId: item.nextPayout._id,
-          formData: body,
-        }),
-      ).unwrap();
-
-      dispatch(getIncomeSummary());
-
+      await axios.post(
+        `${Host}/api/payout/pay/${selectedExpense._id}`,
+        {
+          amount: Number(formData.amount),
+          paymentMode: formData.paymentMode,
+          transactionId: formData.transactionId,
+          chequeNumber: formData.chequeNumber,
+          bankName: formData.bankName,
+          attachment,
+          remarks: formData.remarks,
+        },
+        {
+          headers: {
+            "auth-token": token,
+          },
+        },
+      );
       setAlert({
         status: "Success",
-        message: "Payment added successfully.",
+        message: "Payout completed successfully.",
       });
+
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false);
-      setFormData({});
+
+      await dispatch(getIncomeSummary());
       setViewOpen(false);
+      setFormData({
+        amount: "",
+        paymentMode: "",
+        transactionId: "",
+        chequeNumber: "",
+        bankName: "",
+        attachment: "",
+        remarks: "",
+      });
     } catch (err) {
       console.log(err);
 
       setAlert({
         status: "Error",
-        message: err?.message || "Unable to add payment.",
+        message: err.response?.data?.msg || "Unable to complete payout.",
       });
-      setTimeout(() => setAlert(null), 3000);
-      setSaving(false);
-    }
-  };
 
+      setTimeout(() => setAlert(null), 3000);
+    }
+
+    setSaving(false);
+  };
   return (
     <>
       <div
@@ -127,18 +118,40 @@ const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
         </span>
         <span>{item.designation}</span>
         <span>{item.referralId}</span>
-        <span>₹{item.selfBusiness}</span>
-        <span>₹{formatCurrency(item.wallet)}</span>
-        <span>₹{formatCurrency(item.holdCommission)}</span>
-        <span>₹{formatCurrency(item.releasedCommission)}</span>
-        <span>₹{formatCurrency(item.totalIncome)}</span>
-        <div className="dots">
-          <span onClick={() => setViewOpen(true)}>
-            <NiOpenEye />
+        <span>₹{formatCurrency(item.directIncome || 0)}</span>
+        <span>₹{formatCurrency(item.differenceIncome || 0)}</span>
+        <span>₹{formatCurrency(item.matchingIncome || 0)}</span>
+        <span>₹{formatCurrency(item.royaltyIncome || 0)}</span>
+        <span>₹{formatCurrency(item.cashbackIncome || 0)}</span>
+        <span>₹{formatCurrency(item.bestPerformanceIncome || 0)}</span>
+        <span>₹{formatCurrency(item.rewardIncome || 0)}</span>
+        <span>₹{formatCurrency(item.totalIncome || 0)}</span>
+        <span>₹{formatCurrency(item.tdsDeducted || 0)}</span>
+        <span>₹{formatCurrency(item.adminDeducted || 0)}</span>
+        <span>₹{formatCurrency(item.releasedCommission || 0)}</span>
+        <span>₹{formatCurrency(item.holdCommission || 0)}</span>
+        <span>
+          <span
+            className={`status ${
+              item.nextPayout?.status === "released"
+                ? "active"
+                : item.nextPayout?.status === "processing"
+                  ? "pending"
+                  : "inactive"
+            }`}
+          >
+            {item.nextPayout?.status || "N/A"}
           </span>
-
-          <span onClick={() => exportToExcel([item])}>
-            <NiExport />
+        </span>
+        <div className="dots">
+          <span
+            onClick={() => {
+              setSelectedExpense(item.nextPayout);
+              setViewOpen(true);
+              setActiveTab("summary");
+            }}
+          >
+            <NiOpenEye />
           </span>
         </div>
       </div>
@@ -176,16 +189,19 @@ const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
             Payouts
           </button>
         </div>
-        {mood === "admin" && (
-          <div class="modal-actions">
-            <button
-              className={activeTab === "makepayouts" ? "active" : ""}
-              onClick={() => setActiveTab("makepayouts")}
-            >
-              Make Payouts
-            </button>
-          </div>
-        )}
+        {mood === "admin" &&
+          selectedExpense &&
+          (selectedExpense.status === "payable" ||
+            selectedExpense.status === "partial") && (
+            <div class="modal-actions">
+              <button
+                className={activeTab === "makepayouts" ? "active" : ""}
+                onClick={() => setActiveTab("makepayouts")}
+              >
+                Make Payouts
+              </button>
+            </div>
+          )}
 
         {activeTab === "summary" && (
           <div className="report-view-box-right active">
@@ -479,75 +495,45 @@ const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
             )}
           </div>
         )}
-        {activeTab === "makepayouts" && (
+        {activeTab === "makepayouts" && selectedExpense && (
           <div className="report-view-box-right active">
             {/* Payout Summary */}
             <div className="summary-card">
-              <h5>Payout Summary</h5>
+              <h4>{selectedExpense.user?.name}</h4>
 
               <p>
-                <strong>Gross Commission :</strong>₹
-                {formatCurrency(item.nextPayout?.grossAmount || 0)}
+                <strong>Referral :</strong> {selectedExpense.user?.referralId}
               </p>
 
               <p>
-                <strong>TDS :</strong>₹
-                {formatCurrency(item.nextPayout?.tdsAmount || 0)}
+                <strong>Cycle :</strong>{" "}
+                {formatDate(selectedExpense.cycleStart)} -{" "}
+                {formatDate(selectedExpense.cycleEnd)}
               </p>
 
               <p>
-                <strong>Admin Charge :</strong>₹
-                {formatCurrency(item.nextPayout?.adminChargeAmount || 0)}
+                <strong>Net Amount :</strong> ₹
+                {formatCurrency(selectedExpense.netAmount)}
               </p>
 
               <p>
-                <strong>Net Payable :</strong>₹
-                {formatCurrency(item.nextPayout?.netAmount || 0)}
+                <strong>Already Paid :</strong> ₹
+                {formatCurrency(selectedExpense.totalPaid)}
               </p>
 
-              <p>
-                <strong>Already Paid :</strong>₹
-                {formatCurrency(item.nextPayout?.totalPaid || 0)}
-              </p>
-
-              <p style={{ color: "green", fontWeight: "600" }}>
-                <strong>Remaining :</strong>₹
-                {formatCurrency(item.nextPayout?.balance || 0)}
+              <p style={{ color: "green", fontWeight: 600 }}>
+                <strong>Remaining :</strong> ₹
+                {formatCurrency(selectedExpense.balance)}
               </p>
             </div>
 
-            <h4>Payment Details</h4>
-
             <div className="field">
-              <label>Payment Mode</label>
+              <label>Amount</label>
 
-              <select
-                value={formData.mode || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    mode: e.target.value,
-                  })
-                }
-              >
-                <option value="">Select Mode</option>
-                <option value="cash">Cash</option>
-                <option value="upi">UPI</option>
-                <option value="cheque">Cheque</option>
-                <option value="bank">Bank Transfer</option>
-              </select>
-            </div>
-            <div className="field">
-              <label>
-                Amount
-                <small style={{ fontSize: "12px", color: "green" }}>
-                  ₹{formatCurrency(formData.restAmount || 0)}{" "}
-                </small>
-              </label>
               <input
                 type="number"
-                max={item.nextPayout?.balance}
-                value={formData.amount || ""}
+                max={selectedExpense.balance}
+                value={formData.amount}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -557,49 +543,149 @@ const CommissionTable = ({ index, item, exportToExcel, mood, setAlert }) => {
               />
 
               <small>
-                Remaining : ₹{formatCurrency(item.nextPayout?.balance || 0)}
+                Maximum Payable : ₹{formatCurrency(selectedExpense.balance)}
               </small>
             </div>
-            {(formData.mode === "upi" || formData.mode === "bank") && (
-              <div className="field">
-                <label>Transaction ID *</label>
-                <input
-                  placeholder="Enter Transaction ID"
-                  value={formData.transactionId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      transactionId: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            )}
-            {(formData.mode === "upi" ||
-              formData.mode === "cash" ||
-              formData.mode === "cheque" ||
-              formData.mode === "bank") && (
-              <div className="field">
-                <label>Attachment *</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      attachment: e.target.files[0],
-                    })
-                  }
-                />
-              </div>
-            )}
-            <div class="modal-actions">
-              <button
-                disabled={item.nextPayout?.balance <= 0}
-                disabled={saving}
-                onClick={handleAddPayment}
-                style={{ marginTop: "10px" }}
+
+            <div className="field">
+              <label>Payment Mode</label>
+
+              <select
+                value={formData.paymentMode}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    paymentMode: e.target.value,
+                  })
+                }
               >
-                {item.nextPayout?.balance <= 0 ? "Fully Paid" : "Add Payment"}
+                <option value="">Select</option>
+                <option value="cash">Cash</option>
+                <option value="upi">UPI</option>
+                <option value="bank">Bank Transfer</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            </div>
+
+            {(formData.paymentMode === "upi" ||
+              formData.paymentMode === "bank") && (
+              <>
+                <div className="field">
+                  <label>Transaction ID</label>
+
+                  <input
+                    value={formData.transactionId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        transactionId: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Bank Name</label>
+
+                  <input
+                    value={formData.bankName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bankName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            {formData.paymentMode === "cheque" && (
+              <>
+                <div className="field">
+                  <label>Cheque Number</label>
+
+                  <input
+                    value={formData.chequeNumber}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        chequeNumber: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Bank Name</label>
+
+                  <input
+                    value={formData.bankName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bankName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="field">
+              <label>Attachment</label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload("attachment", e.target.files[0])
+                }
+              />
+
+              {formData.attachment && (
+                <img
+                  src={
+                    formData.attachment instanceof File
+                      ? URL.createObjectURL(formData.attachment)
+                      : formData.attachment
+                  }
+                  alt=""
+                  style={{
+                    width: 120,
+                    borderRadius: 8,
+                    marginTop: 10,
+                  }}
+                />
+              )}
+            </div>
+
+            <div className="field">
+              <label>Remarks</label>
+
+              <textarea
+                rows={3}
+                value={formData.remarks}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    remarks: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button
+                disabled={
+                  saving ||
+                  !formData.amount ||
+                  !formData.paymentMode ||
+                  !["payable", "partial"].includes(selectedExpense.status)
+                }
+                onClick={handlePay}
+              >
+                {saving ? "Processing..." : "Pay Now"}
               </button>
             </div>
           </div>

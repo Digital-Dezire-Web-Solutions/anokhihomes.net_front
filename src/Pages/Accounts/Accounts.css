@@ -1,0 +1,42 @@
+.table.account-table .table-head,
+.table.account-table .table-row {
+  grid-template-columns: 50px 120px 220px 1fr 1fr 1fr 120px 120px 60px 50px;
+}
+
+.account-table-footer {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.account-status-item,
+.account-status {
+  padding: 5px 10px;
+  margin: 0;
+  border-radius: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.Loss {
+  background-color: color-mix(in oklab, var(--error-color) 10%, transparent);
+  color: var(--error-color);
+}
+.Profit {
+  background-color: color-mix(in oklab, var(--success-color) 10%, transparent);
+  color: var(--success-color);
+}
+
+.account-status-box{
+    padding: 5px 10px;
+  margin: 0;
+  border-radius: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  gap: 5px;
+}

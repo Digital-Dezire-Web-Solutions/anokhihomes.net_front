@@ -31,7 +31,6 @@ import Team from "./Pages/Teams/Team";
 import Management from "./Pages/Management/Management";
 import SiteVisit from "./Pages/SiteVisit/SiteVisit";
 import Payments from "./Pages/Payments/Payments";
-import TeamDetail from "./Pages/Teams/TeamDetail";
 import Alert from "./components/Alert/Alert";
 import Setting from "./Pages/Setting/Setting";
 import Logs from "./Pages/Logs/Logs";
@@ -49,6 +48,9 @@ import { getAllColonies, getLandingPage } from "./Redux/Slices/AppSlices";
 import HoldPlot from "./Pages/HoldPlot/HoldPlot";
 import Rating from "./Pages/Rating/Rating";
 import Delete from "./Pages/Delete/Delete";
+import Expense from "./Pages/Expense/Expense";
+import Accounts from "./Pages/Accounts/Accounts";
+import Payout from "./Pages/Payout/Payout";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -224,16 +226,6 @@ function App() {
                         element={<Team mood={mood} setAlert={setAlert} />}
                       />
                       <Route
-                        path="/teams/:id"
-                        element={
-                          <TeamDetail
-                            mood="agent"
-                            currentUser={{ id: "amit", name: "Amit" }}
-                            setAlert={setAlert}
-                          />
-                        }
-                      />
-                      <Route
                         path="/management"
                         element={<Management mood={mood} setAlert={setAlert} />}
                       />
@@ -302,6 +294,18 @@ function App() {
                       <Route
                         path="/rating"
                         element={<Rating mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
+                        path="/expense"
+                        element={<Expense mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
+                        path="/account"
+                        element={<Accounts mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
+                        path="/payout"
+                        element={<Payout mood={mood} setAlert={setAlert} />}
                       />
                     </Routes>
                   </div>

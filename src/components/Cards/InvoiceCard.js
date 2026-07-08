@@ -32,7 +32,7 @@ const InvoiceCard = ({
   }, [viewOpen]);
   const paid = item.paidAmount || 0;
 
-  console.log(item,"item")
+  // console.log(item,"item")
 
   return (
     <div className="user-card card" onClick={dashboard || undefined}>
