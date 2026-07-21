@@ -16,7 +16,7 @@ const AddBookingForm = ({
   isEditMode,
   handleEditBooking,
   setOpen,
-  setPolicyOpen
+  setPolicyOpen,
 }) => {
   const dispatch = useDispatch();
   const { users, siteVisit, paymentTerms, plots } = useSelector(
@@ -340,15 +340,10 @@ const AddBookingForm = ({
         style={{
           color: "#ff6969",
           fontSize: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: "5px",
-          padding: "10px 0",
         }}
       >
-        <input
-          style={{ width: "5%" }}
+        {/* <input
+          style={{ width: "auto" }}
           type="checkbox"
           checked={formData.termsAccepted || false}
           onChange={(e) =>
@@ -361,7 +356,34 @@ const AddBookingForm = ({
           onClick={() => setPolicyOpen(true)}
         >
           Read Cancellation Policy
-        </span>
+        </span> */}
+        <div class="checkbox-wrapper-4">
+          <input
+            class="inp-cbx"
+            id={"policy"}
+            type="checkbox"
+            checked={formData.termsAccepted || false}
+            onChange={(e) =>
+              setFormData({ ...formData, termsAccepted: e.target.checked })
+            }
+          />
+          <label class="cbx" for={"policy"}>
+            <span>
+              <svg width="12px" height="10px"></svg>
+            </span>
+            <span
+              style={{ borderBottom: "1px solid #ff6969", cursor: "pointer" }}
+              onClick={() => setPolicyOpen(true)}
+            >
+              Notes : 35% cancellation charges Read Cancellation Policy
+            </span>
+          </label>
+          <svg class="inline-svg">
+            <symbol id="check-4" viewBox="0 0 12 10">
+              <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+            </symbol>
+          </svg>
+        </div>
       </p>
 
       <div className="modal-actions">

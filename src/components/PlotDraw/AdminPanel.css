@@ -160,6 +160,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
 }
 
 .modal-actions {
@@ -264,16 +265,27 @@
   .modal {
     min-width: 90%;
   }
-  .plot-draw.card{
-    height: 70dvh !important;
+  .plot-draw.card {
+    padding: 0;
+    height: 100dvh !important;
+    overflow: auto;
   }
+
   .plot-compass {
     position: absolute;
-    top: 70%;
-    right: 60%;
+    top: 86%;
+    right: 66%;
     z-index: 5;
-}
-.plot-colors {
-    bottom: 1%;
+  }
+  .plot-colors {
+    position: static;
+    flex-direction: row;
+    overflow: auto;
+  }
+  .plot-colors span {
+    white-space: nowrap;
+  }
+  .plot-draw.card svg {
+    width: 900px;
   }
 }

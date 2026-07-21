@@ -15,7 +15,13 @@ import formatDate from "../DateFormate/DateFormate";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Host from "../../Host/Host";
-import { getAccountDetails, getPaymentTerms, getPlots, getPlotsetting, getSiteVisit } from "../../Redux/Slices/AppSlices";
+import {
+  getAccountDetails,
+  getPaymentTerms,
+  getPlots,
+  getPlotsetting,
+  getSiteVisit,
+} from "../../Redux/Slices/AppSlices";
 import NoteItem from "../NoteItem/NoteItem";
 import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
 import { formatCurrency } from "../Utils/FormatCurrency";
@@ -28,10 +34,12 @@ const SiteVisitCard = ({
   mood,
   dashboard,
   setAlert,
-  landingPage
+  landingPage,
 }) => {
   const dispatch = useDispatch();
-  const { plots, userDetail, paymentTerms, plotSetting } = useSelector((state) => state.app);
+  const { plots, userDetail, paymentTerms, plotSetting } = useSelector(
+    (state) => state.app,
+  );
 
   useEffect(() => {
     dispatch(getAccountDetails());
@@ -75,7 +83,7 @@ const SiteVisitCard = ({
 
   const handleVisitAction = async (visitId, action, extraData = {}) => {
     try {
-      setSaving(true)
+      setSaving(true);
       const token = localStorage.getItem("token");
 
       const res = await axios.put(
@@ -89,7 +97,7 @@ const SiteVisitCard = ({
             "auth-token": token,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       setAlert({
@@ -110,7 +118,7 @@ const SiteVisitCard = ({
       setNewVisitDate("");
 
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     } catch (err) {
       console.error(err);
       setAlert({
@@ -118,7 +126,7 @@ const SiteVisitCard = ({
         status: "Error",
       });
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
 
@@ -130,22 +138,21 @@ const SiteVisitCard = ({
       if (noteImage) {
         const upload = await uploadImage(noteImage);
         image = upload.url;
-
       }
-      console.log(image)
+      console.log(image);
       const res = await axios.post(
         `${Host}/api/sitevisit/add-note/${visitId}`,
         {
           note: noteText,
           image,
-          colonyId: selectedColony
+          colonyId: selectedColony,
         },
         {
           headers: {
             "auth-token": token,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // ✅ update UI from backend response
@@ -185,13 +192,13 @@ const SiteVisitCard = ({
         `${Host}/api/sitevisit/edit-note/${visitId}/${noteId}`,
         {
           note: noteText,
-          image
+          image,
         },
         {
           headers: {
             "auth-token": token,
           },
-        }
+        },
       );
 
       setNotes(res.data.visit.notes);
@@ -219,7 +226,7 @@ const SiteVisitCard = ({
           headers: {
             "auth-token": token,
           },
-        }
+        },
       );
 
       setNotes(res.data.visit.notes);
@@ -234,7 +241,7 @@ const SiteVisitCard = ({
   };
 
   const handleAddBooking = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -259,7 +266,7 @@ const SiteVisitCard = ({
         return;
       }
 
-      console.log(formData, "formData")
+      console.log(formData, "formData");
       const res = await axios.post(
         `${Host}/api/booking/add`,
         {
@@ -282,7 +289,7 @@ const SiteVisitCard = ({
             "auth-token": token,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       setAlert({
@@ -298,9 +305,8 @@ const SiteVisitCard = ({
       setFormData({});
       setPanelMode(null);
 
-      setSaving(false)
+      setSaving(false);
       setTimeout(() => setAlert(null), 3000);
-
     } catch (err) {
       console.error(err);
       setAlert({
@@ -308,10 +314,9 @@ const SiteVisitCard = ({
         status: "Error",
       });
       setTimeout(() => setAlert(null), 3000);
-      setSaving(false)
+      setSaving(false);
     }
   };
-
 
   const handleDeleteVisit = async (visitId) => {
     try {
@@ -343,7 +348,7 @@ const SiteVisitCard = ({
   };
 
   const handleHoldPlot = async () => {
-    setSaving(true)
+    setSaving(true);
     const token = localStorage.getItem("token");
     await axios.post(
       `${Host}/api/plothold/${type.toLowerCase()}`,
@@ -363,19 +368,19 @@ const SiteVisitCard = ({
       status: "Success",
     });
     dispatch(getSiteVisit());
-    
+
     // reset UI
     setViewOpen(false);
     setSelectedPlot(null);
     setFormData({});
     setPanelMode(null);
-    
+
     setTimeout(() => setAlert(null), 3000);
-    setSaving(false)
+    setSaving(false);
     // setShowHoldModal(false);
     // onClose();
   };
-  
+
   // console.log(item, "item")
   return (
     <div className="user-card card" onClick={dashboard || undefined}>
@@ -386,7 +391,6 @@ const SiteVisitCard = ({
               {item.customer.name}
               {/* <span>({item.phone})</span> */}
               <span
-
                 className={`status ${item.status === "completed" ? "active" : item.status === "scheduled" ? "pending" : item.status === "rescheduled" ? "pending" : item.status === "approval" ? "pending2" : "failed"}`}
               >
                 {item.status}
@@ -396,7 +400,6 @@ const SiteVisitCard = ({
           </div>
         </div>
         <div className="dots">
-
           <span
             onClick={(e) => {
               e.stopPropagation();
@@ -441,16 +444,17 @@ const SiteVisitCard = ({
           <p>Visit Date</p>
         </div>
         <div className="user-card-bottom-right">
-          <p>
-            {formatDate(item?.createdAt)}
-          </p>
+          <p>{formatDate(item?.createdAt)}</p>
           <p>{item.customer.phone}</p>
           {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
-          <p> {item.colonies?.length}, {item?.location?.name}</p>
+          <p>
+            {" "}
+            {item.colonies?.length}, {item?.location?.name}
+          </p>
           <p>{item.visitDate}</p>
         </div>
       </div>
-      {(mood === "admin" || mood === "staff") && (item.status === "approval") && (
+      {(mood === "admin" || mood === "staff") && item.status === "approval" && (
         <div className="modal-actions">
           <button
             className="site-visit-approval status active"
@@ -477,7 +481,8 @@ const SiteVisitCard = ({
           </button>
         </div>
       )}
-      {(mood === "agent" && item.status === "scheduled" || item.status === "rescheduled") && (
+      {((mood === "agent" && item.status === "scheduled") ||
+        item.status === "rescheduled") && (
         <div className="modal-actions">
           <button
             onClick={(e) => {
@@ -518,12 +523,12 @@ const SiteVisitCard = ({
         <p>Are you sure you want to delete?</p>
         <div className="modal-actions">
           <button
-          disabled={saving}
+            disabled={saving}
             onClick={(e) => {
               e.stopPropagation();
               console.log("Site Visit deleted");
               setDeleteOpen(false);
-              handleDeleteVisit(item._id)
+              handleDeleteVisit(item._id);
             }}
           >
             Yes
@@ -540,7 +545,10 @@ const SiteVisitCard = ({
           </button>
         </div>
       </DeleteModal>
-      <DeleteModal open={rescheduleOpen} onClose={() => setRescheduleOpen(false)}>
+      <DeleteModal
+        open={rescheduleOpen}
+        onClose={() => setRescheduleOpen(false)}
+      >
         <h4>Reschedule Site Visit</h4>
         <div className="field">
           <label>Date of Visit</label>
@@ -594,9 +602,7 @@ const SiteVisitCard = ({
           />
         </div> */}
         <div className="field">
-          <label>
-            Notes
-          </label>
+          <label>Notes</label>
           <textarea
             placeholder="Add Notes..."
             value={formData.notes || ""}
@@ -608,7 +614,7 @@ const SiteVisitCard = ({
 
         <div className="modal-actions">
           <button
-          disabled={saving}
+            disabled={saving}
             onClick={() => {
               if (
                 !formData.visitDate ||
@@ -633,7 +639,8 @@ const SiteVisitCard = ({
               }
 
               handleVisitAction(item._id, "reschedule", {
-                visitDate: formData.visitHour +
+                visitDate:
+                  formData.visitHour +
                   " " +
                   formData.visitPeriod +
                   " " +
@@ -646,12 +653,13 @@ const SiteVisitCard = ({
           </button>
         </div>
       </DeleteModal>
-      <DeleteModal open={disapproveOpen} onClose={() => setDisapproveOpen(false)}>
+      <DeleteModal
+        open={disapproveOpen}
+        onClose={() => setDisapproveOpen(false)}
+      >
         <h4>Disapprove Site Visit</h4>
         <div className="field">
-          <label>
-            Notes
-          </label>
+          <label>Notes</label>
           <textarea
             placeholder="Add Notes..."
             value={formData.notes || ""}
@@ -663,7 +671,7 @@ const SiteVisitCard = ({
 
         <div className="modal-actions">
           <button
-          disabled={saving}
+            disabled={saving}
             onClick={() => {
               if (!formData.notes?.trim()) {
                 setAlert({
@@ -698,18 +706,18 @@ const SiteVisitCard = ({
             {/* <p>Notes</p> */}
           </div>
           <div className="user-card-bottom-right">
+            <p>{formatDate(item?.createdAt)}</p>
+            <p>{item.customer.phone}</p>
+            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
+            <p>{item.customer.phone}</p>
+            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
             <p>
-              {formatDate(item?.createdAt)}
+              {" "}
+              {item.colonies?.map((i) => (
+                <>{i?.colony?.name}</>
+              ))}
+              , {item?.location?.name}
             </p>
-            <p>{item.customer.phone}</p>
-            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
-            <p>{item.customer.phone}</p>
-            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
-            <p> {item.colonies?.map((i) => (
-              <>
-                {i?.colony?.name}
-              </>
-            ))}, {item?.location?.name}</p>
             <p>{item.visitDate}</p>
             <div className="table-filters">
               <button
@@ -724,6 +732,10 @@ const SiteVisitCard = ({
             </div>
           </div>
         </div>
+        <span className="countdown" style={{ fontSize: "12px" }}>
+          {item.siteVisitCounter} Out of 3 Site Visit, After 3 site visit some
+          additional charge will be applied for requesting site visit
+        </span>
         {mood === "agent" && item.status === "scheduled" && (
           <div className="modal-actions">
             <button
@@ -755,7 +767,7 @@ const SiteVisitCard = ({
                   value={selectedColony?._id || ""}
                   onChange={(e) => {
                     const colony = item.colonies.find(
-                      (c) => c.colony._id === e.target.value
+                      (c) => c.colony._id === e.target.value,
                     )?.colony;
 
                     setSelectedColony(colony);
@@ -782,9 +794,7 @@ const SiteVisitCard = ({
                 <SearchSelect
                   label="Plots"
                   placeholder={
-                    selectedColony
-                      ? "Search Plot..."
-                      : "Select Colony First"
+                    selectedColony ? "Search Plot..." : "Select Colony First"
                   }
                   disabled={!selectedColony}
                   options={plots?.plots}
@@ -815,18 +825,30 @@ const SiteVisitCard = ({
               </div>
 
               <div className="field">
-                <label>Rate <small style={{ fontSize: "12px", color: "green" }}>₹{selectedPlot?.price || 0} / sq.ft </small></label>
+                <label>
+                  Rate{" "}
+                  <small style={{ fontSize: "12px", color: "green" }}>
+                    ₹{selectedPlot?.price || 0} / sq.ft{" "}
+                  </small>
+                </label>
                 <input
                   placeholder="Rate with sqft"
-                  value={formData.pricePerSqft ? `₹${formData.pricePerSqft} * ${formData.plotArea} sq.ft` : ""}
+                  value={
+                    formData.pricePerSqft
+                      ? `₹${formData.pricePerSqft} * ${formData.plotArea} sq.ft`
+                      : ""
+                  }
                   // {"₹550 * 1200 sq.ft"}
                   readOnly
                 />
               </div>
 
               <div className="field">
-                <label>Price Request in sq.ft
-                  <small style={{ fontSize: "12px", color: "green" }}>₹{formData.requestAmount * formData.plotArea || 0} </small>
+                <label>
+                  Price Request in sq.ft
+                  <small style={{ fontSize: "12px", color: "green" }}>
+                    ₹{formData.requestAmount * formData.plotArea || 0}{" "}
+                  </small>
                 </label>
                 <input
                   type="number"
@@ -838,14 +860,18 @@ const SiteVisitCard = ({
                 />
               </div>
 
-
               {selectedPlot &&
                 formData.requestAmount &&
                 (Number(formData.requestAmount) < selectedPlot.priceRange.min ||
-                  Number(formData.requestAmount) > selectedPlot.priceRange.max) && (
+                  Number(formData.requestAmount) >
+                    selectedPlot.priceRange.max) && (
                   <div className="field">
                     <label>
-                      Notes <small style={{ fontSize: "12px", color: "#ff6969" }}>(Price Doesn't Match Allowed Range)</small><span style={{ color: "red" }}>*</span>
+                      Notes{" "}
+                      <small style={{ fontSize: "12px", color: "#ff6969" }}>
+                        (Price Doesn't Match Allowed Range)
+                      </small>
+                      <span style={{ color: "red" }}>*</span>
                     </label>
                     <textarea
                       placeholder="Enter reason for requesting amount outside allowed range"
@@ -922,21 +948,43 @@ const SiteVisitCard = ({
                   ))}
                 </select>
               </div>
-              <p style={{ color: "#ff6969", fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "5px", padding: "10px 0" }}>
-                <input style={{ width: "5%" }} type="checkbox"
+              <p
+                style={{
+                  color: "#ff6969",
+                  fontSize: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  gap: "5px",
+                  padding: "10px 0",
+                }}
+              >
+                <input
+                  style={{ width: "auto" }}
+                  type="checkbox"
                   checked={formData.termsAccepted || false}
                   onChange={(e) =>
-                    setFormData({ ...formData, termsAccepted: e.target.checked })
-                  } />
+                    setFormData({
+                      ...formData,
+                      termsAccepted: e.target.checked,
+                    })
+                  }
+                />
                 Notes : 35% cancellation charges
-                <span style={{ borderBottom: "1px solid #ff6969", cursor: "pointer" }} onClick={() => setPolicyOpen(true)}>
+                <span
+                  style={{
+                    borderBottom: "1px solid #ff6969",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setPolicyOpen(true)}
+                >
                   Read Cancellation Policy
                 </span>
               </p>
 
               <div className="modal-actions">
                 <button
-                disabled={saving}
+                  disabled={saving}
                   onClick={() => {
                     if (!selectedPlot) {
                       setAlert({
@@ -951,7 +999,8 @@ const SiteVisitCard = ({
                     const min = selectedPlot.priceRange.min;
                     const max = selectedPlot.priceRange.max;
 
-                    const isInRange = requestedAmount >= min && requestedAmount <= max;
+                    const isInRange =
+                      requestedAmount >= min && requestedAmount <= max;
 
                     if (!requestedAmount) {
                       setAlert({
@@ -964,7 +1013,8 @@ const SiteVisitCard = ({
 
                     if (!isInRange && !formData.notes?.trim()) {
                       setAlert({
-                        message: "Notes are required when amount is outside the allowed range",
+                        message:
+                          "Notes are required when amount is outside the allowed range",
                         status: "Error",
                       });
                       setTimeout(() => setAlert(null), 3000);
@@ -989,7 +1039,7 @@ const SiteVisitCard = ({
                   value={selectedColony?._id || ""}
                   onChange={(e) => {
                     const colony = item.colonies.find(
-                      (c) => c.colony._id === e.target.value
+                      (c) => c.colony._id === e.target.value,
                     )?.colony;
 
                     setSelectedColony(colony);
@@ -1016,9 +1066,7 @@ const SiteVisitCard = ({
                 <SearchSelect
                   label="Plots"
                   placeholder={
-                    selectedColony
-                      ? "Search Plot..."
-                      : "Select Colony First"
+                    selectedColony ? "Search Plot..." : "Select Colony First"
                   }
                   disabled={!selectedColony}
                   options={plots?.plots}
@@ -1094,7 +1142,9 @@ const SiteVisitCard = ({
                 )}
               </div>
               <div className="modal-actions">
-                <button disabled={saving} onClick={handleHoldPlot}>Submit Hold</button>
+                <button disabled={saving} onClick={handleHoldPlot}>
+                  Submit Hold
+                </button>
               </div>
             </>
           )}
@@ -1140,8 +1190,10 @@ const SiteVisitCard = ({
                   ))}
                 </>} */}
 
-
-              {(item.status === "scheduled" || item.status === "approval" || item.status === "completed" || item.status === "rescheduled") && (
+              {(item.status === "scheduled" ||
+                item.status === "approval" ||
+                item.status === "completed" ||
+                item.status === "rescheduled") && (
                 <>
                   <NoteItem
                     item={item}
@@ -1163,7 +1215,6 @@ const SiteVisitCard = ({
               )}
             </>
           )}
-
         </div>
       </ViewModal>
       <AddLocationModal

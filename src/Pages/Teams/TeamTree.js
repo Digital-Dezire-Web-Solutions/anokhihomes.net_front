@@ -6,7 +6,7 @@ const TeamNode = ({
   level = 0,
   side = "",
 }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(level === 0);
 
   const hasChildren =
     (member?.leftChildren?.length || 0) > 0 ||

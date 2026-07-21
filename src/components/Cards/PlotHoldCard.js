@@ -429,7 +429,7 @@ const PlotHoldCard = ({ item, mood, setAlert }) => {
                 }}
               >
                 <input
-                  style={{ width: "5%" }}
+                  style={{ width: "auto" }}
                   type="checkbox"
                   checked={formData.termsAccepted || false}
                   onChange={(e) =>

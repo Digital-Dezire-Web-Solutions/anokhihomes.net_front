@@ -397,6 +397,19 @@ export const getOffers = createAsyncThunk("app/getOffers", async () => {
 
   return res.json();
 });
+export const getOfferClaims = createAsyncThunk(
+  "app/getOfferClaims",
+  async () => {
+    const res = await fetch(`${Host}/api/offer/claims`, {
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": getToken(),
+      },
+    });
+
+    return res.json();
+  },
+);
 
 export const addOffer = createAsyncThunk("app/addOffer", async (data) => {
   const res = await fetch(`${Host}/api/offer/add`, {
@@ -450,6 +463,26 @@ export const toggleOfferStatus = createAsyncThunk(
     });
 
     return await res.json();
+  },
+);
+
+export const deliverOfferReward = createAsyncThunk(
+  "app/deliverOfferReward",
+  async ({ id, remarks }, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${Host}/api/offer/claim/${id}/deliver`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          authToken: localStorage.getItem("token"),
+        },
+        body: JSON.stringify({ remarks }),
+      });
+
+      return await res.json();
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   },
 );
 
@@ -1042,6 +1075,9 @@ const appSlice = createSlice({
       })
       .addCase(getOffers.fulfilled, (state, action) => {
         state.offersData = action.payload;
+      })
+      .addCase(getOfferClaims.fulfilled, (state, action) => {
+        state.offerClaims = action.payload;
       })
       .addCase(getDiscount.fulfilled, (state, action) => {
         state.discountsData = action.payload;

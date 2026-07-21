@@ -98,26 +98,50 @@
   opacity: 1;
 }
 
-
-.countdown{
-font-weight:600;
-color:#ff7a00;
-margin-top:4px;
+.countdown {
+  font-weight: 600;
+  color: #ff7a00;
+  margin-top: 4px;
 }
 
-.ladder-time{
-font-size:12px;
-color:#888;
+.ladder-time {
+  font-size: 12px;
+  color: #888;
 }
 
-.checkbox-group{
+.checkbox-group {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
 }
-.checkbox-group input{
+.checkbox-group input {
   border-radius: 1.25rem;
-  
+}
+
+.reward-table {
+  border: 1px solid #bcbcbc2e;
+}
+.reward-table .table {
+  width: 100%;
+  min-width: 250px;
+}
+.reward-table .table-head,
+.reward-table .table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 60px;
+  gap: 5px;
+  padding: 5px 0;
+}
+.claimreward-table .table {
+  width: 100%;
+  min-width: 1080px;
+}
+.claimreward-table .table-head,
+.claimreward-table .table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 60px;
+  gap: 5px;
+  padding: 5px 0;
 }

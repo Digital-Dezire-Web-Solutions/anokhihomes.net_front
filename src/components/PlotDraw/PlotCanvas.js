@@ -40,8 +40,8 @@ export default function PlotCanvas({
 
   useEffect(() => {
     const updateScale = () => {
-      if (window.innerWidth < 576) setScale(0.35);
-      else if (window.innerWidth < 768) setScale(0.5);
+      if (window.innerWidth < 576) setScale(1);
+      else if (window.innerWidth < 768) setScale(1);
       else setScale(1);
     };
 
@@ -336,7 +336,7 @@ export default function PlotCanvas({
 
       <svg
         ref={svgRef}
-        width={mood === "admin" ? "100%" : "100%"}
+        width={"100%"}
         height={mood === "admin" ? "500" : "100%"}
         onWheel={mood === "admin" ? handleWheel : undefined}
         onMouseDown={handleMouseDown}

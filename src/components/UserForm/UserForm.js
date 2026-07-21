@@ -360,7 +360,7 @@ const UserForm = ({
               {showPassword ? <NiClosseye /> : <NiOpenEye />}
             </span>
           </div>
-          {errorMsg && <p style={{color:"red"}}>{errorMsg?.msg}</p>}
+          {errorMsg && <p style={{ color: "red" }}>{errorMsg?.msg}</p>}
           {currentRole === "agent" && (
             <>
               <input
@@ -420,7 +420,9 @@ const UserForm = ({
           <button
             type="submit 1"
             disabled={
-              currentRole === "agent" || currentRole === "" || currentRole === undefined
+              currentRole === "agent" ||
+              currentRole === "" ||
+              currentRole === undefined
                 ? !canGoStep2
                 : false
             }
@@ -729,7 +731,28 @@ const UserForm = ({
               </div>
             ))}
           </div>
-          <label className="terms-checkbox">
+          <div class="checkbox-wrapper-4">
+            <input
+              class="inp-cbx"
+              id={"policy"}
+              type="checkbox"
+              checked={acceptedTerms}
+              disabled={!hasScrolledToBottom}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+            />
+            <label class="cbx" for={"policy"}>
+              <span>
+                <svg width="12px" height="10px"></svg>
+              </span>
+              <span>I have read and agree to the Terms & Conditions</span>
+            </label>
+            <svg class="inline-svg">
+              <symbol id="check-4" viewBox="0 0 12 10">
+                <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+              </symbol>
+            </svg>
+          </div>
+          {/* <label className="terms-checkbox">
             <input
               type="checkbox"
               checked={acceptedTerms}
@@ -737,7 +760,7 @@ const UserForm = ({
               onChange={(e) => setAcceptedTerms(e.target.checked)}
             />
             I have read and agree to the Terms & Conditions
-          </label>
+          </label> */}
           {!hasScrolledToBottom && (
             <p className="scroll-msg">Please scroll to bottom.</p>
           )}

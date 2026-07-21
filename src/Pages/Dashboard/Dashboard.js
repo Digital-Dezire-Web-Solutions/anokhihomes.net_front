@@ -85,7 +85,7 @@ const Dashboard = ({ setAlert, mood, data }) => {
 
     if (mood === "admin" || mood === "staff") return true;
 
-    return item.userType.includes(mood);
+    return item.userType?.includes(mood);
   });
 
   const [index, setIndex] = useState(0);

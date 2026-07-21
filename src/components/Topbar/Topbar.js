@@ -18,6 +18,7 @@ import {
   getAccountDetails,
   getNotifications,
   getNotificationsCount,
+  getOffers,
   readNotification,
 } from "../../Redux/Slices/AppSlices";
 import NiDrawr from "../../icons/ni-drawr";
@@ -27,13 +28,13 @@ import PosterView from "./PosterView";
 
 function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const dispatch = useDispatch();
-  const { userDetail, notificationsCount, notifications } = useSelector(
-    (state) => state.app,
-  );
+  const { userDetail, notificationsCount, notifications, offersData } =
+    useSelector((state) => state.app);
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getNotificationsCount());
     dispatch(getNotifications());
+    dispatch(getOffers());
   }, []);
 
   const currentUser = userDetail;
@@ -69,7 +70,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
 
   const handleLogout = () => {
     navigate("/");
-    setMood(" ");
+    setMood("");
     localStorage.removeItem("token");
   };
 
@@ -84,8 +85,6 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
       .trim()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-
-  // console.log(notificationsCount?.unread, "notificationsCount");
 
   return (
     <div className="topbar">
@@ -243,7 +242,7 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
             />
 
             <div className="sidebar-content">
-              <PosterView />
+              <PosterView offersData={offersData} />
             </div>
           </div>
         </div>
