@@ -7,7 +7,7 @@ import axios from "axios";
 
 const Login = ({ mood }) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ const Login = ({ mood }) => {
       setLoading(true);
       setError("");
       const res = await axios.post(`${Host}/api/auth/login`, {
-        email,
+        loginId,
         password,
       });
       // console.log(res.data, "data");
@@ -51,9 +51,10 @@ const Login = ({ mood }) => {
         <p>Access your account quickly and securely.</p>
 
         <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Email or Referral ID"
+          value={loginId}
+          onChange={(e) => setLoginId(e.target.value)}
         />
         <div className="password-field">
           <input
