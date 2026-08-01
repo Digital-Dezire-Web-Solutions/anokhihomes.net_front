@@ -19,6 +19,8 @@ import {
 import { uploadImage } from "../LandingSetting/LandingApi";
 import NiEdit from "../../icons/ni-edit";
 import NiDelete from "../../icons/ni-delete";
+import NiTick from "../../icons/ni-tick";
+import NiCross from "../../icons/ni-cross";
 
 const Profile = ({ mood, currentUser, setAlert }) => {
   const location = useLocation();
@@ -36,6 +38,8 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   let userData = userById;
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [formData, setFormData] = useState();
+  const [editingName, setEditingName] = useState(false);
+  const [name, setName] = useState("");
   // console.log(userId, "userId")
 
   /* ================= SAFETY ================= */
@@ -44,10 +48,16 @@ const Profile = ({ mood, currentUser, setAlert }) => {
     if (!userData) navigate("/dashboard");
   }, [userData, navigate]);
 
+  useEffect(() => {
+    if (userData) {
+      setName(userData.name || "");
+    }
+  }, [userData]);
+
   //   if (!userData) return null;
 
-  const isOwnProfile = userDetail?._id === userData;
-  // console.log(isOwnProfile, "isOwnProfile")
+  const isOwnProfile = userDetail?._id === userData?._id;
+  console.log(isOwnProfile, "isOwnProfile");
 
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -75,7 +85,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         }),
       ).unwrap();
       dispatch(getAccountDetails());
-      dispatch(getUserById(userData));
+      dispatch(getUserById(userDetail._id));
       // userData.avatar = result.avatar;
       setAlert({
         message: "Profile photo updated",
@@ -107,7 +117,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         }),
       ).unwrap();
       dispatch(getAccountDetails());
-      dispatch(getUserById(userData));
+      dispatch(getUserById(userDetail._id));
 
       setAlert({
         message: "Profile photo removed",
@@ -123,6 +133,54 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         status: "Error",
       });
       setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
+  const handleUpdateName = async () => {
+    if (!name.trim()) {
+      return setAlert({
+        message: "Name cannot be empty",
+        status: "Error",
+      });
+    }
+
+    try {
+      setAvatarUploading(true);
+
+      const result = await dispatch(
+        updateUser({
+          id: userData._id,
+          data: {
+            name: name.trim(),
+          },
+        }),
+      ).unwrap();
+
+      if (userId) {
+        dispatch(getUserById(userId));
+      } else {
+        dispatch(getAccountDetails());
+      }
+
+      setEditingName(false);
+
+      setAlert({
+        message: "Name updated successfully",
+        status: "Success",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+    } catch (err) {
+      console.log(err);
+
+      setAlert({
+        message: "Failed to update name",
+        status: "Error",
+      });
+
+      setTimeout(() => setAlert(null), 3000);
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -307,7 +365,55 @@ const Profile = ({ mood, currentUser, setAlert }) => {
                   </div>
                 )}
               </div>
-              <h3>{userData.name}</h3>
+              <div
+                className="plot-modal"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                {editingName ? (
+                  <div className="field">
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                    <div className="profilename-btn">
+                      <span
+                        style={{ cursor: "pointer", color: "#16a34a" }}
+                        onClick={handleUpdateName}
+                      >
+                        <NiTick />
+                      </span>
+
+                      <span
+                        style={{ cursor: "pointer", color: "#ef4444" }}
+                        onClick={() => {
+                          setEditingName(false);
+                          setName(userData.name);
+                        }}
+                      >
+                        <NiCross />
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h3 style={{ margin: 0 }}>{userData.name}</h3>
+
+                    {mood === "admin" && (
+                      <span
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setEditingName(true)}
+                      >
+                        <NiEdit />
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
               <p className="role">
                 {userData.role === "staff"
                   ? "Staff"

@@ -59,7 +59,16 @@
 .profile-main {
   width: 75%;
 }
-
+.profilename-btn{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+.profilename-btn svg{
+ width: 25px;
+ height: 25px;
+}
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

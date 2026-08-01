@@ -37,6 +37,7 @@ const Overview = ({ userData, mood, setAlert }) => {
   const [formData, setFormData] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
+  const [editPhone, setEditPhone] = useState(false);
   const [editKyc, setEditKyc] = useState(false);
   const [editBank, setEditBank] = useState(false);
   const [editNominee, setEditNominee] = useState(false);
@@ -105,6 +106,7 @@ const Overview = ({ userData, mood, setAlert }) => {
   }, [localUser, staffRoles]);
 
   const [editData, setEditData] = useState({
+    phone: localUser?.phone || "",
     panNumber: localUser?.panNumber || "",
     aadharNumber: localUser?.aadharNumber || "",
     panPhoto: localUser?.panPhoto || "",
@@ -133,6 +135,8 @@ const Overview = ({ userData, mood, setAlert }) => {
   useEffect(() => {
     if (localUser) {
       setEditData({
+        phone: localUser.phone || "",
+
         panNumber: localUser.panNumber || "",
         aadharNumber: localUser.aadharNumber || "",
         panPhoto: localUser?.panPhoto || "",
@@ -295,6 +299,7 @@ const Overview = ({ userData, mood, setAlert }) => {
       setEditKyc(false);
       setEditBank(false);
       setEditNominee(false);
+      setEditPhone(false);
 
       setAlert({
         message: "Details updated successfully",
@@ -485,8 +490,54 @@ const Overview = ({ userData, mood, setAlert }) => {
               <p>{localUser.email}</p>
             </div>
             <div>
-              <label>Phone</label>
-              <p>{localUser.phone}</p>
+              <label>
+                Phone
+                {mood === "admin" && localUser.role === "agent" && (
+                  <span
+                    style={{ marginLeft: 8, cursor: "pointer" }}
+                    onClick={() => setEditPhone(!editPhone)}
+                  >
+                    {editPhone ? <X /> : <NiEdit />}
+                  </span>
+                )}
+              </label>
+
+              {editPhone ? (
+                <div className="plot-modal">
+                  <div
+                    className="field"
+                    style={{ flexDirection: "row", gap: 5, alignItems:"center" }}
+                  >
+                    <input
+                      type="text"
+                      value={editData.phone || ""}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          phone: e.target.value,
+                        })
+                      }
+                    />
+                    {editPhone && (
+                      <div className="modal-actions">
+                        <button
+                          onClick={handleSave}
+                          disabled={saving}
+                          style={{
+                            padding:"8px",
+                            opacity: saving ? 0.6 : 1,
+                            cursor: saving ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {saving ? "Saving..." : <NiTick/>}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p>{localUser.phone}</p>
+              )}
             </div>
             <div>
               <label>Referral ID</label>
