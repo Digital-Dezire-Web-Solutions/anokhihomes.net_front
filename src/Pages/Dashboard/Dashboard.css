@@ -350,4 +350,30 @@
   .dashboard-box-left .user-card-box {
     grid-template-columns: repeat(1, 1fr);
   }
+  .offers-box-card{
+    flex-direction: column;
+  }
+  .offers-box-card .dashboard-box-item-left{
+    width: 100%;
+    order: 2;
+  }
+  .offers-box-card .dashboard-box-item-right{
+    order: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .offers-box-card .dashboard-box-item-right svg{
+   width: 50%;
+  }
+  .offer-carousel {
+    height: 150px;
+  }
+  .offer-carousel h4{
+  font-size: 16px !important;
+}
+  .offer-carousel p{
+  font-size: 14px !important;
+}
 }

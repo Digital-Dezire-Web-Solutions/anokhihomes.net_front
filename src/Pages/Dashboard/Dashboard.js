@@ -127,7 +127,7 @@ const Dashboard = ({ setAlert, mood, data }) => {
           <div className="dashboard-box-left">
             <h6>Configurations</h6>
 
-            <div className="dashboard-box-item card">
+            <div className="dashboard-box-item offers-box-card card">
               <div className="dashboard-box-item-left">
                 {/* <h4>Configurations of the {mood}</h4> */}
 
