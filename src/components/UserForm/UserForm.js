@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
 import NiTick from "../../icons/ni-tick";
+import congrat from "../../Assets/congratulations.png"
 
 import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
 
@@ -15,7 +16,7 @@ import {
 } from "../../Redux/Slices/AppSlices";
 
 import Host from "../../Host/Host";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, PartyPopper } from "lucide-react";
 
 const UserForm = ({
   mode = "signup",
@@ -24,6 +25,7 @@ const UserForm = ({
   setAlert,
   onSuccess,
   onClose,
+  responseMsg
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -225,7 +227,6 @@ const UserForm = ({
         isEmailVerified: false,
       });
 
-      // setStep(1);
       setAcceptedTerms(false);
       setHasScrolledToBottom(false);
       onClose?.();
@@ -236,7 +237,7 @@ const UserForm = ({
     }
   };
 
-  console.log(currentRole, "currentRole");
+  console.log(responseMsg.user, "responseMsg");
 
   return (
     <div>
@@ -521,7 +522,7 @@ const UserForm = ({
           </div>
           <div className="field">
             <input
-              type="password"
+              type="text"
               placeholder="Account Number"
               value={formData.accountNumber}
               onChange={(e) =>
@@ -776,11 +777,16 @@ const UserForm = ({
       {step === 5 && (
         <div className="approval-success">
           <div className="approval-icon">
-            <NiTick />
+            {/* <NiTick /> */}
+            <img src={congrat} alt="" />
           </div>
 
           <h2>Account Created Successfully</h2>
 
+          <p style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
+            <PartyPopper color="green" />Congratulations<strong>{responseMsg.user.name}</strong>
+          </p>
+          <p>Referral Id : <strong>{responseMsg.user.referralId}</strong></p>
           <p>Your account has been created successfully.</p>
 
           <p>

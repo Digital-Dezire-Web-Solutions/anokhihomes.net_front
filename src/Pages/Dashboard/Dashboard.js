@@ -77,13 +77,14 @@ const Dashboard = ({ setAlert, mood, data }) => {
     user: [{ label: "Download Receipt" }],
   };
 
+  console.log(offersData,"offersData")
   const visibleOffers = offersData?.filter((item) => {
     const today = new Date();
     const end = new Date(item.endDate);
 
     if (end < today) return false;
 
-    if (mood === "admin" || mood === "staff") return true;
+    if (mood === "admin" || mood === "staff" || mood === "agent") return true;
 
     return item.userType?.includes(mood);
   });

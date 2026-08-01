@@ -13,6 +13,7 @@ import UserForm from "../../components/UserForm/UserForm";
 const Signup = ({ mood, setAlert, setMood, data }) => {
   const navigate = useNavigate();
   const termsRef = useRef(null);
+  const [responseMsg, setResponseMsg] = useState(null);
 
   if (mood === "admin") {
     return (
@@ -55,6 +56,7 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
             if (!res.ok) {
               throw new Error(result.msg);
             }
+            setResponseMsg(result)
 
             if (mood === "user") {
               localStorage.setItem("token", result.token);
@@ -62,6 +64,7 @@ const Signup = ({ mood, setAlert, setMood, data }) => {
               navigate("/dashboard");
             }
           }}
+          responseMsg={responseMsg}
         />
       </div>
     </div>
