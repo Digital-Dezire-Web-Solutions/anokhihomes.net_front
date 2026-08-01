@@ -237,7 +237,6 @@ const UserForm = ({
     }
   };
 
-  console.log(responseMsg.user, "responseMsg");
 
   return (
     <div>
