@@ -77,7 +77,7 @@ const Dashboard = ({ setAlert, mood, data }) => {
     user: [{ label: "Download Receipt" }],
   };
 
-  console.log(offersData,"offersData")
+  // console.log(offersData,"offersData")
   const visibleOffers = offersData?.filter((item) => {
     const today = new Date();
     const end = new Date(item.endDate);
