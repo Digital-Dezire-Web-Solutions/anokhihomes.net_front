@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
 import NiTick from "../../icons/ni-tick";
-import congrat from "../../Assets/congratulations.png"
+import congrat from "../../Assets/congratulations.png";
 
 import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
 
@@ -25,7 +25,7 @@ const UserForm = ({
   setAlert,
   onSuccess,
   onClose,
-  responseMsg
+  responseMsg,
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -41,6 +41,11 @@ const UserForm = ({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const termsRef = useRef(null);
+  const [emailStatus, setEmailStatus] = useState(null);
+  const [phoneStatus, setPhoneStatus] = useState(null);
+
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [checkingPhone, setCheckingPhone] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -237,6 +242,57 @@ const UserForm = ({
     }
   };
 
+  useEffect(() => {
+    const checkEmail = async () => {
+      const email = formData.email.trim();
+      if (!email.includes("@") || !email.endsWith(".com")) {
+        setEmailStatus(null);
+        return;
+      }
+      try {
+        setCheckingEmail(true);
+        const res = await fetch(
+          `${Host}/api/auth/check-email/${encodeURIComponent(email)}`,
+        );
+        const data = await res.json();
+        setEmailStatus(data);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setCheckingEmail(false);
+      }
+    };
+
+    const timer = setTimeout(checkEmail, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.email]);
+
+  useEffect(() => {
+    const checkPhone = async () => {
+      const phone = formData.phone.trim();
+
+      if (phone.length !== 10) {
+        setPhoneStatus(null);
+        return;
+      }
+
+      try {
+        setCheckingPhone(true);
+        const res = await fetch(`${Host}/api/auth/check-phone/${phone}`);
+        const data = await res.json();
+        setPhoneStatus(data);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setCheckingPhone(false);
+      }
+    };
+
+    const timer = setTimeout(checkPhone, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.phone]);
 
   return (
     <div>
@@ -326,19 +382,68 @@ const UserForm = ({
                   email: e.target.value,
                 })
               }
+              style={{
+                borderColor: emailStatus
+                  ? emailStatus?.exists
+                    ? "red"
+                    : "green"
+                  : "",
+              }}
             />
+
+            {checkingEmail && (
+              <p style={{ color: "#666", fontSize: "13px" }}>
+                Checking email...
+              </p>
+            )}
+
+            {emailStatus && (
+              <p
+                style={{
+                  color: emailStatus.exists ? "red" : "green",
+                  fontSize: "13px",
+                }}
+              >
+                {emailStatus.message}
+              </p>
+            )}
           </div>
           <div className="field">
             <input
               placeholder="Phone"
+              maxLength={10}
               value={formData.phone}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  phone: e.target.value,
+                  phone: e.target.value.replace(/\D/g, ""),
                 })
               }
+              style={{
+                borderColor: phoneStatus
+                  ? phoneStatus?.exists
+                    ? "red"
+                    : "green"
+                  : "",
+              }}
             />
+
+            {checkingPhone && (
+              <p style={{ color: "#666", fontSize: "13px" }}>
+                Checking phone...
+              </p>
+            )}
+
+            {phoneStatus && (
+              <p
+                style={{
+                  color: phoneStatus.exists ? "red" : "green",
+                  fontSize: "13px",
+                }}
+              >
+                {phoneStatus.message}
+              </p>
+            )}
           </div>
           <div className="password-field">
             <input
@@ -782,10 +887,20 @@ const UserForm = ({
 
           <h2>Account Created Successfully</h2>
 
-          <p style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
-            <PartyPopper color="green" />Congratulations<strong>{responseMsg.user.name}</strong>
+          <p
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              justifyContent: "center",
+            }}
+          >
+            <PartyPopper color="green" />
+            Congratulations<strong>{responseMsg.user.name}</strong>
           </p>
-          <p>Referral Id : <strong>{responseMsg.user.referralId}</strong></p>
+          <p>
+            Referral Id : <strong>{responseMsg.user.referralId}</strong>
+          </p>
           <p>Your account has been created successfully.</p>
 
           <p>
