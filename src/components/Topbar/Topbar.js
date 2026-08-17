@@ -28,6 +28,14 @@ import PosterView from "./PosterView";
 
 function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    }
+  }, []);
+
   const { userDetail, notificationsCount, notifications, offersData } =
     useSelector((state) => state.app);
   useEffect(() => {
@@ -38,7 +46,6 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   }, []);
 
   const currentUser = userDetail;
-  const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);

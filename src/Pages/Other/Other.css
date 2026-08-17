@@ -117,6 +117,24 @@
   background: #252528;
 }
 
+
+.pagination-wrapper {
+  position: relative;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.pagination-info strong {
+  color: #222;
+  font-weight: 600;
+}
+
 .pagination {
   display: flex;
   justify-content: center;

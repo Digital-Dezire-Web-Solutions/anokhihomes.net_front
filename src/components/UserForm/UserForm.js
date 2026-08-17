@@ -845,7 +845,7 @@ const UserForm = ({
               disabled={!hasScrolledToBottom}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
             />
-            <label class="cbx" for={"policy"}>
+            <label class="cbx" for={"policy"} style={{display:"flex"}}>
               <span>
                 <svg width="12px" height="10px"></svg>
               </span>

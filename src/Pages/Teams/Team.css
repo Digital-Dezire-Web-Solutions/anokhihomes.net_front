@@ -118,6 +118,7 @@
   /* background: #fff; */
   /* border: 1px solid #ececec; */
   position: relative;
+  min-width: 350px;
 }
 
 .tree-card::before {
@@ -159,7 +160,7 @@
 
 .tree-card-body {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   flex-wrap: wrap;
   margin-top: 10px;
   font-size: 14px;
@@ -170,5 +171,8 @@
     flex-direction: column;
     gap: 5px;
     align-items: flex-start;
+  }
+  .team-tree-container {
+    overflow: auto;
   }
 }

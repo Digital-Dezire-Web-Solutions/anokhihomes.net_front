@@ -21,7 +21,7 @@ const Income = ({ mood, setAlert }) => {
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedIncome, setSelectedIncome] = useState(null);
   const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 15;
+  const ITEMS_PER_PAGE = 25;
   const [designationFilter, setDesignationFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -286,7 +286,7 @@ const Income = ({ mood, setAlert }) => {
                 ) : (
                   paginated?.map((item, index) => (
                     <div className="table-row" key={item._id}>
-                      <span>{index + 1}</span>
+                      <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
                       <span>{formatDate(item.createdAt)}</span>
                       <span>{item.user?.name} ({item.user?.referralId})</span>
                       <span>

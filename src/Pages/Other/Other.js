@@ -29,7 +29,7 @@ import NiUser from "../../icons/ni-user";
 import Stars from "../../components/Utils/Stars";
 import UserForm from "../../components/UserForm/UserForm";
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 25;
 const Other = ({ mood, setAlert, data }) => {
   const dispatch = useDispatch();
   const { users, staffRoles } = useSelector((state) => state.app);
@@ -78,17 +78,26 @@ const Other = ({ mood, setAlert, data }) => {
   const filteredData = users?.filter((item) => {
     // Role filter
     const matchesRole =
-      filter === "all" || item.role?.toLowerCase() === filter?.toLowerCase();
+      filter === "all" ||
+      item?.role?.toLowerCase() === filter.toLowerCase();
 
-    // Search filter
-    const searchValue = search.toLowerCase();
+    const searchValue = search.trim().toLowerCase();
+
+    // If search is empty, don't need to check fields
+    if (!searchValue) {
+      return matchesRole;
+    }
 
     const matchesSearch =
-      item.name.toLowerCase().includes(searchValue) ||
-      item.email?.toLowerCase().includes(searchValue) ||
-      item.phone?.includes(searchValue) ||
-      item.id.toString().includes(searchValue) ||
-      item.user.toLowerCase().includes(searchValue);
+      item?.name?.toLowerCase().includes(searchValue) ||
+      item?.email?.toLowerCase().includes(searchValue) ||
+      item?.phone?.toString().includes(searchValue) ||
+      item?._id?.toString().toLowerCase().includes(searchValue) ||
+      item?.id?.toString().toLowerCase().includes(searchValue) ||
+      item?.user?.toLowerCase().includes(searchValue) ||
+      item?.referralId?.toLowerCase().includes(searchValue) ||
+      item?.designation?.toLowerCase().includes(searchValue) ||
+      item?.referredBy?.name?.toLowerCase().includes(searchValue);
 
     return matchesRole && matchesSearch;
   });
@@ -247,7 +256,7 @@ const Other = ({ mood, setAlert, data }) => {
           <div className="searchItem">
             <NiSearch />
             <input
-              placeholder="Search Nane"
+              placeholder="Search Name, Number, Referral Id..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -320,8 +329,8 @@ const Other = ({ mood, setAlert, data }) => {
             </div>
 
             {currentData?.map((item, index) => (
-              <div key={item.id} className="table-row">
-                <span>{index + 1}</span>
+              <div key={item._id} className="table-row">
+                <span>{startIndex + index + 1}</span>
                 {item?.avatar ? (
                   <img
                     src={item.avatar}
@@ -536,39 +545,57 @@ const Other = ({ mood, setAlert, data }) => {
         </div>
       )}
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={currentPage === i + 1 ? "active" : ""}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
+      <div className="pagination-wrapper">
+        <div className="pagination-info">
+          {filteredData?.length > 0 ? (
+            <>
+              Showing{" "}
+              <strong>{startIndex + 1}</strong>
+              {" – "}
+              <strong>
+                {Math.min(startIndex + ITEMS_PER_PAGE, filteredData.length)}
+              </strong>{" "}
+              of <strong>{filteredData.length}</strong> users
+            </>
+          ) : (
+            "No users found"
+          )}
         </div>
-      )}
+
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              Prev
+            </button>
+
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                className={currentPage === i + 1 ? "active" : ""}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
       <AddLocationModal
         open={open}
         onClose={() => setOpen(false)}
         title={isEditMode ? "Edit User" : "Add User"}
       >
-        <div className="auth-card" style={{ padding: "0", width:"auto", boxShadow: "none" }}>
+        <div className="auth-card" style={{ padding: "0", width: "auto", boxShadow: "none" }}>
           <UserForm
             mode="admin"
             setAlert={setAlert}
