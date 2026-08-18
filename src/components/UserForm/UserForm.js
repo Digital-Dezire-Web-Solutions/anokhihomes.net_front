@@ -152,8 +152,8 @@ const UserForm = ({
     // formData.panPhoto &&
     formData.aadharNumber &&
     // formData.aadharPhoto &&
-    formData.accountNumber &&
-    formData.ifsc &&
+    // formData.accountNumber &&
+    // formData.ifsc &&
     formData.isEmailVerified;
 
   const canFinish =
@@ -794,9 +794,19 @@ const UserForm = ({
               Please complete all nominee details.
             </p>
           )}
-          <button type="submit" disabled={!canFinish}>
-            Next
-          </button>
+          <div className="form-actions">
+            <button type="submit" disabled={!canFinish}>
+              Next
+            </button>
+
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={() => setStep(4)}
+            >
+              Skip
+            </button>
+          </div>
         </form>
       )}
       {step === 4 && (

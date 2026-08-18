@@ -157,6 +157,29 @@ const Overview = ({ userData, mood, setAlert }) => {
 
   if (!localUser) return null;
 
+  const isBankDetailsComplete =
+    Boolean(localUser.bankName?.trim()) &&
+    Boolean(localUser.accountNumber?.trim()) &&
+    Boolean(localUser.ifsc?.trim());
+
+  const isNomineeDetailsComplete =
+    Boolean(localUser.nomineeName?.trim()) &&
+    Boolean(localUser.nomineeRelation?.trim()) &&
+    Boolean(localUser.nomineeAadharNumber?.trim()) &&
+    Boolean(localUser.nomineeAadharPhoto?.trim());
+
+  // Admin can always edit.
+  // Agent can edit only while details are incomplete.
+  const canEditBank =
+    mood === "admin" ||
+    (mood === "agent" && localUser.role === "agent" && !isBankDetailsComplete);
+
+  const canEditNominee =
+    mood === "admin" ||
+    (mood === "agent" &&
+      localUser.role === "agent" &&
+      !isNomineeDetailsComplete);
+
   const handleApprove = async () => {
     setSaving(true);
     try {
@@ -506,7 +529,11 @@ const Overview = ({ userData, mood, setAlert }) => {
                 <div className="plot-modal">
                   <div
                     className="field"
-                    style={{ flexDirection: "row", gap: 5, alignItems:"center" }}
+                    style={{
+                      flexDirection: "row",
+                      gap: 5,
+                      alignItems: "center",
+                    }}
                   >
                     <input
                       type="text"
@@ -524,12 +551,12 @@ const Overview = ({ userData, mood, setAlert }) => {
                           onClick={handleSave}
                           disabled={saving}
                           style={{
-                            padding:"8px",
+                            padding: "8px",
                             opacity: saving ? 0.6 : 1,
                             cursor: saving ? "not-allowed" : "pointer",
                           }}
                         >
-                          {saving ? "Saving..." : <NiTick/>}
+                          {saving ? "Saving..." : <NiTick />}
                         </button>
                       </div>
                     )}
@@ -867,13 +894,41 @@ const Overview = ({ userData, mood, setAlert }) => {
           <div className="section-header">
             <h4>
               Bank Details
+              {canEditBank && (
+                <span
+                  style={{
+                    marginLeft: 8,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setEditBank(!editBank)}
+                >
+                  {editBank ? <X /> : <NiEdit />}
+                </span>
+              )}
+              {mood === "agent" &&
+                localUser.role === "agent" &&
+                isBankDetailsComplete && (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      color: "#16a34a",
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    ✓ Verified
+                  </span>
+                )}
+            </h4>
+            {/* <h4>
+              Bank Details
               {mood === "admin" && (
                 <span onClick={() => setEditBank(!editBank)}>
                   {" "}
                   {editBank ? <X /> : <NiEdit />}
                 </span>
               )}
-            </h4>
+            </h4> */}
 
             {/* {(mood === "admin" || mood === "staff") && (
               <button onClick={() => setEditBank(!editBank)}>
@@ -948,13 +1003,41 @@ const Overview = ({ userData, mood, setAlert }) => {
           </div>
 
           <div className="section-header">
-            <h4>
+            {/* <h4>
               Nominee Details{" "}
               {mood === "admin" && (
                 <span onClick={() => setEditNominee(!editNominee)}>
                   {editNominee ? <X /> : <NiEdit />}
                 </span>
               )}
+            </h4> */}
+            <h4>
+              Nominee Details
+              {canEditNominee && (
+                <span
+                  style={{
+                    marginLeft: 8,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setEditNominee(!editNominee)}
+                >
+                  {editNominee ? <X /> : <NiEdit />}
+                </span>
+              )}
+              {mood === "agent" &&
+                localUser.role === "agent" &&
+                isNomineeDetailsComplete && (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      color: "#16a34a",
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    ✓ Verified
+                  </span>
+                )}
             </h4>
 
             {/* {(mood === "admin" || mood === "staff") && (
@@ -1087,6 +1170,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                 style={{
                   opacity: saving ? 0.6 : 1,
                   cursor: saving ? "not-allowed" : "pointer",
+                  marginBottom:"1rem"
                 }}
               >
                 {saving ? "Saving..." : "Save Changes"}
