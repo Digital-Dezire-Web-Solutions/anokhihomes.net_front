@@ -16,7 +16,9 @@ import {
 } from "../../Redux/Slices/AppSlices";
 
 import Host from "../../Host/Host";
-import { ChevronLeft, PartyPopper } from "lucide-react";
+import { ChevronLeft, PartyPopper, X } from "lucide-react";
+import VerifyModal from "../Modals/VerifyModal";
+import PanCard from "./PanCard";
 
 const UserForm = ({
   mode = "signup",
@@ -47,6 +49,32 @@ const UserForm = ({
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [checkingPhone, setCheckingPhone] = useState(false);
 
+  const [panVerified, setPanVerified] = useState(false);
+  const [panVerifying, setPanVerifying] = useState(false);
+
+  const [aadhaarVerified, setAadhaarVerified] = useState(false);
+  const [aadhaarSendingOtp, setAadhaarSendingOtp] = useState(false);
+  const [aadhaarVerifying, setAadhaarVerifying] = useState(false);
+
+  const [aadhaarOtpSent, setAadhaarOtpSent] = useState(false);
+  const [aadhaarOtp, setAadhaarOtp] = useState("");
+  const [aadhaarReferenceId, setAadhaarReferenceId] = useState("");
+
+  const [panModalOpen, setPanModalOpen] = useState(false);
+  const [aadhaarModalOpen, setAadhaarModalOpen] = useState(false);
+
+  const [panVerifyData, setPanVerifyData] = useState({
+    name: "",
+    dob: "",
+    pan: "",
+  });
+
+  const [aadhaarVerifyData, setAadhaarVerifyData] = useState({
+    aadhaar: "",
+  });
+
+  const [aadhaarOtpVerified, setAadhaarOtpVerified] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -58,6 +86,8 @@ const UserForm = ({
     password: "",
 
     address: "",
+
+    dob: "",
 
     panNumber: "",
     panPhoto: null,
@@ -138,6 +168,252 @@ const UserForm = ({
     }));
   };
 
+  const formatDobForPan = (date) => {
+    if (!date) return "";
+
+    const [year, month, day] = date.split("-");
+
+    return `${day}/${month}/${year}`;
+  };
+
+  /* ================= PAN VERIFY ================= */
+  const handlePanVerify = async () => {
+    const pan = panVerifyData.pan.trim().toUpperCase();
+    const name = panVerifyData.name.trim();
+    const dob = formatDobForPan(panVerifyData.dob);
+
+    if (!name || !dob) {
+      setAlert({
+        message: "Name and date of birth are required",
+        status: "Error",
+      });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+      setAlert({
+        message: "Enter a valid PAN number",
+        status: "Error",
+      });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    try {
+      setPanVerifying(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${Host}/api/kyc/panverify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "auth-token": token }),
+        },
+        body: JSON.stringify({ pan, name, dob }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.message || "PAN verification failed");
+      }
+
+      const apiData = result?.data;
+
+      const verified =
+        apiData?.verified === true ||
+        apiData?.success === true ||
+        apiData?.status === true ||
+        apiData?.data?.verified === true ||
+        apiData?.data?.success === true ||
+        apiData?.data?.status === true;
+
+      if (!verified) {
+        setPanVerified(false);
+        setAlert({
+          message:
+            apiData?.message || apiData?.msg || "PAN verification failed",
+          status: "Error",
+        });
+        setTimeout(() => setAlert(null), 3000);
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        name,
+        dob,
+        panNumber: pan,
+      }));
+
+      setPanVerified(true);
+      setPanModalOpen(false);
+
+      setAlert({
+        message: "PAN verified successfully",
+        status: "Success",
+      });
+      setTimeout(() => setAlert(null), 3000);
+    } catch (error) {
+      setPanVerified(false);
+      setAlert({
+        message: error.message || "PAN verification failed",
+        status: "Error",
+      });
+      setTimeout(() => setAlert(null), 3000);
+    } finally {
+      setPanVerifying(false);
+    }
+  };
+
+  /* ================= AADHAAR SEND OTP ================= */
+
+  const handleAadhaarSendOtp = async () => {
+    const aadhaar = aadhaarVerifyData.aadhaar.trim();
+
+    if (!/^\d{12}$/.test(aadhaar)) {
+      setAlert({
+        message: "Enter a valid 12 digit Aadhaar number",
+        status: "Error",
+      });
+      return;
+    }
+
+    try {
+      setAadhaarSendingOtp(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${Host}/api/kyc/aadhaar/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "auth-token": token }),
+        },
+        body: JSON.stringify({
+          aadhaar_number: aadhaar,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.message || "Failed to send Aadhaar OTP");
+      }
+
+      const apiData = result?.data;
+
+      const referenceId =
+        apiData?.reference_id ||
+        apiData?.referenceId ||
+        apiData?.data?.reference_id ||
+        apiData?.data?.referenceId;
+
+      if (!referenceId) {
+        throw new Error("Reference ID was not received");
+      }
+
+      setAadhaarReferenceId(referenceId);
+      setAadhaarOtpSent(true);
+
+      setFormData((prev) => ({
+        ...prev,
+        aadharNumber: aadhaar,
+      }));
+
+      setAlert({
+        message: "OTP sent successfully",
+        status: "Success",
+      });
+    } catch (error) {
+      setAlert({
+        message: error.message || "Failed to send Aadhaar OTP",
+        status: "Error",
+      });
+    } finally {
+      setAadhaarSendingOtp(false);
+    }
+  };
+
+  /* ================= AADHAAR VERIFY OTP ================= */
+
+  const handleAadhaarVerifyOtp = async () => {
+    if (!aadhaarReferenceId) {
+      setAlert({
+        message: "Please send OTP first",
+        status: "Error",
+      });
+      return;
+    }
+
+    if (!/^\d{4,8}$/.test(aadhaarOtp)) {
+      setAlert({
+        message: "Enter a valid OTP",
+        status: "Error",
+      });
+      return;
+    }
+
+    try {
+      setAadhaarVerifying(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${Host}/api/kyc/aadhaar/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "auth-token": token }),
+        },
+        body: JSON.stringify({
+          reference_id: aadhaarReferenceId,
+          otp: aadhaarOtp,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.message || "Aadhaar verification failed");
+      }
+
+      const apiData = result?.data;
+
+      const verified =
+        apiData?.verified === true ||
+        apiData?.success === true ||
+        apiData?.status === true ||
+        apiData?.data?.verified === true ||
+        apiData?.data?.success === true ||
+        apiData?.data?.status === true;
+
+      if (!verified) {
+        throw new Error(
+          apiData?.message || apiData?.msg || "Aadhaar verification failed",
+        );
+      }
+
+      setAadhaarVerified(true);
+      setAadhaarOtpVerified(true);
+
+      setAlert({
+        message: "Aadhaar verified successfully",
+        status: "Success",
+      });
+    } catch (error) {
+      setAadhaarVerified(false);
+
+      setAlert({
+        message: error.message || "Aadhaar verification failed",
+        status: "Error",
+      });
+    } finally {
+      setAadhaarVerifying(false);
+    }
+  };
+
   /* ================= VALIDATIONS ================= */
   const canGoStep2 =
     formData.name &&
@@ -200,12 +476,25 @@ const UserForm = ({
         panPhoto: panPhotoUrl,
         aadharPhoto: aadharPhotoUrl,
         nomineeAadharPhoto: nomineePhotoUrl,
+        panVerified,
+        aadhaarVerified,
       };
 
       await onSuccess(payload);
       if (role !== "user" && mode === "signup") {
         setStep(5);
       }
+
+      setPanVerified(false);
+      setPanVerifying(false);
+
+      setAadhaarVerified(false);
+      setAadhaarSendingOtp(false);
+      setAadhaarVerifying(false);
+
+      setAadhaarOtpSent(false);
+      setAadhaarOtp("");
+      setAadhaarReferenceId("");
 
       setSaving(false);
       setFormData({
@@ -215,19 +504,26 @@ const UserForm = ({
         referralId: "",
         password: "",
         position: "",
+
         address: "",
+        dob: "",
+
         panNumber: "",
         panPhoto: null,
+
         aadharNumber: "",
         aadharPhoto: null,
+
         bankName: "",
         accountNumber: "",
         confirmAccountNumber: "",
         ifsc: "",
+
         nomineeName: "",
         nomineeRelation: "",
         nomineeAadharNumber: "",
         nomineeAadharPhoto: null,
+
         emailOtp: "",
         isEmailVerified: false,
       });
@@ -294,580 +590,674 @@ const UserForm = ({
     return () => clearTimeout(timer);
   }, [formData.phone]);
 
+  const openPanModal = () => {
+    setPanVerifyData({
+      name: formData.name || "",
+      dob: formData.dob || "",
+      pan: formData.panNumber || "",
+    });
+
+    setPanModalOpen(true);
+  };
+
+  const openAadhaarModal = () => {
+    setAadhaarVerifyData({
+      aadhaar: formData.aadharNumber || "",
+    });
+
+    setAadhaarOtp("");
+    setAadhaarOtpSent(false);
+    setAadhaarReferenceId("");
+    setAadhaarOtpVerified(false);
+
+    setAadhaarModalOpen(true);
+  };
+
   return (
-    <div>
-      {mode === "signup" && (
-        <div className="auth-header">
-          {step !== 1 && role === "agent" && (
-            <ChevronLeft
-              className="back-button"
-              onClick={() => setStep(step - 1)}
-            />
-          )}
-          <h2>{role === "agent" ? "Associate Signup" : "Signup"}</h2>
-        </div>
-      )}
-      {(mode === "admin" || mode === "staff") && (
-        <div className="field">
-          <label>User Type</label>
-
-          <select
-            value={formData.role || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                role: e.target.value,
-              })
-            }
-          >
-            <option value="">Select User Type</option>
-            <option value="user">Customer</option>
-            <option value="agent">Associate</option>
-            <option value="staff">Staff</option>
-          </select>
-        </div>
-      )}
-
-      {(currentRole === "agent" || currentRole === "staff") && step <= 4 && (
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {step !== 1 && mode !== "signup" && (
-            <ChevronLeft
-              className="back-button"
-              onClick={() => setStep(step - 1)}
-            />
-          )}
-          <p>Step {step} of 4</p>
-        </div>
-      )}
-
-      {(currentRole === "user" || step === 1) && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-
-            if (currentRole === "user") {
-              handleFinish(e);
-            } else {
-              setStep(2);
-            }
-          }}
-        >
-          <div className="field">
-            <input
-              placeholder="Name (as per Aadhaar)"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  email: e.target.value,
-                })
-              }
-              style={{
-                borderColor: emailStatus
-                  ? emailStatus?.exists
-                    ? "red"
-                    : "green"
-                  : "",
-              }}
-            />
-
-            {checkingEmail && (
-              <p style={{ color: "#666", fontSize: "13px" }}>
-                Checking email...
-              </p>
-            )}
-
-            {emailStatus && (
-              <p
-                style={{
-                  color: emailStatus.exists ? "red" : "green",
-                  fontSize: "13px",
-                }}
-              >
-                {emailStatus.message}
-              </p>
-            )}
-          </div>
-          <div className="field">
-            <input
-              placeholder="Phone"
-              maxLength={10}
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  phone: e.target.value.replace(/\D/g, ""),
-                })
-              }
-              style={{
-                borderColor: phoneStatus
-                  ? phoneStatus?.exists
-                    ? "red"
-                    : "green"
-                  : "",
-              }}
-            />
-
-            {checkingPhone && (
-              <p style={{ color: "#666", fontSize: "13px" }}>
-                Checking phone...
-              </p>
-            )}
-
-            {phoneStatus && (
-              <p
-                style={{
-                  color: phoneStatus.exists ? "red" : "green",
-                  fontSize: "13px",
-                }}
-              >
-                {phoneStatus.message}
-              </p>
-            )}
-          </div>
-          <div className="password-field">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  password: e.target.value,
-                })
-              }
-            />
-
-            <span
-              className="password-eye"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <NiClosseye /> : <NiOpenEye />}
-            </span>
-          </div>
-          {errorMsg && <p style={{ color: "red" }}>{errorMsg?.msg}</p>}
-          {currentRole === "agent" && (
-            <>
-              <input
-                placeholder="Referral Code"
-                value={formData.referralId}
-                onChange={(e) =>
-                  handleReferralCheck(e.target.value.toUpperCase())
-                }
+    <>
+      <div>
+        {mode === "signup" && (
+          <div className="auth-header">
+            {step !== 1 && role === "agent" && (
+              <ChevronLeft
+                className="back-button"
+                onClick={() => setStep(step - 1)}
               />
+            )}
+            <h2>{role === "agent" ? "Associate Signup" : "Signup"}</h2>
+          </div>
+        )}
+        {(mode === "admin" || mode === "staff") && (
+          <div className="field">
+            <label>User Type</label>
 
-              {referalMsg &&
-                (referalMsg.payload?.msg ? (
-                  <p style={{ color: "red" }}>{referalMsg.payload.msg}</p>
-                ) : (
-                  <p style={{ color: "green" }}>
-                    Referred by :{referalMsg.payload?.name}
-                  </p>
-                ))}
-
-              <select
-                value={formData.position}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    position: e.target.value,
-                  })
-                }
-              >
-                <option value="">Select Position</option>
-
-                <option value="left">Left</option>
-
-                <option value="right">Right</option>
-              </select>
-            </>
-          )}
-          {currentRole === "staff" && (
             <select
-              value={formData.staffRole || ""}
+              value={formData.role || ""}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-
-                  staffRole: e.target.value,
+                  role: e.target.value,
                 })
               }
             >
-              <option value="">Select Staff Role</option>
-
-              {staffRoles?.map((role) => (
-                <option key={role._id} value={role._id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            type="submit 1"
-            disabled={
-              currentRole === "agent" ||
-              currentRole === "" ||
-              currentRole === undefined
-                ? !canGoStep2
-                : false
-            }
-          >
-            {currentRole === "user" ? "Register" : "Next"}
-          </button>
-          {mode === "signup" && (
-            <p className="auth-footer">
-              Already have account? <Link to="/login">Sign in</Link>
-            </p>
-          )}
-        </form>
-      )}
-      {step === 2 && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStep(3);
-          }}
-        >
-          <div className="field">
-            <input
-              placeholder="Address"
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  address: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              placeholder="PAN Number"
-              value={formData.panNumber}
-              maxLength={10}
-              onChange={(e) => {
-                const value = e.target.value
-                  .toUpperCase()
-                  .replace(/[^A-Z0-9]/g, "");
-
-                setFormData({
-                  ...formData,
-                  panNumber: value,
-                });
-              }}
-            />
-          </div>
-          <div className="field">
-            <label>PAN Card</label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload("panPhoto", e.target.files[0])}
-            />
-          </div>
-          <div className="field">
-            <input
-              placeholder="Aadhaar Number"
-              maxLength={12}
-              value={formData.aadharNumber}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "");
-
-                setFormData({
-                  ...formData,
-                  aadharNumber: value,
-                });
-              }}
-            />
-          </div>
-          <div className="field">
-            <label>Aadhaar Card</label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                handleFileUpload("aadharPhoto", e.target.files[0])
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              placeholder="Bank Name"
-              value={formData.bankName}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  bankName: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              type="text"
-              placeholder="Account Number"
-              value={formData.accountNumber}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  accountNumber: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              type="password"
-              placeholder="Confirm Account Number"
-              className={
-                formData.confirmAccountNumber
-                  ? isAccountMatch
-                    ? "input-success"
-                    : "input-error"
-                  : ""
-              }
-              value={formData.confirmAccountNumber}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  confirmAccountNumber: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <input
-              placeholder="IFSC Code"
-              value={formData.ifsc}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  ifsc: e.target.value,
-                })
-              }
-            />
-          </div>
-          <p className="email-otp-messge">Check your email for OTP</p>
-
-          <div className="otp-box">
-            <input
-              placeholder="Enter OTP"
-              value={formData.emailOtp}
-              disabled={formData.isEmailVerified}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  emailOtp: e.target.value,
-                })
-              }
-            />
-
-            <button
-              type="button"
-              onClick={verifyOtp}
-              disabled={formData.isEmailVerified}
-            >
-              {formData.isEmailVerified ? "Verified" : "Verify"}
-            </button>
-          </div>
-          {!formData.isEmailVerified && (
-            <p
-              className="email-otp-messge"
-              style={{
-                color: "red",
-                cursor: "pointer",
-              }}
-            >
-              Resend OTP
-            </p>
-          )}
-          <button type="submit" disabled={!canGoStep3}>
-            Next
-          </button>
-        </form>
-      )}
-      {step === 3 && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStep(4);
-          }}
-        >
-          <div className="field">
-            <input
-              placeholder="Nominee Name"
-              value={formData.nomineeName}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  nomineeName: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="field">
-            <select
-              value={formData.nomineeRelation}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  nomineeRelation: e.target.value,
-                })
-              }
-            >
-              <option value="">Select Relation</option>
-              <option value="wife">Wife</option>
-              <option value="husband">Husband</option>
-              <option value="father">Father</option>
-              <option value="mother">Mother</option>
-              <option value="son">Son</option>
-              <option value="daughter">Daughter</option>
-              <option value="brother">Brother</option>
-              <option value="sister">Sister</option>
+              <option value="">Select User Type</option>
+              <option value="user">Customer</option>
+              <option value="agent">Associate</option>
+              <option value="staff">Staff</option>
             </select>
           </div>
-          <div className="field">
-            <input
-              placeholder="Nominee Aadhaar Number"
-              maxLength={12}
-              value={formData.nomineeAadharNumber}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "");
+        )}
 
-                setFormData({
-                  ...formData,
-                  nomineeAadharNumber: value,
-                });
-              }}
-            />
-          </div>
-          <div className="field">
-            <label>Nominee Aadhaar</label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                handleFileUpload("nomineeAadharPhoto", e.target.files[0])
-              }
-            />
-          </div>
-          {formData.nomineeAadharPhoto && (
-            <p
-              style={{
-                color: "green",
-                fontSize: "13px",
-              }}
-            >
-              ✔ Aadhaar Uploaded
-            </p>
-          )}
-          {!canFinish && (
-            <p
-              style={{
-                color: "red",
-                fontSize: "13px",
-              }}
-            >
-              Please complete all nominee details.
-            </p>
-          )}
-          <div className="form-actions">
-            <button type="submit" disabled={!canFinish}>
-              Next
-            </button>
-
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={() => setStep(4)}
-            >
-              Skip
-            </button>
-          </div>
-        </form>
-      )}
-      {step === 4 && (
-        <form onSubmit={handleFinish}>
+        {(currentRole === "agent" || currentRole === "staff") && step <= 4 && (
           <div
-            ref={termsRef}
-            className="terms-box"
-            onScroll={(e) => {
-              const target = e.target;
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {step !== 1 && mode !== "signup" && (
+              <ChevronLeft
+                className="back-button"
+                onClick={() => setStep(step - 1)}
+              />
+            )}
+            <p>Step {step} of 4</p>
+          </div>
+        )}
 
-              if (
-                target.scrollTop + target.clientHeight >=
-                target.scrollHeight - 5
-              ) {
-                setHasScrolledToBottom(true);
+        {(currentRole === "user" || step === 1) && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+
+              if (currentRole === "user") {
+                handleFinish(e);
+              } else {
+                setStep(2);
               }
             }}
           >
-            <h4>Terms & Conditions</h4>
+            <div className="field">
+              <input
+                placeholder="Name (as per Pan)"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    name: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="field">
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    email: e.target.value,
+                  })
+                }
+                style={{
+                  borderColor: emailStatus
+                    ? emailStatus?.exists
+                      ? "red"
+                      : "green"
+                    : "",
+                }}
+              />
 
-            {data?.policies?.termcondition?.sections?.map((section) => (
-              <div key={section._id}>
-                {section.heading && <h5>{section.heading}</h5>}
+              {checkingEmail && (
+                <p style={{ color: "#666", fontSize: "13px" }}>
+                  Checking email...
+                </p>
+              )}
 
-                {section.content && <p>{section.content}</p>}
-              </div>
-            ))}
-            <hr />
+              {emailStatus && (
+                <p
+                  style={{
+                    color: emailStatus.exists ? "red" : "green",
+                    fontSize: "13px",
+                  }}
+                >
+                  {emailStatus.message}
+                </p>
+              )}
+            </div>
+            <div className="field">
+              <input
+                placeholder="Phone"
+                maxLength={10}
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    phone: e.target.value.replace(/\D/g, ""),
+                  })
+                }
+                style={{
+                  borderColor: phoneStatus
+                    ? phoneStatus?.exists
+                      ? "red"
+                      : "green"
+                    : "",
+                }}
+              />
 
-            <h4>Privacy Policy</h4>
+              {checkingPhone && (
+                <p style={{ color: "#666", fontSize: "13px" }}>
+                  Checking phone...
+                </p>
+              )}
 
-            {data?.policies?.privacy?.sections?.map((section) => (
-              <div key={section._id}>
-                {section.heading && <h5>{section.heading}</h5>}
+              {phoneStatus && (
+                <p
+                  style={{
+                    color: phoneStatus.exists ? "red" : "green",
+                    fontSize: "13px",
+                  }}
+                >
+                  {phoneStatus.message}
+                </p>
+              )}
+            </div>
+            <div className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    password: e.target.value,
+                  })
+                }
+              />
 
-                {section.content && <p>{section.content}</p>}
-              </div>
-            ))}
-          </div>
-          <div class="checkbox-wrapper-4">
-            <input
-              class="inp-cbx"
-              id={"policy"}
-              type="checkbox"
-              checked={acceptedTerms}
-              disabled={!hasScrolledToBottom}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-            />
-            <label class="cbx" for={"policy"} style={{display:"flex"}}>
-              <span>
-                <svg width="12px" height="10px"></svg>
+              <span
+                className="password-eye"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <NiClosseye /> : <NiOpenEye />}
               </span>
-              <span>I have read and agree to the Terms & Conditions</span>
-            </label>
-            <svg class="inline-svg">
-              <symbol id="check-4" viewBox="0 0 12 10">
-                <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-              </symbol>
-            </svg>
-          </div>
-          {/* <label className="terms-checkbox">
+            </div>
+            {errorMsg && <p style={{ color: "red" }}>{errorMsg?.msg}</p>}
+            {currentRole === "agent" && (
+              <>
+                <input
+                  placeholder="Referral Code"
+                  value={formData.referralId}
+                  onChange={(e) =>
+                    handleReferralCheck(e.target.value.toUpperCase())
+                  }
+                />
+
+                {referalMsg &&
+                  (referalMsg.payload?.msg ? (
+                    <p style={{ color: "red" }}>{referalMsg.payload.msg}</p>
+                  ) : (
+                    <p style={{ color: "green" }}>
+                      Referred by :{referalMsg.payload?.name}
+                    </p>
+                  ))}
+
+                <select
+                  value={formData.position}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      position: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select Position</option>
+
+                  <option value="left">Left</option>
+
+                  <option value="right">Right</option>
+                </select>
+              </>
+            )}
+            {currentRole === "staff" && (
+              <select
+                value={formData.staffRole || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+
+                    staffRole: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Staff Role</option>
+
+                {staffRoles?.map((role) => (
+                  <option key={role._id} value={role._id}>
+                    {role.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              type="submit 1"
+              disabled={
+                currentRole === "agent" ||
+                  currentRole === "" ||
+                  currentRole === undefined
+                  ? !canGoStep2
+                  : false
+              }
+            >
+              {currentRole === "user" ? "Register" : "Next"}
+            </button>
+            {mode === "signup" && (
+              <p className="auth-footer">
+                Already have account? <Link to="/login">Sign in</Link>
+              </p>
+            )}
+          </form>
+        )}
+        {step === 2 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep(3);
+            }}
+          >
+            {/* ================= ADDRESS ================= */}
+
+            <div className="field">
+              <input
+                placeholder="Address"
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    address: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            {/* ================= DATE OF BIRTH ================= */}
+
+            {/* <div className="field">
+              <label>Date of Birth</label>
+
+              <input
+                type="date"
+                value={formData.dob}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    dob: e.target.value,
+                  })
+                }
+              />
+            </div> */}
+
+            {/* ================= PAN ================= */}
+
+            <div className="field">
+              <label>PAN Verification</label>
+
+              {panVerified ? (
+                <span style={{
+                  color: "green",
+                  fontWeight: "500",
+                  padding: "10px",
+                  margin: "8px 0",
+                  borderRadius: "1.125rem",
+                  border: "1px solid #bcbcbc2e",
+                  backgroundColor: "transparen",
+                  width: "100%",
+                  display: "flex"
+                }}>
+                  ✓ PAN Verified ({formData.panNumber})
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openPanModal}
+                  className="kyc-verify-button"
+                >
+                  Verify PAN
+                </button>
+              )}
+            </div>
+
+            {/* ================= AADHAAR ================= */}
+
+            {/* <div className="field">
+              <label>Aadhaar Verification</label>
+
+              {aadhaarVerified ? (
+                <span style={{ color: "green", fontWeight: 600 }}>
+                  ✓ Aadhaar Verified ({formData.aadharNumber})
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openAadhaarModal}
+                  className="kyc-verify-button"
+                >
+                  Verify Aadhaar
+                </button>
+              )}
+            </div> */}
+            <div className="field">
+              <input
+                placeholder="Aadhaar Number"
+                maxLength={12}
+                value={formData.aadharNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+
+                  setFormData({
+                    ...formData,
+                    aadharNumber: value,
+                  });
+                }}
+              />
+            </div>
+
+            {/* ================= AADHAAR PHOTO ================= */}
+
+            <div className="field">
+              <label>Aadhaar Card</label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload("aadharPhoto", e.target.files[0])
+                }
+              />
+            </div>
+
+            {/* ================= BANK ================= */}
+
+            <div className="field">
+              <input
+                placeholder="Bank Name"
+                value={formData.bankName}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    bankName: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <input
+                type="text"
+                placeholder="Account Number"
+                value={formData.accountNumber}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    accountNumber: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <input
+                type="password"
+                placeholder="Confirm Account Number"
+                className={
+                  formData.confirmAccountNumber
+                    ? isAccountMatch
+                      ? "input-success"
+                      : "input-error"
+                    : ""
+                }
+                value={formData.confirmAccountNumber}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirmAccountNumber: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <input
+                placeholder="IFSC Code"
+                value={formData.ifsc}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    ifsc: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            {/* ================= EMAIL OTP ================= */}
+
+            <p className="email-otp-messge">Check your email for OTP</p>
+
+            <div className="otp-box">
+              <input
+                placeholder="Enter OTP"
+                value={formData.emailOtp}
+                disabled={formData.isEmailVerified}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailOtp: e.target.value,
+                  })
+                }
+              />
+
+              <button
+              className={`${formData.isEmailVerified ? "verified" : ""}`}
+                type="button"
+                onClick={verifyOtp}
+                disabled={formData.isEmailVerified}
+              >
+                {formData.isEmailVerified ? "Verified" : "Verify"}
+              </button>
+            </div>
+
+            {!formData.isEmailVerified && (
+              <p
+                className="email-otp-messge"
+                style={{
+                  color: "red",
+                  cursor: "pointer",
+                }}
+              >
+                Resend OTP
+              </p>
+            )}
+
+            {/* ================= BUTTONS ================= */}
+
+            <div className="form-actions">
+              <button type="submit" disabled={!canGoStep3}>
+                Next
+              </button>
+
+              {/* <button
+              type="button"
+              className="btn-outline"
+              onClick={() => setStep(3)}
+            >
+              Skip
+            </button> */}
+            </div>
+          </form>
+        )}
+        {step === 3 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep(4);
+            }}
+          >
+            <div className="field">
+              <input
+                placeholder="Nominee Name"
+                value={formData.nomineeName}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nomineeName: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="field">
+              <select
+                value={formData.nomineeRelation}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nomineeRelation: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Relation</option>
+                <option value="wife">Wife</option>
+                <option value="husband">Husband</option>
+                <option value="father">Father</option>
+                <option value="mother">Mother</option>
+                <option value="son">Son</option>
+                <option value="daughter">Daughter</option>
+                <option value="brother">Brother</option>
+                <option value="sister">Sister</option>
+              </select>
+            </div>
+            <div className="field">
+              <input
+                placeholder="Nominee Aadhaar Number"
+                maxLength={12}
+                value={formData.nomineeAadharNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+
+                  setFormData({
+                    ...formData,
+                    nomineeAadharNumber: value,
+                  });
+                }}
+              />
+            </div>
+            <div className="field">
+              <label>Nominee Aadhaar</label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  handleFileUpload("nomineeAadharPhoto", e.target.files[0])
+                }
+              />
+            </div>
+            {formData.nomineeAadharPhoto && (
+              <p
+                style={{
+                  color: "green",
+                  fontSize: "13px",
+                }}
+              >
+                ✔ Aadhaar Uploaded
+              </p>
+            )}
+            {!canFinish && (
+              <p
+                style={{
+                  color: "red",
+                  fontSize: "13px",
+                }}
+              >
+                Please complete all nominee details.
+              </p>
+            )}
+            <div className="form-actions">
+              <button type="submit" disabled={!canFinish}>
+                Next
+              </button>
+
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => setStep(4)}
+              >
+                Skip
+              </button>
+            </div>
+          </form>
+        )}
+        {step === 4 && (
+          <form onSubmit={handleFinish}>
+            <div
+              ref={termsRef}
+              className="terms-box"
+              onScroll={(e) => {
+                const target = e.target;
+
+                if (
+                  target.scrollTop + target.clientHeight >=
+                  target.scrollHeight - 5
+                ) {
+                  setHasScrolledToBottom(true);
+                }
+              }}
+            >
+              <h4>Terms & Conditions</h4>
+
+              {data?.policies?.termcondition?.sections?.map((section) => (
+                <div key={section._id}>
+                  {section.heading && <h5>{section.heading}</h5>}
+
+                  {section.content && <p>{section.content}</p>}
+                </div>
+              ))}
+              <hr />
+
+              <h4>Privacy Policy</h4>
+
+              {data?.policies?.privacy?.sections?.map((section) => (
+                <div key={section._id}>
+                  {section.heading && <h5>{section.heading}</h5>}
+
+                  {section.content && <p>{section.content}</p>}
+                </div>
+              ))}
+            </div>
+            <div class="checkbox-wrapper-4">
+              <input
+                class="inp-cbx"
+                id={"policy"}
+                type="checkbox"
+                checked={acceptedTerms}
+                disabled={!hasScrolledToBottom}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label class="cbx" for={"policy"} style={{ display: "flex" }}>
+                <span>
+                  <svg width="12px" height="10px"></svg>
+                </span>
+                <span>I have read and agree to the Terms & Conditions</span>
+              </label>
+              <svg class="inline-svg">
+                <symbol id="check-4" viewBox="0 0 12 10">
+                  <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+                </symbol>
+              </svg>
+            </div>
+            {/* <label className="terms-checkbox">
             <input
               type="checkbox"
               checked={acceptedTerms}
@@ -876,55 +1266,204 @@ const UserForm = ({
             />
             I have read and agree to the Terms & Conditions
           </label> */}
-          {!hasScrolledToBottom && (
-            <p className="scroll-msg">Please scroll to bottom.</p>
-          )}
-          <button type="submit" disabled={!acceptedTerms || saving}>
-            {saving
-              ? "Saving..."
-              : mode === "signup"
-                ? "Finish Registration"
-                : "Create User"}
-          </button>
-        </form>
-      )}
-      {step === 5 && (
-        <div className="approval-success">
-          <div className="approval-icon">
-            {/* <NiTick /> */}
-            <img src={congrat} alt="" />
+            {!hasScrolledToBottom && (
+              <p className="scroll-msg">Please scroll to bottom.</p>
+            )}
+            <button type="submit" disabled={!acceptedTerms || saving}>
+              {saving
+                ? "Saving..."
+                : mode === "signup"
+                  ? "Finish Registration"
+                  : "Create User"}
+            </button>
+          </form>
+        )}
+        {step === 5 && (
+          <div className="approval-success">
+            <div className="approval-icon">
+              {/* <NiTick /> */}
+              <img src={congrat} alt="" />
+            </div>
+
+            <h2>Account Created Successfully</h2>
+
+            <p
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                justifyContent: "center",
+              }}
+            >
+              <PartyPopper color="green" />
+              Congratulations<strong>{responseMsg.user.name}</strong>
+            </p>
+            <p>
+              Referral Id : <strong>{responseMsg.user.referralId}</strong>
+            </p>
+            <p>Your account has been created successfully.</p>
+
+            <p>
+              Your account is currently <strong>under approval</strong>. Once it
+              has been reviewed and approved by the administrator, you will
+              receive a confirmation email.
+            </p>
+
+            <button className={`role-${role}`} onClick={() => navigate("/")}>
+              Go to Home
+            </button>
           </div>
+        )}
+      </div>
 
-          <h2>Account Created Successfully</h2>
-
-          <p
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              justifyContent: "center",
-            }}
-          >
-            <PartyPopper color="green" />
-            Congratulations<strong>{responseMsg.user.name}</strong>
-          </p>
-          <p>
-            Referral Id : <strong>{responseMsg.user.referralId}</strong>
-          </p>
-          <p>Your account has been created successfully.</p>
-
-          <p>
-            Your account is currently <strong>under approval</strong>. Once it
-            has been reviewed and approved by the administrator, you will
-            receive a confirmation email.
-          </p>
-
-          <button className={`role-${role}`} onClick={() => navigate("/")}>
-            Go to Home
-          </button>
+      <VerifyModal
+        open={panModalOpen}
+        onClose={() => setPanModalOpen(false)}
+        title="Verify PAN"
+      >
+        <PanCard panVerifyData={panVerifyData} formatDobForPan={formatDobForPan} />
+        <div className="field">
+          <label>Name</label>
+          <input
+            value={panVerifyData.name}
+            onChange={(e) =>
+              setPanVerifyData({
+                ...panVerifyData,
+                name: e.target.value.toUpperCase(),
+              })
+            }
+          />
         </div>
-      )}
-    </div>
+
+        <div className="field">
+          <label>Date of Birth</label>
+          <input
+            type="date"
+            value={panVerifyData.dob}
+            onChange={(e) =>
+              setPanVerifyData({
+                ...panVerifyData,
+                dob: e.target.value,
+              })
+            }
+          />
+        </div>
+
+        <div className="field">
+          <label>PAN Number</label>
+          <input
+            maxLength={10}
+            value={panVerifyData.pan}
+            onChange={(e) =>
+              setPanVerifyData({
+                ...panVerifyData,
+                pan: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""),
+              })
+            }
+          />
+        </div>
+        {/* ================= PAN PHOTO ================= */}
+
+        <div className="field">
+          <label>PAN Card</label>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileUpload("panPhoto", e.target.files[0])}
+          />
+        </div>
+        <button type="button" onClick={handlePanVerify} disabled={panVerifying}>
+          {panVerifying ? "Verifying..." : "Verify PAN"}
+        </button>
+      </VerifyModal>
+      <VerifyModal
+        open={aadhaarModalOpen}
+        onClose={() => setAadhaarModalOpen(false)}
+        title="Verify Aadhaar"
+      >
+        {!aadhaarOtpVerified ? (
+          <>
+            <div className="field">
+              <label>Aadhaar Number</label>
+
+              <input
+                maxLength={12}
+                disabled={aadhaarOtpSent}
+                value={aadhaarVerifyData.aadhaar}
+                onChange={(e) =>
+                  setAadhaarVerifyData({
+                    aadhaar: e.target.value.replace(/\D/g, ""),
+                  })
+                }
+              />
+            </div>
+
+            {!aadhaarOtpSent && (
+              <button
+                type="button"
+                onClick={handleAadhaarSendOtp}
+                disabled={
+                  aadhaarSendingOtp || aadhaarVerifyData.aadhaar.length !== 12
+                }
+              >
+                {aadhaarSendingOtp ? "Sending OTP..." : "Send OTP"}
+              </button>
+            )}
+
+            {aadhaarOtpSent && (
+              <>
+                <p style={{ color: "green" }}>OTP sent successfully.</p>
+
+                <div className="field">
+                  <label>Enter OTP</label>
+
+                  <input
+                    maxLength={8}
+                    value={aadhaarOtp}
+                    onChange={(e) =>
+                      setAadhaarOtp(e.target.value.replace(/\D/g, ""))
+                    }
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAadhaarVerifyOtp}
+                  disabled={aadhaarVerifying || !aadhaarOtp}
+                >
+                  {aadhaarVerifying ? "Verifying..." : "Verify OTP"}
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "45px",
+                color: "green",
+              }}
+            >
+              ✓
+            </div>
+
+            <h3>Aadhaar Verified Successfully</h3>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAadhaarModalOpen(false);
+                setAadhaarOtp("");
+                setAadhaarOtpSent(false);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </VerifyModal>
+    </>
   );
 };
 

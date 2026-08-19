@@ -416,6 +416,12 @@ body {
   border-radius: 1.125rem;
   margin-top: 10px;
   cursor: pointer;
+  background-color: var(--mood-color);
+  color: white;
+}
+.auth-card button:disabled {
+  background-color: #bcbcbc2e;
+  color: #646464;
 }
 
 .app.dark .auth-card .role-admin:hover,
@@ -451,7 +457,7 @@ body {
 }
 
 .auth-footer a {
-  color: #f8a32a;
+  color: var(--mood-color);
 }
 
 .password-field {
@@ -491,8 +497,8 @@ body {
   width: 40%;
 }
 button.verified {
-  background-color: #22c55e; /* green */
-  color: white;
+  background-color: var(--success-color) !important; /* green */
+  color: white !important;
   cursor: not-allowed;
   opacity: 0.9;
 }
@@ -561,7 +567,7 @@ button.verified {
   align-items: center;
   justify-content: center;
 } */
-.approval-icon img{
+.approval-icon img {
   width: 100%;
 }
 

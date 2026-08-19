@@ -1,0 +1,309 @@
+/* =========================================
+   PAN CARD
+========================================= */
+
+.pancard-card {
+  width: 100%;
+  max-width: 430px;
+  min-height: 250px;
+  margin: 0 auto 25px;
+  padding: 20px 24px;
+  box-sizing: border-box;
+
+  border-radius: 18px;
+
+  background: linear-gradient(
+    60deg,
+    #e9b5e7 0%,
+    #d8c1ed 10%,
+    #a7d7f2 80%,
+    #5fc7ed 100%
+  );
+
+  /* box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5); */
+
+  position: relative;
+  overflow: hidden;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* subtle card texture */
+
+.pancard-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.22),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(255, 255, 255, 0.16),
+      transparent 35%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.pancard-header {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+}
+
+/* Header text */
+
+.pan-title {
+  width: 40%;
+}
+
+.hindi-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #c63b76;
+  line-height: 1.2;
+}
+
+.english-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: #c63b76;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+/* =========================================
+   EMBLEM
+========================================= */
+
+.pan-emblem {
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pan-emblem img {
+  width: 40%;
+}
+
+/* =========================================
+   CARD MIDDLE
+========================================= */
+
+.pancard-middle {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 28px;
+}
+
+/* =========================================
+   PAN DETAILS
+========================================= */
+
+.pan-details {
+  flex: 1;
+  padding-right: 15px;
+}
+
+.pan-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  text-transform: uppercase;
+
+  margin-bottom: 10px;
+}
+
+.pan-dob {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+
+  margin-bottom: 20px;
+}
+
+.pan-number-title {
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #2989a5;
+
+  letter-spacing: 0.4px;
+
+  margin-bottom: 4px;
+}
+
+.pan-number {
+  font-size: 21px;
+  letter-spacing: 2px;
+
+  color: #111;
+
+  font-weight: 500;
+}
+
+/* =========================================
+   SIGNATURE
+========================================= */
+
+.pan-signature {
+  display: flex;
+  flex-direction: column;
+  width: 90px;
+}
+
+.signature-line {
+  font-family: cursive;
+  font-size: 25px;
+
+  color: #111;
+
+  height: 22px;
+  overflow: hidden;
+}
+
+.pan-signature span:last-child {
+  font-size: 10px;
+  font-weight: 600;
+  color: #2989a5;
+}
+
+/* =========================================
+   RIGHT SIDE
+========================================= */
+
+.pan-images {
+  width: 75px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 13px;
+}
+
+/* =========================================
+   HOLOGRAM
+========================================= */
+
+.pan-hologram {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 7px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(249, 248, 248, 0.625),
+    rgba(180, 180, 180, 0.841)
+  );
+
+  box-shadow:
+    inset 0 0 8px rgba(255, 255, 255, 0.8),
+    0 1px 4px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #777;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+/* =========================================
+   PHOTO
+========================================= */
+
+.pan-photo {
+  width: 70px;
+  height: 70px;
+
+  border-radius: 7px;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}
+
+.pan-photo-placeholder {
+  width: 60px;
+  height: 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 35px;
+
+  background: #d7d7d7;
+
+  color: #777;
+
+  border-radius: 4px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 500px) {
+  .pancard-card {
+    min-height: 250px;
+    padding: 17px 18px;
+  }
+
+  .hindi-title {
+    font-size: 14px;
+  }
+
+  .english-title {
+    font-size: 7px;
+  }
+
+  .pan-name {
+    font-size: 11px;
+  }
+
+  .pan-dob {
+    font-size: 10px;
+  }
+
+  .pan-number-title {
+    font-size: 9px;
+  }
+
+  .pan-number {
+    font-size: 17px;
+  }
+}

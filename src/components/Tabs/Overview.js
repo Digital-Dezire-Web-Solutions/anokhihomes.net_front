@@ -567,6 +567,10 @@ const Overview = ({ userData, mood, setAlert }) => {
               )}
             </div>
             <div>
+              <label>Date of Birth</label>
+              <p>{localUser.dob || "00/00/0000"}</p>
+            </div>
+            <div>
               <label>Referral ID</label>
               <p>{localUser.referralId}</p>
             </div>

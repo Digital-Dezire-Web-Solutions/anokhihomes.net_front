@@ -473,7 +473,7 @@ const Other = ({ mood, setAlert, data }) => {
                     <NiOpenEye />
                   </span>
 
-                  <span
+                  {/* <span
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveRow(activeRow === item._id ? null : item._id);
@@ -496,7 +496,7 @@ const Other = ({ mood, setAlert, data }) => {
                         setDeleteOpen(true);
                       }}
                     />
-                  )}
+                  )} */}
                 </div>
               </div>
               {item.role === "agent" && (
