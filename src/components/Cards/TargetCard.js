@@ -107,7 +107,7 @@ const TargetCard = ({
         </div>
 
         <div className="user-card-bottom-right">
-          <p>{item.targetBusiness}</p>
+          <p>₹{formatCurrency(item.targetBusiness)}</p>
           <p>
             ₹{formatCurrency(item.rewardCash)} / {item.rewardName}
           </p>
