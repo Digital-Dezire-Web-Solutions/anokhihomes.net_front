@@ -301,7 +301,10 @@ const OffersDiscounts = ({ mood, setAlert }) => {
       // }
 
       if (tab === "targets") {
-        response = await dispatch(updateReward(formData));
+        response = await dispatch(updateReward({
+          id: formData._id,
+          data: formData,
+        }));
       }
 
       if (tab === "cashback") {
@@ -765,7 +768,7 @@ const OffersDiscounts = ({ mood, setAlert }) => {
               ))}
               {paginated.length === 0 &&
                 <p>No Data Found</p>
-                }
+              }
             </div>
           </div>
         )}
@@ -812,6 +815,75 @@ const OffersDiscounts = ({ mood, setAlert }) => {
             }`
         }
       >
+        {tab === "targets" && (
+          <>
+            <div className="field">
+              <label>Target Business (₹)</label>
+
+              <input
+                type="number"
+                placeholder="1000000"
+                value={formData.targetBusiness || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    targetBusiness: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Reward Name</label>
+
+              <input
+                type="text"
+                placeholder="Samsung TV"
+                value={formData.rewardName || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    rewardName: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Reward Cash (₹)</label>
+
+              <input
+                type="number"
+                placeholder="10000"
+                value={formData.rewardCash || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    rewardCash: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label>Royalty (%)</label>
+
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="0"
+                value={formData.royaltyPercent || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    royaltyPercent: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+          </>
+        )}
         {tab === "cashback" && (
           <>
             <div className="field">
