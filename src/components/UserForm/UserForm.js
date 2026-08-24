@@ -564,31 +564,31 @@ const UserForm = ({
     return () => clearTimeout(timer);
   }, [formData.email]);
 
-  useEffect(() => {
-    const checkPhone = async () => {
-      const phone = formData.phone.trim();
+  // useEffect(() => {
+  //   const checkPhone = async () => {
+  //     const phone = formData.phone.trim();
 
-      if (phone.length !== 10) {
-        setPhoneStatus(null);
-        return;
-      }
+  //     if (phone.length !== 10) {
+  //       setPhoneStatus(null);
+  //       return;
+  //     }
 
-      try {
-        setCheckingPhone(true);
-        const res = await fetch(`${Host}/api/auth/check-phone/${phone}`);
-        const data = await res.json();
-        setPhoneStatus(data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setCheckingPhone(false);
-      }
-    };
+  //     try {
+  //       setCheckingPhone(true);
+  //       const res = await fetch(`${Host}/api/auth/check-phone/${phone}`);
+  //       const data = await res.json();
+  //       setPhoneStatus(data);
+  //     } catch (err) {
+  //       console.log(err);
+  //     } finally {
+  //       setCheckingPhone(false);
+  //     }
+  //   };
 
-    const timer = setTimeout(checkPhone, 500);
+  //   const timer = setTimeout(checkPhone, 500);
 
-    return () => clearTimeout(timer);
-  }, [formData.phone]);
+  //   return () => clearTimeout(timer);
+  // }, [formData.phone]);
 
   const openPanModal = () => {
     setPanVerifyData({
