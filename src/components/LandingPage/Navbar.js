@@ -9,7 +9,7 @@ import NiGallery from "../../icons/ni-gallery";
 import NiContact from "../../icons/ni-contact";
 import svgss from "../../Assets/icons/Construction crane-cuate.svg";
 import MainLogo from "../../icons/MainLogo";
-import AdminLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import AdminLogo from "../../Assets/Logo/logo-anokhi-homes.png";
 import StaffLogo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import AgentLogo from "../../Assets/Logo/logo-anokhi-home-blue.png";
 import UserLogo from "../../Assets/Logo/logo-anokhi-home-yellow.png";
