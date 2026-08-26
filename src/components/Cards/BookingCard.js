@@ -40,7 +40,7 @@ const BookingCard = ({
   const [formData, setFormData] = useState({});
   const [panelMode, setPanelMode] = useState(null);
   const [timeline, setTimeline] = useState([]);
-  const [saving, setSaving] = useState([]);
+  const [saving, setSaving] = useState();
 
   useEffect(() => {
     if (!viewOpen) {
@@ -412,7 +412,6 @@ const BookingCard = ({
 
   // console.log(paymentSummary, "paymentSummary");
   // console.log(bookingPaid, "bookingPaid")
-
   return (
     <>
       {/* ================= CARD ================= */}
