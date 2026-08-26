@@ -199,6 +199,7 @@ const BookingCard = ({
 
   // console.log(bookingProgress, "bookingProgress")
   const handleBookingAction = async (bookingId, action, note = "") => {
+    // console.log("wroking")
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
@@ -595,7 +596,7 @@ const BookingCard = ({
           (item.status === "scheduled" || item.status === "approval") && (
             <div className="modal-actions">
               <button
-                disabled={saving}
+                // disabled={saving}
                 className="site-visit-approval status active"
                 onClick={() => {
                   handleBookingAction(item._id, "approve");
@@ -681,7 +682,6 @@ const BookingCard = ({
 
               handleDeleteBooking(item._id);
             }}
-            disabled={saving}
           >
             Yes
           </button>
