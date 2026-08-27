@@ -535,7 +535,7 @@ const BookingCard = ({
               <div
                 className="progress-fill"
                 style={{
-                  width: `${item.status === "pending" || item.status === "confirmed" ? bookingProgress : 0}%`,
+                  width: `${(item.status === "pending" || item.status === "confirmed") ? bookingProgress : 0}%`,
                 }}
               >
                 <span>
@@ -556,7 +556,7 @@ const BookingCard = ({
               <div
                 className="progress-fill"
                 style={{
-                  width: `${item.status === "pending" || item.status === "confirmed" ? agreementProgress : 0}%`,
+                  width: `${(item.status === "pending" || item.status === "confirmed") ? agreementProgress : 0}%`,
                 }}
               >
                 <span>
@@ -577,7 +577,7 @@ const BookingCard = ({
               <div
                 className="progress-fill"
                 style={{
-                  width: `${item.status === "pending" || item.status === "confirmed" ? registryProgress : 0}%`,
+                  width: `${(item.status === "pending" || item.status === "confirmed") ? registryProgress : 0}%`,
                 }}
               >
                 <span>
@@ -629,6 +629,22 @@ const BookingCard = ({
             </div>
           )}
         </div>
+        {item.status === "pending" &&
+          mood !== "user"  && (
+            <div class="modal-actions">
+              <button
+                className="view-report-btn"
+                onClick={() => {
+                  setPanelMode("payment");
+                  setShowReport(false);
+                  setViewOpen(true);
+                }}
+              >
+                {paid === 0 ? "Book Now" : "Add Payment"}
+                
+              </button>
+            </div>
+          )}
       </div>
 
       <DeleteModal
@@ -803,7 +819,8 @@ const BookingCard = ({
                   setShowReport(false);
                 }}
               >
-                Book Now
+                {paid === 0 ? "Book Now" : "Add Payment"}
+                
               </button>
             </div>
           )}
@@ -938,7 +955,7 @@ const BookingCard = ({
               <p>Notes : 35% cancellation charges</p>
               <div className="modal-actions">
                 <button disabled={saving} onClick={handleAddPayment}>
-                  Add Payment
+                  {saving ? "Adding..." : "Add Payment"}
                 </button>
               </div>
             </>
