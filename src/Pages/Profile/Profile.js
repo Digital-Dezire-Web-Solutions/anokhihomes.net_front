@@ -57,7 +57,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   //   if (!userData) return null;
 
   const isOwnProfile = userDetail?._id === userData?._id;
-  console.log(isOwnProfile, "isOwnProfile");
+  // console.log(isOwnProfile, "isOwnProfile");
 
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
 

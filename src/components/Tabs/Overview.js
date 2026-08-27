@@ -501,8 +501,66 @@ const Overview = ({ userData, mood, setAlert }) => {
     (rank) => !parentRank || rank.level <= parentRank.level,
   );
 
-  // console.log(staffPermissions, "staffPermissions")
+  const hasSelfBusiness =
+    Number(localUser.selfBusiness || localUser.totalIncome) > 0;
+  const handleShiftPosition = async (agent, position) => {
+    try {
+      setSaving(true);
 
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${Host}/api/auth/shift-position/${agent._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && {
+              "auth-token": token,
+            }),
+          },
+          body: JSON.stringify({
+            position,
+          }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.msg || "Failed to shift agent");
+      }
+
+      setAlert({
+        status: "Success",
+        message: result.msg,
+      });
+
+      // Refresh users/tree
+      setLocalUser((prev) => ({
+      ...prev,
+      position: position,
+    }));
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+    } catch (error) {
+      setAlert({
+        status: "Error",
+        message: error.message || "Failed to shift agent",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // console.log(staffPermissions, "staffPermissions")
+  // console.log(hasSelfBusiness, "hasSelfBusiness");
   return (
     <div className="card overview-card">
       {localUser.role === "agent" && (
@@ -629,9 +687,34 @@ const Overview = ({ userData, mood, setAlert }) => {
             </div>
             <div>
               <label>Position</label>
-              <p style={{ textTransform: "capitalize" }}>
+              {/* <p style={{ textTransform: "capitalize" }}>
                 {localUser.position}
-              </p>
+              </p> */}
+              {!hasSelfBusiness ? (
+                mood === "admin" && (
+                  <div className="page-toggle">
+                    <span
+                      className={`${localUser.position === "left" ? "active" : ""}`}
+                      onClick={() => handleShiftPosition(localUser, "left")}
+                    >
+                      {/* <NiList /> */}
+                      Move Left
+                    </span>
+                    <span
+                      className={`${localUser.position === "right" ? "active" : ""}`}
+                      onClick={() => handleShiftPosition(localUser, "right")}
+                    >
+                      {/* <NiCard /> */}
+                      Move Right
+                    </span>
+                  </div>
+                )
+              ) : (
+                <p style={{ textTransform: "capitalize" }}>
+                  {localUser.position}
+                </p>
+              )}
+              {/* {} */}
             </div>
           </div>
           {mood === "admin" && localUser.status === "approval" && (
@@ -1174,7 +1257,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                 style={{
                   opacity: saving ? 0.6 : 1,
                   cursor: saving ? "not-allowed" : "pointer",
-                  marginBottom:"1rem"
+                  marginBottom: "1rem",
                 }}
               >
                 {saving ? "Saving..." : "Save Changes"}
@@ -1501,7 +1584,7 @@ const Overview = ({ userData, mood, setAlert }) => {
         <div className="modal-actions">
           <button
             disabled={!isPasswordFormValid}
-            disabled={saving}
+            // disabled={saving}
             style={{
               opacity: !isPasswordFormValid ? 0.5 : 1,
               cursor: !isPasswordFormValid ? "not-allowed" : "pointer",

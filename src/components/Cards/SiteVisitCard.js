@@ -348,37 +348,53 @@ const SiteVisitCard = ({
   };
 
   const handleHoldPlot = async () => {
-    setSaving(true);
-    const token = localStorage.getItem("token");
-    await axios.post(
-      `${Host}/api/plothold/${type.toLowerCase()}`,
-      {
-        colony: selectedColony._id,
-        plotId: selectedPlot._id,
-        customer: item.customer._id,
-      },
-      {
-        headers: {
-          "auth-token": token,
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${Host}/api/plothold/${type.toLowerCase()}`,
+        {
+          colony: selectedColony._id,
+          plotId: selectedPlot._id,
+          customer: item.customer._id,
         },
-      },
-    );
-    setAlert({
-      message: "Hold Request Submitted",
-      status: "Success",
-    });
-    dispatch(getSiteVisit());
+        {
+          headers: {
+            "auth-token": token,
+          },
+        },
+      );
+      setAlert({
+        message: "Hold Request Submitted",
+        status: "Success",
+      });
+      dispatch(getSiteVisit());
 
-    // reset UI
-    setViewOpen(false);
-    setSelectedPlot(null);
-    setFormData({});
-    setPanelMode(null);
+      // reset UI
+      setViewOpen(false);
+      setSelectedPlot(null);
+      setFormData({});
+      setPanelMode(null);
 
-    setTimeout(() => setAlert(null), 3000);
-    setSaving(false);
-    // setShowHoldModal(false);
-    // onClose();
+      setTimeout(() => setAlert(null), 3000);
+      setSaving(false);
+      // setShowHoldModal(false);
+      // onClose();
+    } catch (err) {
+      console.error(err);
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.msg ||
+        "Failed to submit hold request.";
+
+      setAlert({
+        message,
+        status: "Error",
+      });
+      setTimeout(() => setAlert(null), 3000);
+    } finally {
+      setSaving(false);
+    }
   };
 
   // console.log(item, "item")

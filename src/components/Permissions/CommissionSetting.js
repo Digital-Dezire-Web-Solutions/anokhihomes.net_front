@@ -70,6 +70,74 @@ const CommissionSetting = ({ setAlert }) => {
 
   const [levels, setLevels] = useState([]);
 
+  useEffect(() => {
+    if (rankData?.length) {
+      setLevels(
+        rankData.map((rank) => ({
+          _id: rank._id,
+          level: rank.level,
+          designation: rank.designation,
+          min: rank.min,
+          max: rank.max,
+          directIncome: rank.directIncome,
+        })),
+      );
+    }
+  }, [rankData]);
+
+  const updateRankSlabs = async () => {
+  try {
+    setSaving(true);
+
+    const token = localStorage.getItem("token");
+
+    for (const rank of levels) {
+      await axios.put(
+        `${Host}/api/auth/update-rank-slab/${rank.level}`,
+        {
+          min: Number(rank.min),
+          max:
+            rank.max === "" ||
+            rank.max === null ||
+            rank.max === "Infinity"
+              ? "Infinity"
+              : Number(rank.max),
+          directIncome: Number(rank.directIncome),
+          designation: rank.designation,
+        },
+        {
+          headers: {
+            "auth-token": token,
+          },
+        },
+      );
+    }
+
+    await dispatch(getRank());
+
+    setAlert({
+      status: "Success",
+      message: "Rank slabs updated successfully",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+  } catch (err) {
+    console.log(err);
+
+    setAlert({
+      status: "Error",
+      message:
+        err?.response?.data?.msg ||
+        err?.response?.data?.message ||
+        "Unable to update rank slabs",
+    });
+
+    setTimeout(() => setAlert(null), 3000);
+  } finally {
+    setSaving(false);
+  }
+};
+
   return (
     <div>
       <div className="admin-config-box">
@@ -128,74 +196,92 @@ const CommissionSetting = ({ setAlert }) => {
         </div>
         <div>
           <h4>Commission Levels</h4>
+
           <div className="levels-config card">
             <div className="level-head">
-              {/* <span>Level</span> */}
               <span>Min</span>
               <span>Max</span>
               <span>%</span>
               <span>Designation</span>
             </div>
 
-            {rankData.map((lvl, i) => (
-              <div key={i} className="level-row">
-                {/* <input
-                                    value={lvl.level}
-                                    onChange={(e) => {
-                                        const updated = [...levels];
-                                        updated[i].level = +e.target.value;
-                                        setLevels(updated);
-                                    }}
-                                /> */}
+            {levels.map((lvl, i) => (
+              <div key={lvl._id || lvl.level} className="level-row">
+                {/* MIN */}
                 <input
+                  type="number"
                   value={lvl.min}
                   onChange={(e) => {
                     const updated = [...levels];
-                    updated[i].min = +e.target.value;
+
+                    updated[i] = {
+                      ...updated[i],
+                      min: Number(e.target.value),
+                    };
+
                     setLevels(updated);
                   }}
                 />
 
+                {/* MAX */}
                 <input
-                  value={lvl.max}
+                  type="number"
+                  value={lvl.max === Infinity ? "" : lvl.max}
                   onChange={(e) => {
                     const updated = [...levels];
-                    updated[i].max = +e.target.value;
+
+                    updated[i] = {
+                      ...updated[i],
+                      max: Number(e.target.value),
+                    };
+
                     setLevels(updated);
                   }}
                 />
 
+                {/* DIRECT INCOME */}
                 <input
+                  type="number"
                   value={lvl.directIncome}
                   onChange={(e) => {
                     const updated = [...levels];
-                    updated[i].directIncome = +e.target.value;
+
+                    updated[i] = {
+                      ...updated[i],
+                      directIncome: Number(e.target.value),
+                    };
+
                     setLevels(updated);
                   }}
                 />
 
+                {/* DESIGNATION */}
                 <input
+                  type="text"
                   value={lvl.designation}
                   onChange={(e) => {
                     const updated = [...levels];
-                    updated[i].designation = e.target.value;
+
+                    updated[i] = {
+                      ...updated[i],
+                      designation: e.target.value,
+                    };
+
                     setLevels(updated);
                   }}
                 />
               </div>
             ))}
-            {/* <div className="modal-actions">
-                            <button
-                                className="btn primary"
-                                onClick={() => {
-                                    setAlert({ message: "Commission settings updated successfully!", status: "Success" });
-                                    setTimeout(() => {
-                                        setAlert(null);
-                                    }, 5000);
-                                }}>
-                                Update
-                            </button>
-                        </div> */}
+
+            <div className="modal-actions">
+              <button
+                className="btn primary"
+                disabled={saving}
+                onClick={updateRankSlabs}
+              >
+                {saving ? "Updating..." : "Update"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

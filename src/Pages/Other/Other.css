@@ -30,10 +30,14 @@
   border-radius: 20px;
   border: none;
   background: transparent;
-  color: #9f9f9f;
+  color: black;
   cursor: pointer;
   border: 1px solid #9f9f9f;
   white-space: nowrap;
+}
+
+.app.dark .table-filters button {
+  color: white;
 }
 .user-table-box {
   width: 100%;
@@ -105,7 +109,7 @@
 .dots {
   cursor: pointer;
   /* font-size: 20px; */
-  color: #9f9f9f;
+  color: var(--mood-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +120,6 @@
 .app.dark .card {
   background: #252528;
 }
-
 
 .pagination-wrapper {
   position: relative;

@@ -37,7 +37,11 @@ select {
   border: 1px solid #bcbcbc2e;
   background-color: transparent;
   border: none;
-  color: #9f9f9f;
+  color: black;
+}
+.app.dark input,
+.app.dark select {
+  color: white;
 }
 
 input:active,
