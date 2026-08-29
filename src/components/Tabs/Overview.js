@@ -1368,6 +1368,14 @@ const Overview = ({ userData, mood, setAlert }) => {
               <label>Phone</label>
               <p>{localUser.phone}</p>
             </div>
+            <div>
+              <label>Address</label>
+              <p>{localUser.address}</p>
+            </div>
+            <div>
+              <label>Created At</label>
+              <p>{formatDate(localUser.createdAt)}</p>
+            </div>
           </div>
         </div>
       )}

@@ -1,0 +1,237 @@
+/* ==========================================================
+   WRAPPER / CANVAS
+========================================================== */
+
+.team-graph-wrapper {
+  width: 100%;
+  height: 100vh;
+  background: #f0f0f0;
+}
+
+.team-graph-wrapper .react-flow__renderer {
+  background: #f0f0f0;
+}
+
+/* dotted background like the reference image */
+.team-graph-wrapper .react-flow__background {
+  background-color: #f0f0f0;
+}
+
+.team-graph-wrapper .react-flow__background circle {
+  fill: #d4d4d4;
+}
+
+/* ==========================================================
+   EDGES
+========================================================== */
+
+.team-graph-wrapper .react-flow__edge-path {
+  stroke-width: 2;
+  opacity: 0.85;
+}
+
+.team-graph-wrapper .react-flow__edge-text {
+  font-size: 10px;
+  fill: #555;
+}
+
+.team-graph-wrapper .react-flow__edge-textbg {
+  fill: #f0f0f0;
+}
+
+.team-graph-wrapper .react-flow__arrowhead path {
+  fill: #999;
+}
+
+/* ==========================================================
+   NODE — outer wrapper (circle + label stacked)
+========================================================== */
+
+.team-graph-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+  pointer-events: none; /* let clicks pass through to canvas; circle re-enables below */
+}
+
+.team-graph-node * {
+  pointer-events: auto;
+}
+
+/* ==========================================================
+   THE CIRCLE
+========================================================== */
+
+.team-graph-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  text-align: center;
+  padding: 12px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+
+  /* default (no side) */
+  background: #5b8def;
+  color: #fff;
+}
+
+.team-graph-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.team-graph-circle strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.team-graph-circle span {
+  font-size: 10px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+/* ==========================================================
+   ROOT NODE — the current agent, dead center, bigger + distinct
+========================================================== */
+
+.team-graph-root .team-graph-circle {
+  width: 160px;
+  height: 160px;
+  background: #e64545;
+  border-color: #fff;
+  box-shadow: 0 4px 14px rgba(230, 69, 69, 0.45);
+  z-index: 10;
+}
+
+.team-graph-root .team-graph-circle strong {
+  font-size: 15px;
+}
+
+/* ==========================================================
+   LEFT TEAM — teal
+========================================================== */
+
+.team-graph-left .team-graph-circle {
+  background: #1abc9c;
+}
+
+/* ==========================================================
+   RIGHT TEAM — purple
+========================================================== */
+
+.team-graph-right .team-graph-circle {
+  background: #8e5cf6;
+}
+
+/* ==========================================================
+   INFO PILL — designation + % under the circle
+========================================================== */
+
+.team-graph-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 6px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  max-width: 140px;
+  text-align: center;
+}
+
+.team-graph-info span {
+  font-size: 10px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.team-graph-info small {
+  font-size: 9px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* ==========================================================
+   HANDLES — invisible connectors (keep react-flow happy,
+   don't show ugly dots)
+========================================================== */
+
+.team-graph-handle {
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  border: none;
+  opacity: 0;
+}
+
+/* ==========================================================
+   CONTROLS / MINIMAP — restyle to match light theme
+========================================================== */
+
+.team-graph-wrapper .react-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.team-graph-wrapper .react-flow__controls-button {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.team-graph-wrapper .react-flow__controls-button:hover {
+  background: #f5f5f5;
+}
+
+.team-graph-wrapper .react-flow__controls-button svg {
+  fill: #444;
+}
+
+.team-graph-wrapper .react-flow__minimap {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: #fafafa;
+}
+
+/* ==========================================================
+   RESPONSIVE — shrink nodes a bit on small screens
+========================================================== */
+
+@media (max-width: 768px) {
+  .team-graph-node {
+    width: 110px;
+  }
+
+  .team-graph-circle {
+    width: 95px;
+    height: 95px;
+    padding: 8px;
+  }
+
+  .team-graph-root .team-graph-circle {
+    width: 115px;
+    height: 115px;
+  }
+
+  .team-graph-circle strong {
+    font-size: 11px;
+  }
+}

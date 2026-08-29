@@ -63,6 +63,7 @@ const DataTable = ({ data, mood, setAlert }) => {
     name: "",
     phone: "",
     email: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -141,6 +142,7 @@ const DataTable = ({ data, mood, setAlert }) => {
         name: "",
         phone: "",
         email: "",
+        address: ""
       });
       dispatch(getLeads());
       setSaving(false);
@@ -200,6 +202,7 @@ const DataTable = ({ data, mood, setAlert }) => {
           phone: formData.phone,
           email: formData.email,
           password: formData.password,
+          address: formData.address,
           role: "user",
         }),
       ).unwrap();
@@ -215,6 +218,7 @@ const DataTable = ({ data, mood, setAlert }) => {
           name: formData.name,
           phone: formData.phone,
           email: formData.email,
+          address: formData.address,
         },
         {
           headers: {
@@ -456,6 +460,19 @@ const DataTable = ({ data, mood, setAlert }) => {
                 {showPassword ? <NiClosseye /> : <NiOpenEye />}
               </span>
             </div>
+            <div className="field">
+              <label>Address</label>
+                <input
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
           </>
         ) : (
           <>

@@ -248,6 +248,90 @@
   gap: 10px;
 }
 
+.export-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 22px;
+  border-bottom: 1px solid #eee;
+}
+
+.export-modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.export-modal-header p {
+  margin: 5px 0 0;
+  color: #777;
+  font-size: 13px;
+}
+
+.export-close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.export-modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.export-modal-body select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 1.75rem;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.export-count {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 1.75rem;
+  background: #f6f6f6;
+  font-size: 13px;
+  color: #555;
+}
+
+.export-fields {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  max-width: 500px;
+}
+
+.export-fields p {
+  width: 100%;
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.export-fields span {
+  padding: 6px 10px;
+  background: #f4f4f4;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.export-excel-btn {
+  border: none;
+  background: #198754 !important;
+  border: 1px solid #198754 !important;
+  color: white;
+}
+
+.export-modal-footer .btn-outline {
+  border: 1px solid #ddd;
+  background: white;
+}
+
 @media (max-width: 768px) {
   .user-table-box {
     width: 100%;

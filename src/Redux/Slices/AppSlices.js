@@ -59,6 +59,15 @@ export const getRank = createAsyncThunk("app/ranks", async () => {
   });
   return res.json();
 });
+export const getCustomers = createAsyncThunk("app/customers", async () => {
+  const res = await fetch(`${Host}/api/auth/my-connected-users`, {
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": getToken(),
+    },
+  });
+  return res.json();
+});
 
 export const addUser = createAsyncThunk(
   "app/addUser",
@@ -1005,6 +1014,9 @@ const appSlice = createSlice({
       })
       .addCase(getRank.fulfilled, (state, action) => {
         state.rankData = action.payload;
+      })
+      .addCase(getCustomers.fulfilled, (state, action) => {
+        state.customers = action.payload;
       })
 
       // LEADS

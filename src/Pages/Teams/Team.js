@@ -10,6 +10,9 @@ import { getAccountDetails, getTeamTree } from "../../Redux/Slices/AppSlices";
 import NiPayments from "../../icons/ni-payments";
 import TeamNode from "./TeamTree";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
+import TeamGraph from "./TeamGraph";
+import NiList from "../../icons/ni-list";
+import NiCard from "../../icons/ni-card";
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ const Teams = () => {
   const rightTeam = currentData?.rightChildren || [];
   const allTeam = [...leftTeam, ...rightTeam];
   const [activeTab, setActiveTab] = useState("all");
+  const [teamView, setTeamView] = useState("node");
 
   const getVisibleTeam = () => {
     if (activeTab === "left") return leftTeam;
@@ -168,15 +172,60 @@ const Teams = () => {
       </div>
 
       <div className="dashboard-wrapper">
-        <h4>Team Hierarchy</h4>
-        <div className=" team-tree-container">
+        <div className="team-hierarchy-header">
+          <h4>Team Hierarchy</h4>
+<div className="page-toggle">
+            <span
+              className={`${teamView === "node" ? "active" : ""}`}
+              onClick={() => setTeamView("node")}
+            >
+              <NiList />
+            </span>
+            <span
+              className={`${teamView === "graph" ? "active" : ""}`}
+              onClick={() => setTeamView("graph")}
+            >
+              <NiCard />
+            </span>
+          </div>
+          {/* <div className="team-view-buttons">
+            <button
+              type="button"
+              className={`team-view-btn ${teamView === "node" ? "active" : ""}`}
+              onClick={() => setTeamView("node")}
+            >
+              Node
+            </button>
+
+            <button
+              type="button"
+              className={`team-view-btn ${
+                teamView === "graph" ? "active" : ""
+              }`}
+              onClick={() => setTeamView("graph")}
+            >
+              Graph
+            </button>
+          </div> */}
+        </div>
+
+        <div
+          className={
+            teamView === "graph"
+              ? "team-tree-container graph-view-container"
+              : "team-tree-container"
+          }
+        >
           {currentData ? (
-            <TeamNode member={currentData} />
+            teamView === "node" ? (
+              <TeamNode member={currentData} />
+            ) : (
+              <TeamGraph member={currentData} />
+            )
           ) : (
             <p>No Team Found</p>
           )}
         </div>
-        {/* </div> */}
       </div>
     </div>
   );

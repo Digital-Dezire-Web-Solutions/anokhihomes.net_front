@@ -502,7 +502,6 @@ const UserForm = ({
         email: "",
         phone: "",
         referralId: "",
-        password: "",
         position: "",
 
         address: "",
@@ -613,6 +612,12 @@ const UserForm = ({
     setAadhaarModalOpen(true);
   };
 
+  const handleHome = () => {
+    setFormData({
+      password: ""
+    })
+    navigate("/")
+  }
   return (
     <>
       <div>
@@ -821,6 +826,20 @@ const UserForm = ({
                   <option value="right">Right</option>
                 </select>
               </>
+            )}
+            {currentRole === "user" && (
+              <div className="field">
+                <input
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
             )}
             {currentRole === "staff" && (
               <select
@@ -1060,7 +1079,7 @@ const UserForm = ({
               />
 
               <button
-              className={`${formData.isEmailVerified ? "verified" : ""}`}
+                className={`${formData.isEmailVerified ? "verified" : ""}`}
                 type="button"
                 onClick={verifyOtp}
                 disabled={formData.isEmailVerified}
@@ -1299,7 +1318,16 @@ const UserForm = ({
               Congratulations<strong>{responseMsg.user.name}</strong>
             </p>
             <p>
-              Referral Id : <strong>{responseMsg.user.referralId}</strong>
+              Email : <strong>{responseMsg.user.email}</strong>
+            </p>
+            <p>
+              Phone : <strong>{responseMsg.user.phone}</strong>
+            </p>
+            <p>
+              Password : <strong>{formData.password}</strong>
+            </p>
+            <p>
+              Referral ID / User ID : <strong>{responseMsg.user.referralId}</strong>
             </p>
             <p>Your account has been created successfully.</p>
 
@@ -1309,7 +1337,7 @@ const UserForm = ({
               receive a confirmation email.
             </p>
 
-            <button className={`role-${role}`} onClick={() => navigate("/")}>
+            <button className={`role-${role}`} onClick={() => handleHome()}>
               Go to Home
             </button>
           </div>

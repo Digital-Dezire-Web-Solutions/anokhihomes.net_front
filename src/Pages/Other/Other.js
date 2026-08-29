@@ -1,3 +1,6 @@
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import React, { useEffect, useRef, useState } from "react";
 import "./Other.css";
 import SearchItems from "../../components/SearchItems/SearchItems";
@@ -10,7 +13,13 @@ import NiEdit from "../../icons/ni-edit";
 import NiSearch from "../../icons/ni-search";
 import NiCard from "../../icons/ni-card";
 import NiList from "../../icons/ni-list";
-import { LucidePlus } from "lucide-react";
+import {
+  LucidePlus,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  X,
+} from "lucide-react";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import ActionModal from "../../components/Modals/ActionModal";
 import DeleteModal from "../../components/Modals/DeleteModal";
@@ -54,6 +63,8 @@ const Other = ({ mood, setAlert, data }) => {
   const [saving, setSaving] = useState(false);
   const [selectedDeleteUser, setSelectedDeleteUser] = useState(null);
   const [referalMsg, setReferralMsg] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportRole, setExportRole] = useState("all");
 
   const [formData, setFormData] = useState({
     user: "",
@@ -232,6 +243,390 @@ const Other = ({ mood, setAlert, data }) => {
 
   // console.log(currentData, "item")
 
+  /* =====================================================
+   EXPORT USERS
+===================================================== */
+
+  const getExportUsers = () => {
+    if (!users || !Array.isArray(users)) {
+      return [];
+    }
+
+    if (exportRole === "all") {
+      return users;
+    }
+
+    return users.filter(
+      (user) => user?.role?.toLowerCase() === exportRole.toLowerCase()
+    );
+  };
+
+  /* =====================================================
+     FORMAT USER DATA FOR EXPORT
+  ===================================================== */
+
+  const getExportRows = () => {
+    const selectedUsers = getExportUsers();
+
+    return selectedUsers.map((user) => {
+      const referredBy =
+        user?.role === "agent" && user?.referredBy
+          ? user.referredBy
+          : null;
+
+      const role =
+        user?.role === "agent"
+          ? "Associate"
+          : user?.role === "staff"
+            ? "Staff"
+            : user?.role === "admin"
+              ? "Admin"
+              : "Customer";
+
+      /* =========================
+         CUSTOMER
+      ========================= */
+      if (exportRole === "user") {
+        return {
+          Name: user?.name || "-",
+          Phone: user?.phone || "-",
+          Email: user?.email || "-",
+          "User Type": role,
+          UserID: user?.referralId || "-",
+          Address: user?.address || "-",
+        };
+      }
+
+      /* =========================
+         ASSOCIATE
+      ========================= */
+      if (exportRole === "agent") {
+        return {
+          Name: user?.name || "-",
+          Phone: user?.phone || "-",
+          Email: user?.email || "-",
+          "User Type": "Associate",
+          UserID: user?.referralId || "-",
+
+          "Referred By Name": referredBy?.name || "-",
+          "Referred By Email": referredBy?.email || "-",
+          "Referred By Phone": referredBy?.phone || "-",
+          "Referred By UserID": referredBy?.referralId || "-",
+
+          Designation: user?.designation || "-",
+          "Direct Income %": `${user?.directIncomePercent ?? 0}%`,
+
+          Address: user?.address || "-",
+        };
+      }
+
+      /* =========================
+         STAFF
+      ========================= */
+      if (exportRole === "staff") {
+        return {
+          Name: user?.name || "-",
+          Phone: user?.phone || "-",
+          Email: user?.email || "-",
+          "User Type": "Staff",
+          UserID: user?.referralId || "-",
+          Role: user?.staffRole?.name || "-",
+          Address: user?.address || "-",
+        };
+      }
+
+      /* =========================
+         ALL USERS
+      ========================= */
+      return {
+        Name: user?.name || "-",
+        Phone: user?.phone || "-",
+        Email: user?.email || "-",
+        "User Type": role,
+        UserID: user?.referralId || "-",
+
+        "Referred By Name":
+          user?.role === "agent"
+            ? referredBy?.name || "-"
+            : "-",
+
+        "Referred By Email":
+          user?.role === "agent"
+            ? referredBy?.email || "-"
+            : "-",
+
+        "Referred By Phone":
+          user?.role === "agent"
+            ? referredBy?.phone || "-"
+            : "-",
+
+        "Referred By UserID":
+          user?.role === "agent"
+            ? referredBy?.referralId || "-"
+            : "-",
+
+        Designation:
+          user?.role === "agent" || user?.role === "admin"
+            ? user?.designation || "-"
+            : "-",
+
+        "Direct Income %":
+          user?.role === "agent" || user?.role === "admin"
+            ? `${user?.directIncomePercent ?? 0}%`
+            : "-",
+
+        Role:
+          user?.role === "staff"
+            ? user?.staffRole?.name || "-"
+            : "-",
+
+        Address: user?.address || "-",
+      };
+    });
+  };
+
+  /* =====================================================
+     EXPORT EXCEL
+  ===================================================== */
+
+  const exportToExcel = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({
+        message: "No users found for selected filter",
+        status: "Error",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    /* Auto column width */
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) =>
+          String(row[key] ?? "").length
+        )
+      );
+
+      return {
+        wch: Math.min(maxLength + 3, 40),
+      };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Users"
+    );
+
+    const fileName =
+      exportRole === "all"
+        ? "all-users.xlsx"
+        : `${exportRole}-users.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+
+    setAlert({
+      message: "Excel exported successfully",
+      status: "Success",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+     EXPORT PDF
+  ===================================================== */
+
+  const exportToPDF = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({
+        message: "No users found for selected filter",
+        status: "Error",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const title =
+      exportRole === "all"
+        ? "All Users"
+        : exportRole === "agent"
+          ? "All Associates"
+          : exportRole === "staff"
+            ? "All Staff"
+            : "All Customers";
+
+    doc.setFontSize(18);
+    doc.text(title, 14, 15);
+
+    doc.setFontSize(9);
+    doc.text(
+      `Total Records: ${rows.length}`,
+      14,
+      22
+    );
+
+    const columns = Object.keys(rows[0]);
+
+    const body = rows.map((row) =>
+      columns.map((column) => row[column] ?? "-")
+    );
+
+    const columnStyles = {};
+
+    columns.forEach((column, index) => {
+      let width = 18;
+
+      switch (column) {
+        case "Name":
+          width = 20;
+          break;
+
+        case "Phone":
+          width = 17;
+          break;
+
+        case "Email":
+          width = 28;
+          break;
+
+        case "User Type":
+          width = 17;
+          break;
+
+        case "UserID":
+          width = 20;
+          break;
+
+        case "Referred By Name":
+          width = 20;
+          break;
+
+        case "Referred By Email":
+          width = 28;
+          break;
+
+        case "Referred By Phone":
+          width = 17;
+          break;
+
+        case "Referred By UserID":
+          width = 20;
+          break;
+
+        case "Designation":
+          width = 25;
+          break;
+
+        case "Direct Income %":
+          width = 17;
+          break;
+
+        case "Role":
+          width = 20;
+          break;
+
+        case "Address":
+          width = 45;
+          break;
+
+        default:
+          width = 18;
+      }
+
+      columnStyles[index] = {
+        cellWidth: width,
+      };
+    });
+
+    autoTable(doc, {
+  head: [columns],
+  body,
+
+  startY: 27,
+
+  theme: "grid",
+
+  tableWidth: "wrap",
+
+  styles: {
+    fontSize: 5.5,
+    cellPadding: 1.2,
+    overflow: "linebreak",
+    valign: "middle",
+    halign: "left",
+    lineWidth: 0.1,
+  },
+
+  headStyles: {
+    fontSize: 5.5,
+    fontStyle: "bold",
+    valign: "middle",
+  },
+
+  bodyStyles: {
+    valign: "middle",
+  },
+
+  columnStyles,
+
+  margin: {
+    top: 27,
+    left: 5,
+    right: 5,
+    bottom: 8,
+  },
+});
+
+    const fileName =
+      exportRole === "all"
+        ? "all-users.pdf"
+        : `${exportRole}-users.pdf`;
+
+    doc.save(fileName);
+
+    setAlert({
+      message: "PDF exported successfully",
+      status: "Success",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+
+    setExportOpen(false);
+  };
+
   return (
     <div className="plot-container user-table-box">
       {/* Filters */}
@@ -242,16 +637,28 @@ const Other = ({ mood, setAlert, data }) => {
         </div>
         <div className="page-tools">
           {(mood === "admin" || mood === "staff") && (
-            <button
-              className="add-button"
-              onClick={() => {
-                setSelectedUser(null);
-                setIsEditMode(false);
-                setOpen(true);
-              }}
-            >
-              <LucidePlus /> Add
-            </button>
+            <>
+              <button
+                className="add-button"
+                onClick={() => {
+                  setSelectedUser(null);
+                  setIsEditMode(false);
+                  setOpen(true);
+                }}
+              >
+                <LucidePlus /> Add
+              </button>
+              <button
+                className="add-button"
+                onClick={() => {
+                  setExportRole("all");
+                  setExportOpen(true);
+                }}
+              >
+                <Download size={18} />
+                Export
+              </button>
+            </>
           )}
           <div className="searchItem">
             <NiSearch />
@@ -320,7 +727,7 @@ const Other = ({ mood, setAlert, data }) => {
               <span>Image</span>
               <span>Role</span>
               <span>Name</span>
-              <span>Referral Id</span>
+              <span>User ID</span>
               <span>Designation</span>
               <span>Referred By</span>
               <span>Rating</span>
@@ -657,6 +1064,150 @@ const Other = ({ mood, setAlert, data }) => {
           </button>
         </div>
       </DeleteModal>
+      {/* =====================================================
+    EXPORT MODAL
+===================================================== */}
+      <AddLocationModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export User"
+      >
+        {/* <div className="export-modal"> */}
+        <div className="export-modal-body">
+          <p>
+            Select which users you want to export
+          </p>
+
+          <label>
+            Select Users {getExportUsers().length}
+          </label>
+
+          <select
+            value={exportRole}
+            onChange={(e) =>
+              setExportRole(e.target.value)
+            }
+          >
+            <option value="all">
+              All Users
+            </option>
+
+            <option value="agent">
+              All Associates
+            </option>
+
+            <option value="staff">
+              All Staff
+            </option>
+
+            <option value="user">
+              All Customers
+            </option>
+          </select>
+
+          {/* <div className="export-count">
+              {getExportUsers().length} users selected
+            </div> */}
+
+          <div className="export-fields">
+            <p>Export includes:</p>
+
+            {/* =========================
+      CUSTOMER
+  ========================= */}
+            {exportRole === "user" && (
+              <>
+                <span>Name</span>
+                <span>Phone</span>
+                <span>Email</span>
+                <span>User Type</span>
+                <span>UserID</span>
+                <span>Address</span>
+              </>
+            )}
+
+            {/* =========================
+      ASSOCIATE / AGENT
+  ========================= */}
+            {exportRole === "agent" && (
+              <>
+                <span>Name</span>
+                <span>Phone</span>
+                <span>Email</span>
+                <span>User Type</span>
+                <span>UserID</span>
+                <span>Referred By Name</span>
+                <span>Referred By Email</span>
+                <span>Referred By Phone</span>
+                <span>Referred By UserID</span>
+                <span>Designation</span>
+                <span>Direct Income %</span>
+                <span>Address</span>
+              </>
+            )}
+
+            {/* =========================
+      STAFF
+  ========================= */}
+            {exportRole === "staff" && (
+              <>
+                <span>Name</span>
+                <span>Phone</span>
+                <span>Email</span>
+                <span>User Type</span>
+                <span>UserID</span>
+                <span>Role</span>
+                <span>Address</span>
+              </>
+            )}
+
+            {/* =========================
+      ALL USERS
+  ========================= */}
+            {exportRole === "all" && (
+              <>
+                <span>Name</span>
+                <span>Phone</span>
+                <span>Email</span>
+                <span>User Type</span>
+                <span>UserID</span>
+                <span>Referred By Name</span>
+                <span>Referred By Email</span>
+                <span>Referred By Phone</span>
+                <span>Referred By UserID</span>
+                <span>Designation</span>
+                <span>Direct Income %</span>
+                <span>Role</span>
+                <span>Address</span>
+              </>
+            )}
+          </div>
+
+        </div>
+
+        <div className="modal-actions" style={{marginTop:"1rem"}}>
+          <button
+            type="button"
+            className="export-excel-btn"
+            onClick={exportToExcel}
+          >
+            <FileSpreadsheet size={18} />
+            Excel
+          </button>
+
+          <button
+            type="button"
+            className="export-pdf-btn"
+            onClick={exportToPDF}
+          >
+            <FileText size={18} />
+            PDF
+          </button>
+
+        </div>
+
+        {/* </div> */}
+      </AddLocationModal>
     </div>
   );
 };

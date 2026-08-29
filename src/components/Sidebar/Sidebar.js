@@ -145,6 +145,7 @@ function Sidebar({ closeMobile, mood }) {
       { path: "/plot", label: "Plots", icon: <NiTool /> },
       { path: "/holdplot", label: "Hold Plots", icon: <NiTool /> },
       { path: "/bookings", label: "Bookings", icon: <NiBooking /> },
+      { path: "/customer", label: "My Customers", icon: <NiTeams /> },
       { path: "/teams", label: "Teams", icon: <NiTeams /> },
       {
         label: "Transactions",

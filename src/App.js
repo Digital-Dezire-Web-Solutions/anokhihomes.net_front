@@ -51,6 +51,7 @@ import Delete from "./Pages/Delete/Delete";
 import Expense from "./Pages/Expense/Expense";
 import Accounts from "./Pages/Accounts/Accounts";
 import Payout from "./Pages/Payout/Payout";
+import MyCustomers from "./Pages/Other/MyCustomers";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -224,6 +225,10 @@ function App() {
                       <Route
                         path="/teams"
                         element={<Team mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
+                        path="/customer"
+                        element={<MyCustomers mood={mood} setAlert={setAlert} />}
                       />
                       <Route
                         path="/management"
