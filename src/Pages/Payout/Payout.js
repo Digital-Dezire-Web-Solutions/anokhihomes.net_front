@@ -2,45 +2,48 @@ import React, { useEffect, useMemo, useState } from "react";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import NiPayments from "../../icons/ni-payments";
-import PaymentCard from "../../components/Cards/PaymentCard";
-import {
-  getAccountDetails,
-  getAllColonies,
-  getExpense,
-  getIncome,
-  getLedger,
-  getPayout,
-  getPlots,
-} from "../../Redux/Slices/AppSlices";
+import { getAccountDetails, getPayout } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import NiSearch from "../../icons/ni-search";
-import InvoiceCard from "../../components/Cards/InvoiceCard";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import formatDate from "../../components/DateFormate/DateFormate";
 import "./Payout.css";
 import NiOpenEye from "../../icons/ni-openEye";
 import ViewModal from "../../components/Modals/ViewModal";
-import NiEdit from "../../icons/ni-edit";
-import NiDelete from "../../icons/ni-delete";
 import Host from "../../Host/Host";
 import axios from "axios";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
-import DeleteModal from "../../components/Modals/DeleteModal";
-import NiDots from "../../icons/ni-dots";
-import ActionModal from "../../components/Modals/ActionModal";
-import { LucidePlus } from "lucide-react";
-import { uploadImage } from "../LandingSetting/LandingApi";
-import SearchSelect from "../../components/SearchItems/SearchSelect";
-import NiCredit from "../../icons/ni-credit";
-import NiDebit from "../../icons/ni-debit";
+
+// Backend Payout.status enum is: hold | released | paid | cancelled
+// (see models/Payout.js) — there is no "payable" / "processing" / "partial".
+const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
+
+// A payout can be paid only while it's still hold or released.
+const PAYABLE_STATUSES = ["hold", "released"];
+
+// Human-readable type labels for the IncomeHistory breakdown shown
+// in the view modal (matches TYPE_FIELD_MAP keys in generatePayouts.js).
+const INCOME_TYPE_LABELS = {
+  direct_income: "Direct Income",
+  difference_income: "Difference Income",
+  matching_income: "Matching Income",
+  royalty_income: "Royalty Income",
+  cashback_income: "Cashback Income",
+  best_performance_income: "Best Performance Income",
+  festival_bonus_income: "Festival Bonus Income",
+  referal_income: "Referral Income",
+  reward_income: "Reward Income",
+};
 
 const Payout = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { userDetail, payout } = useSelector((state) => state.app);
+  const { payout } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [viewOpen, setViewOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedExpense, setSelectedExpense] = useState(null);
+  const [expenseDetail, setExpenseDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const ITEMS_PER_PAGE = 25;
@@ -48,41 +51,28 @@ const Payout = ({ mood, setAlert }) => {
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
   const [cycleFilter, setCycleFilter] = useState("");
-
-  const [formData, setFormData] = useState({
-    amount: "",
-    paymentMode: "",
-    transactionId: "",
-    chequeNumber: "",
-    bankName: "",
-    attachment: "",
-    remarks: "",
-  });
+  const [activeTab, setActiveTab] = useState("summary");
 
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getPayout());
   }, []);
-  // console.log(forSalePlots, "forSalePlots");
+
   const summary = useMemo(() => {
     const data = payout || [];
 
     return {
-      payable: data
-        .filter((i) => i.status === "payable")
-        .reduce((s, i) => s + i.balance, 0),
+      released: data
+        ?.filter((i) => i.status === "released")
+        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
 
-      partial: data
-        .filter((i) => i.status === "partial")
-        .reduce((s, i) => s + i.balance, 0),
+      paid: data
+        ?.filter((i) => i.status === "paid")
+        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
 
-      processing: data
-        .filter((i) => i.status === "processing")
-        .reduce((s, i) => s + i.balance, 0),
-
-      hold: data
-        .filter((i) => i.status === "hold")
-        .reduce((s, i) => s + i.balance, 0),
+      cancelled: data
+        ?.filter((i) => i.status === "cancelled")
+        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
     };
   }, [payout]);
 
@@ -109,7 +99,6 @@ const Payout = ({ mood, setAlert }) => {
 
       const matchSearch =
         item.user?.name?.toLowerCase().includes(keyword) ||
-        item.user?.phone?.includes(search) ||
         item.user?.referralId?.toLowerCase().includes(keyword);
 
       const matchFrom =
@@ -128,25 +117,28 @@ const Payout = ({ mood, setAlert }) => {
     page * ITEMS_PER_PAGE,
   );
 
-  const handleFileUpload = (field, file) => {
-    if (!file) return;
+  const openView = async (item) => {
+    setSelectedExpense(item);
+    setViewOpen(true);
+    setExpenseDetail(null);
+    setDetailLoading(true);
 
-    const MAX_SIZE = 20 * 1024 * 1024;
-
-    if (file.size > MAX_SIZE) {
-      setAlert({
-        message: "Image size should not exceed 20 MB",
-        status: "Error",
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${Host}/api/payout/${item._id}`, {
+        headers: { "auth-token": token },
       });
-
+      setExpenseDetail(res.data);
+    } catch (err) {
+      console.log(err);
+      setAlert({
+        status: "Error",
+        message: "Unable to load payout details.",
+      });
       setTimeout(() => setAlert(null), 3000);
-      return;
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [field]: file,
-    }));
+    setDetailLoading(false);
   };
 
   const handlePay = async () => {
@@ -155,23 +147,9 @@ const Payout = ({ mood, setAlert }) => {
 
       const token = localStorage.getItem("token");
 
-      let attachment = "";
-      if (formData.attachment) {
-              const upload = await uploadImage(formData.attachment);
-              attachment = upload.url;
-            }
-
-      await axios.post(
+      await axios.put(
         `${Host}/api/payout/pay/${selectedExpense._id}`,
-        {
-          amount: Number(formData.amount),
-          paymentMode: formData.paymentMode,
-          transactionId: formData.transactionId,
-          chequeNumber: formData.chequeNumber,
-          bankName: formData.bankName,
-          attachment,
-          remarks: formData.remarks,
-        },
+        {},
         {
           headers: {
             "auth-token": token,
@@ -183,28 +161,18 @@ const Payout = ({ mood, setAlert }) => {
 
       setAlert({
         status: "Success",
-        message: "Payout completed successfully.",
+        message: "Payout marked as paid.",
       });
 
       setTimeout(() => setAlert(null), 3000);
 
       setOpen(false);
-
-      setFormData({
-        amount: "",
-        paymentMode: "",
-        transactionId: "",
-        chequeNumber: "",
-        bankName: "",
-        attachment: "",
-        remarks: "",
-      });
     } catch (err) {
       console.log(err);
 
       setAlert({
         status: "Error",
-        message: err.response?.data?.msg || "Unable to complete payout.",
+        message: err.response?.data?.message || "Unable to complete payout.",
       });
 
       setTimeout(() => setAlert(null), 3000);
@@ -225,26 +193,20 @@ const Payout = ({ mood, setAlert }) => {
         <div className="dashboard-wrapper">
           <div className="dashboard-grid">
             <DashboardCard
-              title="Payable"
-              value={`₹${formatCurrency(summary.payable)}`}
+              title="Released"
+              value={`₹${formatCurrency(summary.released)}`}
               icons={<NiPayments />}
             />
 
             <DashboardCard
-              title="Partial"
-              value={`₹${formatCurrency(summary.partial)}`}
+              title="Paid"
+              value={`₹${formatCurrency(summary.paid)}`}
               icons={<NiPayments />}
             />
 
             <DashboardCard
-              title="Processing"
-              value={`₹${formatCurrency(summary.processing)}`}
-              icons={<NiPayments />}
-            />
-
-            <DashboardCard
-              title="Hold"
-              value={`₹${formatCurrency(summary.hold)}`}
+              title="Cancelled"
+              value={`₹${formatCurrency(summary.cancelled)}`}
               icons={<NiPayments />}
             />
           </div>
@@ -254,7 +216,7 @@ const Payout = ({ mood, setAlert }) => {
               <NiSearch />
 
               <input
-                placeholder="Search Project.... "
+                placeholder="Search associate...."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -288,11 +250,11 @@ const Payout = ({ mood, setAlert }) => {
                 }}
               >
                 <option value="">All Status</option>
-                <option value="hold">Hold</option>
-                <option value="payable">Payable</option>
-                <option value="processing">Processing</option>
-                <option value="partial">Partial</option>
-                <option value="paid">Paid</option>
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="searchItem">
@@ -318,34 +280,31 @@ const Payout = ({ mood, setAlert }) => {
               <div className="table-head">
                 <span>S.No</span>
                 <span>Associate</span>
-                <span>Referral ID</span>
                 <span>Cycle</span>
+                <span>Referral ID</span>
                 <span>Gross</span>
                 <span>TDS</span>
                 <span>Admin</span>
                 <span>Net</span>
-                <span>Balance</span>
                 <span>Status</span>
                 <span>Action</span>
               </div>
               {paginated?.length === 0 ? (
-                <div >
-                  <span>No Expense Found</span>
+                <div>
+                  <span>No Payout Found</span>
                 </div>
               ) : (
                 paginated?.map((item, index) => (
                   <div className="table-row" key={item._id}>
-                    <span>{index + 1}</span>
+                    <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
 
                     <span>{item.user?.name}</span>
 
-                    <span>{item.user?.referralId}</span>
-
                     <span>
-                      {formatDate(item.cycleStart)}
-                      <br />
+                      {formatDate(item.cycleStart)} -{" "}
                       {formatDate(item.cycleEnd)}
                     </span>
+                    <span>{item.user?.referralId}</span>
 
                     <span>₹{formatCurrency(item.grossAmount)}</span>
 
@@ -355,36 +314,38 @@ const Payout = ({ mood, setAlert }) => {
 
                     <span>₹{formatCurrency(item.netAmount)}</span>
 
-                    <span>₹{formatCurrency(item.balance)}</span>
-
                     <span>
-                      <span className={`status ${item.status}`}>
+                      <span
+                        style={{ textTransform: "capitalize" }}
+                        className={`status ${
+                          item.status === "paid"
+                            ? "active"
+                            : item.status === "released"
+                              ? "pending"
+                              : "failed"
+                        }`}
+                      >
                         {item.status}
                       </span>
                     </span>
 
                     <div className="dots">
-                      <span
-                        onClick={() => {
-                          setSelectedExpense(item);
-                          setViewOpen(true);
-                        }}
-                      >
+                      <span onClick={() => openView(item)}>
                         <NiOpenEye />
                       </span>
-
-                      {(item.status === "payable" ||
-                        item.status === "partial") && (
-                        <button
-                          className="table-btn"
-                          onClick={() => {
-                            setSelectedExpense(item);
-                            setOpen(true);
-                          }}
-                        >
-                          Pay
-                        </button>
-                      )}
+                      <div className="modal-actions">
+                        {PAYABLE_STATUSES.includes(item.status) && (
+                          <button
+                            className="table-btn"
+                            onClick={() => {
+                              setSelectedExpense(item);
+                              setOpen(true);
+                            }}
+                          >
+                            Pay
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -415,118 +376,159 @@ const Payout = ({ mood, setAlert }) => {
             </button>
           </div>
         </div>
+
         <ViewModal
           open={viewOpen}
           onClose={() => {
             setViewOpen(false);
             setSelectedExpense(null);
+            setExpenseDetail(null);
           }}
-          title="Transaction Details"
+          title="Payout Details"
         >
-          <p>
-            <strong>Associate :</strong>
-            {selectedExpense?.user?.name}
-          </p>
+          <div className="table-filters">
+            <button
+              className={activeTab === "summary" ? "active" : ""}
+              onClick={() => setActiveTab("summary")}
+            >
+              Summary
+            </button>
 
-          <p>
-            <strong>Phone :</strong>
-            {selectedExpense?.user?.phone}
-          </p>
+            <button
+              className={activeTab === "history" ? "active" : ""}
+              onClick={() => setActiveTab("history")}
+            >
+              Income History
+            </button>
+          </div>
+          {activeTab === "summary" ? (
+            <>
+              <p>
+                <strong>Associate :</strong>
+                {selectedExpense?.user?.name}
+              </p>
 
-          <p>
-            <strong>Referral :</strong>
-            {selectedExpense?.user?.referralId}
-          </p>
+              <p>
+                <strong>Referral :</strong>
+                {selectedExpense?.user?.referralId}
+              </p>
 
-          <p>
-            <strong>Cycle :</strong>
-            {formatDate(selectedExpense?.cycleStart)}
-            {" - "}
-            {formatDate(selectedExpense?.cycleEnd)}
-          </p>
+              <p>
+                <strong>Cycle :</strong>
+                {formatDate(selectedExpense?.cycleStart)}
+                {" - "}
+                {formatDate(selectedExpense?.cycleEnd)}
+              </p>
 
-          <p>
-            <strong>Gross :</strong>₹
-            {formatCurrency(selectedExpense?.grossAmount)}
-          </p>
+              <p>
+                <strong>Gross :</strong>₹
+                {formatCurrency(selectedExpense?.grossAmount)}
+              </p>
 
-          <p>
-            <strong>TDS :</strong>₹{formatCurrency(selectedExpense?.tdsAmount)}
-          </p>
+              <p>
+                <strong>TDS ({selectedExpense?.tdsPercent}%) :</strong>₹
+                {formatCurrency(selectedExpense?.tdsAmount)}
+              </p>
 
-          <p>
-            <strong>Admin Charge :</strong>₹
-            {formatCurrency(selectedExpense?.adminChargeAmount)}
-          </p>
+              <p>
+                <strong>
+                  Admin Charge ({selectedExpense?.adminChargePercent}%) :
+                </strong>
+                ₹{formatCurrency(selectedExpense?.adminChargeAmount)}
+              </p>
 
-          <p>
-            <strong>Net :</strong>₹{formatCurrency(selectedExpense?.netAmount)}
-          </p>
+              <p>
+                <strong>Net :</strong>₹
+                {formatCurrency(selectedExpense?.netAmount)}
+              </p>
 
-          <p>
-            <strong>Paid :</strong>₹{formatCurrency(selectedExpense?.totalPaid)}
-          </p>
+              <p>
+                <strong>Status :</strong>
+                <span
+                  style={{ textTransform: "capitalize" }}
+                  className={`status ${
+                    selectedExpense?.status === "paid"
+                      ? "active"
+                      : selectedExpense?.status === "released"
+                        ? "pending"
+                        : "failed"
+                  }`}
+                >
+                  {selectedExpense?.status}
+                </span>
+              </p>
 
-          <p>
-            <strong>Remaining :</strong>₹
-            {formatCurrency(selectedExpense?.balance)}
-          </p>
-
-          <p>
-            <strong>Status :</strong>
-
-            <span className={`status ${selectedExpense?.status}`}>
-              {selectedExpense?.status}
-            </span>
-          </p>
-          <h4>Payment History</h4>
-
-          {selectedExpense?.payments?.length ? (
-            selectedExpense?.payments.map((payment, index) => (
-              <div className="history-card" key={index}>
+              {selectedExpense?.status === "paid" && (
                 <p>
-                  <strong>Amount :</strong>₹{formatCurrency(payment.amount)}
+                  <strong>Paid At :</strong>
+                  {formatDate(selectedExpense?.paidAt)}
                 </p>
-
-                <p>
-                  <strong>Mode :</strong>
-                  {payment.paymentMode}
-                </p>
-
-                <p>
-                  <strong>Transaction :</strong>
-                  {payment.transactionId || "-"}
-                </p>
-
-                <p>
-                  <strong>Date :</strong>
-                  {formatDate(payment.paidAt)}
-                </p>
-
-                {payment.attachment && (
-                  <img src={payment.attachment} alt="" width={180} />
-                )}
-              </div>
-            ))
+              )}
+            </>
           ) : (
-            <p>No payment history</p>
+            <div className="report-view-box-right active">
+              {detailLoading ? (
+                <p>Loading...</p>
+              ) : expenseDetail?.historyCount ? (
+                <>
+                  
+
+                  {(expenseDetail.histories || []).map((h) => (
+                    <div className="history-card" key={h._id}>
+                      <h5>
+                        <strong>
+                          {INCOME_TYPE_LABELS[h.type] || h.type} :
+                        </strong>
+                        ₹{formatCurrency(h.amount)}
+                      </h5>
+
+                      {h.businessAmount ? (
+                        <p>
+                          <strong>Business :</strong>₹
+                          {formatCurrency(h.businessAmount)}
+                          {h.percentage ? ` (${h.percentage}%)` : ""}
+                        </p>
+                      ) : null}
+
+                      {h.fromUser?.name ? (
+                        <p>
+                          <strong>From :</strong>
+                          {h.fromUser.name}
+                          {h.fromUser.referralId
+                            ? ` (${h.fromUser.referralId})`
+                            : ""}
+                        </p>
+                      ) : null}
+
+                      <p>
+                        <strong>Status :</strong>
+                        <span
+                          style={{ textTransform: "capitalize" }}
+                          className={`status ${
+                            h.status === "credited" ? "active" : "pending"
+                          }`}
+                        >
+                          {h.status}
+                        </span>
+                      </p>
+
+                      <p>
+                        <strong>Date :</strong>
+                        {formatDate(h.createdAt)}
+                      </p>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <p>No income entries found for this payout</p>
+              )}
+            </div>
           )}
         </ViewModal>
+
         <AddLocationModal
           open={open}
-          onClose={() => {
-            setOpen(false);
-
-            setFormData({
-              amount: "",
-              paymentMode: "",
-              transactionId: "",
-              chequeNumber: "",
-              bankName: "",
-              attachment: "",
-              remarks: "",
-            });
-          }}
+          onClose={() => setOpen(false)}
           title="Pay Associate"
         >
           {selectedExpense && (
@@ -545,173 +547,33 @@ const Payout = ({ mood, setAlert }) => {
                 </p>
 
                 <p>
-                  <strong>Net Amount :</strong> ₹
-                  {formatCurrency(selectedExpense.netAmount)}
+                  <strong>Gross Amount :</strong> ₹
+                  {formatCurrency(selectedExpense.grossAmount)}
                 </p>
 
                 <p>
-                  <strong>Already Paid :</strong> ₹
-                  {formatCurrency(selectedExpense.totalPaid)}
+                  <strong>TDS :</strong> ₹
+                  {formatCurrency(selectedExpense.tdsAmount)}
+                </p>
+
+                <p>
+                  <strong>Admin Charge :</strong> ₹
+                  {formatCurrency(selectedExpense.adminChargeAmount)}
                 </p>
 
                 <p style={{ color: "green", fontWeight: 600 }}>
-                  <strong>Remaining :</strong> ₹
-                  {formatCurrency(selectedExpense.balance)}
+                  <strong>Net Amount to pay :</strong> ₹
+                  {formatCurrency(selectedExpense.netAmount)}
                 </p>
               </div>
 
-              <div className="field">
-                <label>Amount</label>
-
-                <input
-                  type="number"
-                  max={selectedExpense.balance}
-                  value={formData.amount}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      amount: e.target.value,
-                    })
-                  }
-                />
-
-                <small>
-                  Maximum Payable : ₹{formatCurrency(selectedExpense.balance)}
-                </small>
-              </div>
-
-              <div className="field">
-                <label>Payment Mode</label>
-
-                <select
-                  value={formData.paymentMode}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      paymentMode: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select</option>
-                  <option value="cash">Cash</option>
-                  <option value="upi">UPI</option>
-                  <option value="bank">Bank Transfer</option>
-                  <option value="cheque">Cheque</option>
-                </select>
-              </div>
-
-              {(formData.paymentMode === "upi" ||
-                formData.paymentMode === "bank") && (
-                <>
-                  <div className="field">
-                    <label>Transaction ID</label>
-
-                    <input
-                      value={formData.transactionId}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          transactionId: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="field">
-                    <label>Bank Name</label>
-
-                    <input
-                      value={formData.bankName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          bankName: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              )}
-
-              {formData.paymentMode === "cheque" && (
-                <>
-                  <div className="field">
-                    <label>Cheque Number</label>
-
-                    <input
-                      value={formData.chequeNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          chequeNumber: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="field">
-                    <label>Bank Name</label>
-
-                    <input
-                      value={formData.bankName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          bankName: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="field">
-                <label>Attachment</label>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload("attachment", e.target.files[0])}
-                />
-
-                {formData.attachment && (
-                  <img
-                    src={
-                      formData.attachment instanceof File
-                        ? URL.createObjectURL(formData.attachment)
-                        : formData.attachment
-                    }
-                    alt=""
-                    style={{
-                      width: 120,
-                      borderRadius: 8,
-                      marginTop: 10,
-                    }}
-                  />
-                )}
-              </div>
-
-              <div className="field">
-                <label>Remarks</label>
-
-                <textarea
-                  rows={3}
-                  value={formData.remarks}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      remarks: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              <p>
+                This will mark the full net amount as paid and cannot be undone.
+              </p>
 
               <div className="modal-actions">
-                <button
-                  disabled={saving || !formData.amount || !formData.paymentMode}
-                  onClick={handlePay}
-                >
-                  {saving ? "Processing..." : "Pay Now"}
+                <button disabled={saving} onClick={handlePay}>
+                  {saving ? "Processing..." : "Confirm Payout"}
                 </button>
               </div>
             </>

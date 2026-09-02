@@ -8,7 +8,7 @@ import ViewModal from "../../components/Modals/ViewModal";
 import CommissionTable from "../../components/Cards/CommissionTable";
 
 import { useDispatch, useSelector } from "react-redux";
-import { getIncome, getIncomeSummary } from "../../Redux/Slices/AppSlices";
+import { getIncomeSummary } from "../../Redux/Slices/AppSlices";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -21,12 +21,17 @@ const Commission = ({ mood, setAlert }) => {
   const [page, setPage] = useState(1);
   const [exportOpen, setExportOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     dispatch(getIncomeSummary());
   }, []);
 
+  // GET /commission/summary returns a flat array of per-agent
+  // objects: root User fields spread, plus incomeSummary,
+  // businessSummary, rankSummary, rewardSummary, payoutSummary,
+  // walletSummary, ratingSummary, histories, payouts, cycleStart,
+  // cycleEnd, cycleDate (next pending cycleDate, may be null).
   const commissionData = incomeSummary || [];
-  // console.log(commissionData, "commissionData")
 
   const formatCycleDate = (date) => {
     if (!date) return "-";
@@ -45,15 +50,17 @@ const Commission = ({ mood, setAlert }) => {
       const matchSearch =
         item?.name?.toLowerCase().includes(searchText) ||
         item?.phone?.includes(search) ||
-        item?.email?.includes(search) ||
+        item?.email?.toLowerCase().includes(searchText) ||
         item?.referralId?.toLowerCase().includes(searchText);
 
       const matchCycle = !cycleFilter || item?.cycleDate === cycleFilter;
 
       const matchStatus =
         !statusFilter ||
-        (statusFilter === "pending" && item.pendingCommission > 0) ||
-        (statusFilter === "credited" && item.creditedCommission > 0);
+        (statusFilter === "pending" &&
+          (item.incomeSummary?.pendingCommission || 0) > 0) ||
+        (statusFilter === "credited" &&
+          (item.incomeSummary?.creditedCommission || 0) > 0);
 
       return matchSearch && matchCycle && matchStatus;
     });
@@ -61,48 +68,56 @@ const Commission = ({ mood, setAlert }) => {
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE) || 1;
 
-  const sortedData = useMemo(() => {
-    return [...filteredData].sort(
-      (a, b) => (b.selfBusiness || 0) - (a.selfBusiness || 0),
-    );
-  }, [filteredData]);
-
-  const paginatedData = sortedData.slice(
+  const paginatedData = filteredData.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
 
-  // const paginatedData =
-  //     filteredData.slice(
-  //         (page - 1) *
-  //         ITEMS_PER_PAGE,
-  //         page * ITEMS_PER_PAGE
-  //     );
-
+  // Exports exactly what the table shows — one row per agent, the
+  // same income/payout columns visible in CommissionTable. The old
+  // version exported item.user.*, item.type, item.businessAmount,
+  // item.amount — those fields don't exist on this response shape
+  // (that shape belongs to a single IncomeHistory row, not the
+  // per-agent summary object this page actually receives).
   const exportToExcel = (rowsData = filteredData) => {
     setSaving(true);
+
     const headers = [
       "Agent",
       "Phone",
       "Referral ID",
-      "Income Type",
-      "Business",
-      "Percentage",
-      "Amount",
-      "Cycle Date",
-      "Status",
+      "Designation",
+      "Direct Income",
+      "Diff. Income",
+      "Matching Income",
+      "Royalty Income",
+      "Cashback Income",
+      "Best Performer",
+      "Total Commission",
+      "TDS",
+      "Admin Charge",
+      "Payout Amount",
+      "Hold (payouts)",
+      "Next Cycle Date",
     ];
 
     const rows = rowsData.map((item) => [
-      item?.user?.name,
-      item?.user?.phone,
-      item?.user?.referralId,
-      item?.type,
-      item?.businessAmount,
-      item?.percentage,
-      item?.amount,
+      item?.name,
+      item?.phone,
+      item?.referralId,
+      item?.designation,
+      item?.incomeSummary?.directIncome,
+      item?.incomeSummary?.differenceIncome,
+      item?.incomeSummary?.matchingIncome,
+      item?.incomeSummary?.royaltyIncome,
+      item?.incomeSummary?.cashbackIncome,
+      item?.incomeSummary?.bestPerformanceIncome,
+      item?.incomeSummary?.totalCommission,
+      item?.incomeSummary?.tdsAmount,
+      item?.incomeSummary?.adminChargeAmount,
+      item?.incomeSummary?.payableAmount,
+      item?.payoutSummary?.holdCommission,
       formatCycleDate(item?.cycleDate),
-      item?.status,
     ]);
 
     const csv =
@@ -119,16 +134,9 @@ const Commission = ({ mood, setAlert }) => {
     setSaving(false);
   };
 
-  // console.log(paginatedData, "paginatedData")
-
   return (
     <div className="plot-container">
       <div className="table-filters">
-        <div className="page-head-title">
-          <h2>Commission</h2>
-          <Breadcrumb />
-        </div>
-
         <div className="page-tools">
           <div className="searchItem">
             <NiSearch />
@@ -152,14 +160,14 @@ const Commission = ({ mood, setAlert }) => {
             <span>Name</span>
             <span>Designation</span>
             <span>Referral ID</span>
+            <span>Referral Income</span>
             <span>Direct Income</span>
             <span>Diff. Income</span>
             <span>Matching Income</span>
             <span>Royalty Income</span>
             <span>Cashback Income</span>
             <span>Best Performer</span>
-            <span>fest. & Bonz.</span>
-            <span>Total Income</span>
+            <span>Total Commission</span>
             <span>TDS</span>
             <span>Admin Charge</span>
             <span>Payout Amount</span>
@@ -177,9 +185,7 @@ const Commission = ({ mood, setAlert }) => {
                 index={index}
                 item={item}
                 mood={mood}
-                exportToExcel={exportToExcel}
-                mood={mood}
-                setAler={setAlert}
+                setAlert={setAlert}
               />
             ))
           )}
