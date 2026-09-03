@@ -126,11 +126,11 @@ const Income = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
 
-            <DashboardCard
+            {/* <DashboardCard
               title="Pending Income"
               value={`₹${formatCurrency(pendingIncome)}`}
               icons={<NiPayments />}
-            />
+            /> */}
 
             <DashboardCard
               title="Today's Income"
@@ -295,8 +295,8 @@ const Income = ({ mood, setAlert }) => {
                           .replace(/\b\w/g, (l) => l.toUpperCase())}
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
-                      <span>{item?.type !== "referal_income" ?
-                        `${item?.payment?.customer?.name} (${item?.payment?.customer?.referralId})` || "-" :
+                      <span>{!item?.fromUser  ?
+                        `${item?.payment?.customer?.name} (Payment)` || "-" :
                         `${item?.fromUser?.name} (${item?.fromUser?.referralId})`}</span>
                       <span
                         className={`status ${item.status === "credited" ? "active" : "pending"
