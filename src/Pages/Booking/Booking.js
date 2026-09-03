@@ -22,6 +22,7 @@ import axios from "axios";
 import Host from "../../Host/Host";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import AddBookingForm from "../../components/UserForm/AddBookingForm";
+import Pagination from "../../components/Pagination/Pagination";
 const ITEMS_PER_PAGE = 12;
 
 const Booking = ({ mood, setAlert, landingPage }) => {
@@ -285,31 +286,11 @@ const Booking = ({ mood, setAlert, landingPage }) => {
       </div>
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={currentPage === i + 1 ? "active" : ""}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          setPage={setCurrentPage}
+        />
       )}
       <AddLocationModal
         open={open}

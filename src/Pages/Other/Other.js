@@ -37,6 +37,7 @@ import {
 import NiUser from "../../icons/ni-user";
 import Stars from "../../components/Utils/Stars";
 import UserForm from "../../components/UserForm/UserForm";
+import Pagination from "../../components/Pagination/Pagination";
 
 const ITEMS_PER_PAGE = 25;
 const Other = ({ mood, setAlert, data }) => {
@@ -970,31 +971,11 @@ const Other = ({ mood, setAlert, data }) => {
         </div>
 
         {totalPages > 1 && (
-          <div className="pagination">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              Prev
-            </button>
-
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                className={currentPage === i + 1 ? "active" : ""}
-                onClick={() => setCurrentPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          setPage={setCurrentPage}
+        />
         )}
       </div>
       <AddLocationModal

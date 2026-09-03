@@ -32,6 +32,7 @@ import { uploadImage } from "../LandingSetting/LandingApi";
 import SearchSelect from "../../components/SearchItems/SearchSelect";
 import NiCredit from "../../icons/ni-credit";
 import NiDebit from "../../icons/ni-debit";
+import Pagination from "../../components/Pagination/Pagination";
 
 const Accounts = ({ mood, setAlert }) => {
     const dispatch = useDispatch();
@@ -247,28 +248,11 @@ const Accounts = ({ mood, setAlert }) => {
                         </div>
 
                     </div>
-                    <div className="pagination">
-                        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-                            Prev
-                        </button>
-
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i}
-                                className={page === i + 1 ? "active" : ""}
-                                onClick={() => setPage(i + 1)}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-
-                        <button
-                            disabled={page === totalPages}
-                            onClick={() => setPage(page + 1)}
-                        >
-                            Next
-                        </button>
-                    </div>
+                    <Pagination
+                        page={page}
+                        totalPages={totalPages}
+                        setPage={setPage}
+                    />
                 </div>
                 <ViewModal
                     open={viewOpen}

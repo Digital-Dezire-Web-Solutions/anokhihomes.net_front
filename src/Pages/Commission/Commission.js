@@ -9,6 +9,7 @@ import CommissionTable from "../../components/Cards/CommissionTable";
 
 import { useDispatch, useSelector } from "react-redux";
 import { getIncomeSummary } from "../../Redux/Slices/AppSlices";
+import Pagination from "../../components/Pagination/Pagination";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -192,30 +193,11 @@ const Commission = ({ mood, setAlert }) => {
         </div>
       </div>
 
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          Prev
-        </button>
-
-        {Array.from({
-          length: totalPages,
-        }).map((_, i) => (
-          <button
-            key={i}
-            className={page === i + 1 ? "active" : ""}
-            onClick={() => setPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+     <Pagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+        />
 
       <ViewModal
         open={exportOpen}

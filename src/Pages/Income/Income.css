@@ -1,4 +1,32 @@
-.table.income-table .table-head ,
+.table.income-table .table-head,
 .table.income-table .table-row {
-    grid-template-columns: 40px 100px 1fr 180px 120px 1fr 100px 60px;
+  grid-template-columns: 40px 100px 1fr 180px 120px 1fr 100px 60px;
+}
+
+.income-tabs {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+.income-tabs button {
+  border-radius: 20px 20px 0 0;
+  border: none;
+  cursor: pointer;
+  background-color: #fff;
+  box-shadow:
+    0px 3px 8px #00000014,
+    0 0 #0000,
+    0 0 #0000,
+    0 0 #0000,
+    0px 3px 8px #00000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 30px 8px;
+}
+
+.income-tabs button.active {
+  background-color: var(--mood-color);
+  color: white;
 }

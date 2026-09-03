@@ -18,6 +18,7 @@ import axios from "axios";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import { uploadImage } from "../LandingSetting/LandingApi";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import Pagination from "../../components/Pagination/Pagination";
 
 const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
 const PAYABLE_STATUSES = ["hold", "released"];
@@ -196,7 +197,6 @@ const Payout = ({ mood, setAlert }) => {
     setSaving(false);
   };
 
-
   const getExportUsers = () => {
     if (!payout || !Array.isArray(payout)) {
       return [];
@@ -263,9 +263,7 @@ const Payout = ({ mood, setAlert }) => {
     const columnWidths = Object.keys(rows[0]).map((key) => {
       const maxLength = Math.max(
         key.length,
-        ...rows.map((row) =>
-          String(row[key] ?? "").length
-        )
+        ...rows.map((row) => String(row[key] ?? "").length),
       );
 
       return {
@@ -277,11 +275,7 @@ const Payout = ({ mood, setAlert }) => {
 
     const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Users"
-    );
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
 
     // in exportToExcel:
     const fileName = exportCycle
@@ -336,17 +330,11 @@ const Payout = ({ mood, setAlert }) => {
     doc.text(title, 14, 15);
 
     doc.setFontSize(9);
-    doc.text(
-      `Total Records: ${rows.length}`,
-      14,
-      22
-    );
+    doc.text(`Total Records: ${rows.length}`, 14, 22);
 
     const columns = Object.keys(rows[0]);
 
-    const body = rows.map((row) =>
-      columns.map((column) => row[column] ?? "-")
-    );
+    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
 
     const columnStyles = {};
 
@@ -449,7 +437,6 @@ const Payout = ({ mood, setAlert }) => {
         bottom: 8,
       },
     });
-
 
     const fileName = exportCycle
       ? `payouts-${exportCycle.split("_")[0]?.slice(0, 10)}-to-${exportCycle.split("_")[1]?.slice(0, 10)}.pdf`
@@ -614,12 +601,13 @@ const Payout = ({ mood, setAlert }) => {
                     <span>
                       <span
                         style={{ textTransform: "capitalize" }}
-                        className={`status ${item.status === "paid"
-                          ? "active"
-                          : item.status === "released"
-                            ? "pending"
-                            : "failed"
-                          }`}
+                        className={`status ${
+                          item.status === "paid"
+                            ? "active"
+                            : item.status === "released"
+                              ? "pending"
+                              : "failed"
+                        }`}
                       >
                         {item.status}
                       </span>
@@ -651,28 +639,7 @@ const Payout = ({ mood, setAlert }) => {
             </div>
           </div>
 
-          <div className="pagination">
-            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
-            </button>
-
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                className={page === i + 1 ? "active" : ""}
-                onClick={() => setPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              Next
-            </button>
-          </div>
+          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
         </div>
 
         <ViewModal
@@ -744,12 +711,13 @@ const Payout = ({ mood, setAlert }) => {
                 <strong>Status :</strong>
                 <span
                   style={{ textTransform: "capitalize" }}
-                  className={`status ${selectedExpense?.status === "paid"
-                    ? "active"
-                    : selectedExpense?.status === "released"
-                      ? "pending"
-                      : "failed"
-                    }`}
+                  className={`status ${
+                    selectedExpense?.status === "paid"
+                      ? "active"
+                      : selectedExpense?.status === "released"
+                        ? "pending"
+                        : "failed"
+                  }`}
                 >
                   {selectedExpense?.status}
                 </span>
@@ -828,8 +796,9 @@ const Payout = ({ mood, setAlert }) => {
                         <strong>Status :</strong>
                         <span
                           style={{ textTransform: "capitalize" }}
-                          className={`status ${h.status === "credited" ? "active" : "pending"
-                            }`}
+                          className={`status ${
+                            h.status === "credited" ? "active" : "pending"
+                          }`}
                         >
                           {h.status}
                         </span>
@@ -945,18 +914,16 @@ const Payout = ({ mood, setAlert }) => {
                   formData.mode === "cash" ||
                   formData.mode === "cheque" ||
                   formData.mode === "bank") && (
-                    <div className="field">
-                      <label>
-                        Attachment *
-                      </label>
-                      <input
-                        id="site-note-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setNoteImage(e.target.files[0])}
-                      />
-                    </div>
-                  )}
+                  <div className="field">
+                    <label>Attachment *</label>
+                    <input
+                      id="site-note-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setNoteImage(e.target.files[0])}
+                    />
+                  </div>
+                )}
                 <div className="modal-actions">
                   <button disabled={saving} onClick={handlePay}>
                     {saving ? "Processing..." : "Confirm Payout"}
@@ -1042,7 +1009,6 @@ const Payout = ({ mood, setAlert }) => {
               <FileText size={18} />
               PDF
             </button>
-
           </div>
 
           {/* </div> */}

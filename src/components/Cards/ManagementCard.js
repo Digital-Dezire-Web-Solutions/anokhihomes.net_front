@@ -421,13 +421,13 @@ const ManagementCard = ({
       </div>
       <div className="user-card-bottom">
         <div className="user-card-bottom-left">
-          <p>Current Status</p>
+          <p style={{color: "#a70304", fontWeight: "bold"}}>Current Status</p>
           <p>Date</p>
           <p>Phone No.</p>
           {mood !== "agent" && <p>Associate</p>}
         </div>
         <div className="user-card-bottom-right">
-          <p>{item.currentStep.step} ({item.currentStep.status})</p>
+          <p style={{color: "#a70304", fontWeight: "bold"}}>{item.currentStep.step} ({item.currentStep.status})</p>
           <p>{formatDate(item?.createdAt)}</p>
           <p>{item?.phone}</p>
           {mood !== "agent" && <p>{item?.agent?.name || ""}</p>}

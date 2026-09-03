@@ -12,6 +12,7 @@ import axios from "axios";
 import Host from "../../Host/Host";
 import { formatCurrency } from "../Utils/FormatCurrency";
 import AddPaymentForm from "../UserForm/AddPaymentForm";
+import Pagination from "../Pagination/Pagination";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -249,28 +250,11 @@ const PaymentTable = ({ data, mood, setAlert }) => {
             ))
         )}
       </div>
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-          Prev
-        </button>
-
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <button
-            key={i}
-            className={page === i + 1 ? "active" : ""}
-            onClick={() => setPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+      <Pagination
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+        />
       <AddLocationModal
         open={open}
         onClose={() => setOpen(false)}

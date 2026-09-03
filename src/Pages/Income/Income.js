@@ -12,6 +12,7 @@ import formatDate from "../../components/DateFormate/DateFormate";
 import "./Income.css";
 import NiOpenEye from "../../icons/ni-openEye";
 import ViewModal from "../../components/Modals/ViewModal";
+import Pagination from "../../components/Pagination/Pagination";
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -30,8 +31,12 @@ const Income = ({ mood, setAlert }) => {
     dispatch(getIncome());
   }, []);
 
+  const [tabActive, setTabActive] = useState("other");
+
   const filtered = useMemo(() => {
-    return incomeHistory?.filter((income) => {
+    return (incomeHistory || []).filter((income) => {
+
+      // Search
       const searchValue = search.toLowerCase();
 
       const matchSearch =
@@ -40,28 +45,40 @@ const Income = ({ mood, setAlert }) => {
         income?.user?.phone?.includes(search) ||
         income?.user?.referralId?.toLowerCase()?.includes(searchValue);
 
+      // Designation
       const matchDesignation =
         designationFilter === "" ||
         income?.user?.designation === designationFilter;
 
+      // Status
       const matchStatus =
-        statusFilter === "" || income?.status === statusFilter;
+        statusFilter === "" ||
+        income?.status === statusFilter;
 
+      // Date
       const incomeDate = new Date(income.createdAt);
 
       const matchFrom =
-        !fromDate || incomeDate >= new Date(fromDate);
+        !fromDate ||
+        incomeDate >= new Date(fromDate);
 
       const matchTo =
         !toDate ||
         incomeDate <= new Date(`${toDate}T23:59:59`);
+
+      // Tab
+      const matchTab =
+        tabActive === "referral"
+          ? income?.type === "referal_income"
+          : income?.type !== "referal_income";
 
       return (
         matchSearch &&
         matchDesignation &&
         matchStatus &&
         matchFrom &&
-        matchTo
+        matchTo &&
+        matchTab
       );
     });
   }, [
@@ -71,6 +88,7 @@ const Income = ({ mood, setAlert }) => {
     fromDate,
     toDate,
     incomeHistory,
+    tabActive,
   ]);
 
   const totalPages = Math.ceil(filtered?.length / ITEMS_PER_PAGE);
@@ -100,6 +118,17 @@ const Income = ({ mood, setAlert }) => {
         return new Date(i.createdAt).toDateString() === today;
       })
       ?.reduce((acc, item) => acc + item.amount, 0) || 0;
+
+  const referralIncome =
+    incomeHistory
+      ?.filter((i) => i.type === "referal_income")
+      ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+
+  const otherIncome =
+    incomeHistory
+      ?.filter((i) => i.type !== "referal_income")
+      ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+
 
   // console.log(incomeHistory, "incomeHistory");
   return (
@@ -145,8 +174,18 @@ const Income = ({ mood, setAlert }) => {
             />
 
             <DashboardCard
-              title="My Wallet"
+              title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
               value={`₹${formatCurrency(userDetail?.wallet || 0)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Total Referral Income"
+              value={`₹${formatCurrency(referralIncome || 0)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Other Incomes"
+              value={`₹${formatCurrency(otherIncome || 0)}`}
               icons={<NiPayments />}
             />
           </div>
@@ -265,6 +304,27 @@ const Income = ({ mood, setAlert }) => {
               />
             </div>
           </div>
+          <div className="income-tabs">
+            <button
+              className={tabActive === "referral" ? "active" : ""}
+              onClick={() => {
+                setTabActive("referral");
+                setPage(1);
+              }}
+            >
+              Referral Income
+            </button>
+
+            <button
+              className={tabActive === "other" ? "active" : ""}
+              onClick={() => {
+                setTabActive("other");
+                setPage(1);
+              }}
+            >
+              Other Income
+            </button>
+          </div>
           {mood === "admin" ? (
             <div className="card table-box">
               <div className="table income-table">
@@ -295,7 +355,7 @@ const Income = ({ mood, setAlert }) => {
                           .replace(/\b\w/g, (l) => l.toUpperCase())}
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
-                      <span>{!item?.fromUser  ?
+                      <span>{!item?.fromUser ?
                         `${item?.payment?.customer?.name} (Payment)` || "-" :
                         `${item?.fromUser?.name} (${item?.fromUser?.referralId})`}</span>
                       <span
@@ -334,28 +394,7 @@ const Income = ({ mood, setAlert }) => {
               )}
             </div>
           )}
-          <div className="pagination">
-            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
-            </button>
-
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                className={page === i + 1 ? "active" : ""}
-                onClick={() => setPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              Next
-            </button>
-          </div>
+          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
         </div>
         <ViewModal
           open={viewOpen}

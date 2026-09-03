@@ -15,6 +15,7 @@ import Host from "../../Host/Host";
 import axios from "axios";
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
+import Pagination from "../Pagination/Pagination";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -362,28 +363,7 @@ const DataTable = ({ data, mood, setAlert }) => {
             ))
         )}
       </div>
-      <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-          Prev
-        </button>
-
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <button
-            key={i}
-            className={page === i + 1 ? "active" : ""}
-            onClick={() => setPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       <AddLocationModal
         open={open}
         onClose={() => setOpen(false)}

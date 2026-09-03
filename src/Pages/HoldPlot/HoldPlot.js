@@ -3,6 +3,7 @@ import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import { getPlotHold } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import PlotHoldCard from "../../components/Cards/PlotHoldCard";
+import Pagination from "../../components/Pagination/Pagination";
 const ITEMS_PER_PAGE = 16;
 
 const HoldPlot = ({ mood, setAlert }) => {
@@ -97,31 +98,36 @@ const HoldPlot = ({ mood, setAlert }) => {
       </div>
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
+        // <div className="pagination">
+        //   <button
+        //     disabled={currentPage === 1}
+        //     onClick={() => setCurrentPage((p) => p - 1)}
+        //   >
+        //     Prev
+        //   </button>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={currentPage === i + 1 ? "active" : ""}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
+        //   {Array.from({ length: totalPages }).map((_, i) => (
+        //     <button
+        //       key={i}
+        //       className={currentPage === i + 1 ? "active" : ""}
+        //       onClick={() => setCurrentPage(i + 1)}
+        //     >
+        //       {i + 1}
+        //     </button>
+        //   ))}
 
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
+        //   <button
+        //     disabled={currentPage === totalPages}
+        //     onClick={() => setCurrentPage((p) => p + 1)}
+        //   >
+        //     Next
+        //   </button>
+        // </div>
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          setPage={setCurrentPage}
+        />
       )}
     </div>
   );
