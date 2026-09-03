@@ -1,3 +1,6 @@
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import React, { useEffect, useMemo, useState } from "react";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import DashboardCard from "../../components/Cards/DashboardCard";
@@ -13,16 +16,11 @@ import ViewModal from "../../components/Modals/ViewModal";
 import Host from "../../Host/Host";
 import axios from "axios";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
+import { uploadImage } from "../LandingSetting/LandingApi";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 
-// Backend Payout.status enum is: hold | released | paid | cancelled
-// (see models/Payout.js) — there is no "payable" / "processing" / "partial".
 const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
-
-// A payout can be paid only while it's still hold or released.
 const PAYABLE_STATUSES = ["hold", "released"];
-
-// Human-readable type labels for the IncomeHistory breakdown shown
-// in the view modal (matches TYPE_FIELD_MAP keys in generatePayouts.js).
 const INCOME_TYPE_LABELS = {
   direct_income: "Direct Income",
   difference_income: "Difference Income",
@@ -52,6 +50,14 @@ const Payout = ({ mood, setAlert }) => {
   const [statusFilter, setStatusFilter] = useState("");
   const [cycleFilter, setCycleFilter] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
+  const [formData, setFormData] = useState({});
+  const [noteImage, setNoteImage] = useState(null);
+  const [imageModal, setImageModal] = useState({
+    open: false,
+    src: "",
+  });
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportCycle, setExportCycle] = useState("");
 
   useEffect(() => {
     dispatch(getAccountDetails());
@@ -146,17 +152,26 @@ const Payout = ({ mood, setAlert }) => {
       setSaving(true);
 
       const token = localStorage.getItem("token");
-
+      let attachment = "";
+      if (noteImage) {
+        const upload = await uploadImage(noteImage);
+        attachment = upload.url;
+      }
+      const payload = {
+        paymentMode: formData.mode,
+        transactionId: formData.transactionId || "",
+        attachment: attachment || "",
+      };
       await axios.put(
         `${Host}/api/payout/pay/${selectedExpense._id}`,
-        {},
+        payload,
         {
           headers: {
             "auth-token": token,
           },
         },
       );
-
+      console.log(payload, "payload");
       dispatch(getPayout());
 
       setAlert({
@@ -179,6 +194,279 @@ const Payout = ({ mood, setAlert }) => {
     }
 
     setSaving(false);
+  };
+
+
+  const getExportUsers = () => {
+    if (!payout || !Array.isArray(payout)) {
+      return [];
+    }
+
+    if (!exportCycle) {
+      return payout;
+    }
+
+    return payout.filter(
+      (item) => `${item.cycleStart}_${item.cycleEnd}` === exportCycle,
+    );
+  };
+
+  /* =====================================================
+     FORMAT USER DATA FOR EXPORT
+  ===================================================== */
+
+  const getExportRows = () => {
+    const selectedUsers = getExportUsers();
+
+    return selectedUsers.map((item) => {
+      return {
+        Name: item?.user?.name || "-",
+        Phone: item?.user?.phone || "-",
+        Email: item?.user?.email || "-",
+        UserID: item?.user?.referralId || "-",
+        Cycle: `${formatDate(item.cycleStart)} - ${formatDate(item.cycleEnd)}`,
+        Gross: item?.grossAmount,
+        TDS: item?.tdsAmount,
+        AdminCharge: item?.adminChargeAmount,
+        Net: item?.netAmount,
+        Status: item?.status,
+        PaymentMode: item?.paymentMode || "-",
+        TransactionId: item?.transactionId || "-",
+      };
+    });
+  };
+
+  /* =====================================================
+     EXPORT EXCEL
+  ===================================================== */
+
+  const exportToExcel = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({
+        message: "No users found for selected filter",
+        status: "Error",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    /* Auto column width */
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) =>
+          String(row[key] ?? "").length
+        )
+      );
+
+      return {
+        wch: Math.min(maxLength + 3, 40),
+      };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Users"
+    );
+
+    // in exportToExcel:
+    const fileName = exportCycle
+      ? `payouts-${exportCycle.split("_")[0]?.slice(0, 10)}-to-${exportCycle.split("_")[1]?.slice(0, 10)}.xlsx`
+      : "all-payouts.xlsx";
+
+    XLSX.writeFile(workbook, fileName);
+
+    setAlert({
+      message: "Excel exported successfully",
+      status: "Success",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+     EXPORT PDF
+  ===================================================== */
+
+  const exportToPDF = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({
+        message: "No users found for selected filter",
+        status: "Error",
+      });
+
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const cycleLabel = cycles.find((c) => c.value === exportCycle)?.label;
+
+    const title = exportCycle ? `Payouts — ${cycleLabel}` : "All Payouts";
+
+    doc.setFontSize(18);
+    doc.text(title, 14, 15);
+
+    doc.setFontSize(9);
+    doc.text(
+      `Total Records: ${rows.length}`,
+      14,
+      22
+    );
+
+    const columns = Object.keys(rows[0]);
+
+    const body = rows.map((row) =>
+      columns.map((column) => row[column] ?? "-")
+    );
+
+    const columnStyles = {};
+
+    columns.forEach((column, index) => {
+      let width = 18;
+
+      switch (column) {
+        case "Name":
+          width = 20;
+          break;
+
+        case "Phone":
+          width = 17;
+          break;
+
+        case "Email":
+          width = 28;
+          break;
+
+        case "UserID":
+          width = 20;
+          break;
+
+        case "Cycle":
+          width = 20;
+          break;
+
+        case "Gross":
+          width = 28;
+          break;
+
+        case "TDS":
+          width = 17;
+          break;
+
+        case "Admin Charge":
+          width = 20;
+          break;
+
+        case "Net":
+          width = 25;
+          break;
+
+        case "Status":
+          width = 17;
+          break;
+
+        case "Payment Mode":
+          width = 20;
+          break;
+
+        case "Transaction Id":
+          width = 45;
+          break;
+
+        default:
+          width = 18;
+      }
+
+      columnStyles[index] = {
+        cellWidth: width,
+      };
+    });
+
+    autoTable(doc, {
+      head: [columns],
+      body,
+
+      startY: 27,
+
+      theme: "grid",
+
+      tableWidth: "wrap",
+
+      styles: {
+        fontSize: 5.5,
+        cellPadding: 1.2,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+
+      headStyles: {
+        fontSize: 5.5,
+        fontStyle: "bold",
+        valign: "middle",
+      },
+
+      bodyStyles: {
+        valign: "middle",
+      },
+
+      columnStyles,
+
+      margin: {
+        top: 27,
+        left: 5,
+        right: 5,
+        bottom: 8,
+      },
+    });
+
+
+    const fileName = exportCycle
+      ? `payouts-${exportCycle.split("_")[0]?.slice(0, 10)}-to-${exportCycle.split("_")[1]?.slice(0, 10)}.pdf`
+      : "all-payouts.pdf";
+
+    doc.save(fileName);
+
+    setAlert({
+      message: "PDF exported successfully",
+      status: "Success",
+    });
+
+    setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+
+    setExportOpen(false);
   };
 
   return (
@@ -265,15 +553,24 @@ const Payout = ({ mood, setAlert }) => {
                   setPage(1);
                 }}
               >
-                <option value="">All Cycles</option>
-
                 {cycles.map((cycle) => (
                   <option key={cycle.value} value={cycle.value}>
                     {cycle.label}
                   </option>
                 ))}
+                <option value="">All Cycles</option>
               </select>
             </div>
+            <button
+              className="add-button"
+              onClick={() => {
+                setExportCycle("");
+                setExportOpen(true);
+              }}
+            >
+              <Download size={18} />
+              Export
+            </button>
           </div>
           <div className="card table-box">
             <div className="table payout-table">
@@ -317,13 +614,12 @@ const Payout = ({ mood, setAlert }) => {
                     <span>
                       <span
                         style={{ textTransform: "capitalize" }}
-                        className={`status ${
-                          item.status === "paid"
-                            ? "active"
-                            : item.status === "released"
-                              ? "pending"
-                              : "failed"
-                        }`}
+                        className={`status ${item.status === "paid"
+                          ? "active"
+                          : item.status === "released"
+                            ? "pending"
+                            : "failed"
+                          }`}
                       >
                         {item.status}
                       </span>
@@ -333,19 +629,21 @@ const Payout = ({ mood, setAlert }) => {
                       <span onClick={() => openView(item)}>
                         <NiOpenEye />
                       </span>
-                      <div className="modal-actions">
-                        {PAYABLE_STATUSES.includes(item.status) && (
-                          <button
-                            className="table-btn"
-                            onClick={() => {
-                              setSelectedExpense(item);
-                              setOpen(true);
-                            }}
-                          >
-                            Pay
-                          </button>
-                        )}
-                      </div>
+                      {mood === "admin" && (
+                        <div className="modal-actions">
+                          {PAYABLE_STATUSES.includes(item.status) && (
+                            <button
+                              className="table-btn"
+                              onClick={() => {
+                                setSelectedExpense(item);
+                                setOpen(true);
+                              }}
+                            >
+                              Pay
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -446,13 +744,12 @@ const Payout = ({ mood, setAlert }) => {
                 <strong>Status :</strong>
                 <span
                   style={{ textTransform: "capitalize" }}
-                  className={`status ${
-                    selectedExpense?.status === "paid"
-                      ? "active"
-                      : selectedExpense?.status === "released"
-                        ? "pending"
-                        : "failed"
-                  }`}
+                  className={`status ${selectedExpense?.status === "paid"
+                    ? "active"
+                    : selectedExpense?.status === "released"
+                      ? "pending"
+                      : "failed"
+                    }`}
                 >
                   {selectedExpense?.status}
                 </span>
@@ -464,6 +761,35 @@ const Payout = ({ mood, setAlert }) => {
                   {formatDate(selectedExpense?.paidAt)}
                 </p>
               )}
+
+              {selectedExpense?.paymentMode && (
+                <p>
+                  <strong>Payment Mode :</strong>
+                  {selectedExpense?.paymentMode}
+                </p>
+              )}
+              {selectedExpense?.transactionId && (
+                <p>
+                  <strong>Transaction Id :</strong>
+                  {selectedExpense?.transactionId}
+                </p>
+              )}
+              {selectedExpense?.attachment && (
+                <p>
+                  {/* <strong>Attachment :</strong> */}
+                  <img
+                    src={selectedExpense?.attachment}
+                    className="note-preview"
+                    alt=""
+                    onClick={() =>
+                      setImageModal({
+                        open: true,
+                        src: selectedExpense?.attachment,
+                      })
+                    }
+                  />
+                </p>
+              )}
             </>
           ) : (
             <div className="report-view-box-right active">
@@ -471,8 +797,6 @@ const Payout = ({ mood, setAlert }) => {
                 <p>Loading...</p>
               ) : expenseDetail?.historyCount ? (
                 <>
-                  
-
                   {(expenseDetail.histories || []).map((h) => (
                     <div className="history-card" key={h._id}>
                       <h5>
@@ -504,9 +828,8 @@ const Payout = ({ mood, setAlert }) => {
                         <strong>Status :</strong>
                         <span
                           style={{ textTransform: "capitalize" }}
-                          className={`status ${
-                            h.status === "credited" ? "active" : "pending"
-                          }`}
+                          className={`status ${h.status === "credited" ? "active" : "pending"
+                            }`}
                         >
                           {h.status}
                         </span>
@@ -570,14 +893,159 @@ const Payout = ({ mood, setAlert }) => {
               <p>
                 This will mark the full net amount as paid and cannot be undone.
               </p>
+              <>
+                <h4>Payment</h4>
 
-              <div className="modal-actions">
-                <button disabled={saving} onClick={handlePay}>
-                  {saving ? "Processing..." : "Confirm Payout"}
-                </button>
-              </div>
+                <div className="field">
+                  <label>Payment Mode</label>
+                  <select
+                    value={formData.mode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, mode: e.target.value })
+                    }
+                  >
+                    <option value="">Select Mode</option>
+                    <option value="cash">Cash</option>
+                    <option value="upi">UPI</option>
+                    <option value="cheque">Cheque</option>
+                    <option value="bank">Bank Transfer</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label>
+                    Amount
+                    <small style={{ fontSize: "12px", color: "green" }}>
+                      ₹{formatCurrency(selectedExpense.netAmount)}
+                    </small>
+                  </label>
+                  <input
+                    type="number"
+                    value={selectedExpense.netAmount}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
+                  />
+                </div>
+                {(formData.mode === "upi" || formData.mode === "bank") && (
+                  <div className="field">
+                    <label>Transaction ID *</label>
+                    <input
+                      placeholder="Enter Transaction ID"
+                      value={formData.transactionId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          transactionId: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+                {(formData.mode === "upi" ||
+                  formData.mode === "cash" ||
+                  formData.mode === "cheque" ||
+                  formData.mode === "bank") && (
+                    <div className="field">
+                      <label>
+                        Attachment *
+                      </label>
+                      <input
+                        id="site-note-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setNoteImage(e.target.files[0])}
+                      />
+                    </div>
+                  )}
+                <div className="modal-actions">
+                  <button disabled={saving} onClick={handlePay}>
+                    {saving ? "Processing..." : "Confirm Payout"}
+                  </button>
+                </div>
+              </>
             </>
           )}
+        </AddLocationModal>
+        <AddLocationModal
+          open={imageModal.open}
+          onClose={() =>
+            setImageModal({
+              open: false,
+              src: "",
+            })
+          }
+          title="Image Preview"
+        >
+          <div className="image-preview-modal">
+            <img
+              src={imageModal.src}
+              alt="Preview"
+              className="image-preview-full"
+            />
+          </div>
+        </AddLocationModal>
+        <AddLocationModal
+          open={exportOpen}
+          onClose={() => setExportOpen(false)}
+          title="Export User"
+        >
+          {/* <div className="export-modal"> */}
+          <div className="export-modal-body">
+            <p>Select which cycle you want to export</p>
+
+            <label>Payouts in selection: {getExportUsers().length}</label>
+
+            <select
+              value={exportCycle}
+              onChange={(e) => setExportCycle(e.target.value)}
+            >
+              <option value="">All Cycles</option>
+              {cycles.map((cycle) => (
+                <option key={cycle.value} value={cycle.value}>
+                  {cycle.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="export-fields">
+              <p>Export includes:</p>
+              <span>Name</span>
+              <span>Phone</span>
+              <span>Email</span>
+              <span>UserID</span>
+              <span>Cycle</span>
+              <span>Gross</span>
+              <span>TDS</span>
+              <span>Admin Charge</span>
+              <span>Net</span>
+              <span>Status</span>
+              <span>Payment Mode</span>
+              <span>Transaction Id</span>
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="export-excel-btn"
+              onClick={exportToExcel}
+            >
+              <FileSpreadsheet size={18} />
+              Excel
+            </button>
+
+            <button
+              type="button"
+              className="export-pdf-btn"
+              onClick={exportToPDF}
+            >
+              <FileText size={18} />
+              PDF
+            </button>
+
+          </div>
+
+          {/* </div> */}
         </AddLocationModal>
       </div>
     </div>

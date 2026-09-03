@@ -363,7 +363,7 @@ const ManagementCard = ({
     return text?.toLowerCase().includes("accepted by");
   };
 
-  // console.log(item, "item")
+  console.log(item, "item")
   // console.log(selectedProjects, "allCoselectedProjectslonies")
   return (
     <div className="user-card card" onClick={dashboard || undefined}>
@@ -378,6 +378,7 @@ const ManagementCard = ({
               >
                 {item?.status}
               </span>
+              
             </h4>
             {/* <p>{item.id}</p> */}
           </div>
@@ -420,11 +421,13 @@ const ManagementCard = ({
       </div>
       <div className="user-card-bottom">
         <div className="user-card-bottom-left">
+          <p>Current Status</p>
           <p>Date</p>
           <p>Phone No.</p>
           {mood !== "agent" && <p>Associate</p>}
         </div>
         <div className="user-card-bottom-right">
+          <p>{item.currentStep.step} ({item.currentStep.status})</p>
           <p>{formatDate(item?.createdAt)}</p>
           <p>{item?.phone}</p>
           {mood !== "agent" && <p>{item?.agent?.name || ""}</p>}

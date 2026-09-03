@@ -4,9 +4,7 @@ import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import { useNavigate } from "react-router-dom";
 import NiOpenEye from "../../icons/ni-openEye";
 import NiSearch from "../../icons/ni-search";
-import {
-  LucidePlus,
-} from "lucide-react";
+import { LucidePlus } from "lucide-react";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import DeleteModal from "../../components/Modals/DeleteModal";
 import NiClosseye from "../../icons/ni-closseye";
@@ -28,7 +26,7 @@ const MyCustomers = ({ mood, setAlert, data }) => {
     dispatch(getCustomers());
   }, []);
 
-//   console.log(customers, "customers");
+  //   console.log(customers, "customers");
 
   // console.log(staffRoles, "staffRoles")
   const navigate = useNavigate();
@@ -206,7 +204,7 @@ const MyCustomers = ({ mood, setAlert, data }) => {
             <span>User ID</span>
             <span>Phone</span>
             <span>Email</span>
-            <span>Address</span>
+            <span>Stage</span>
             <span>Status</span>
             <span>Actions</span>
           </div>
@@ -239,7 +237,32 @@ const MyCustomers = ({ mood, setAlert, data }) => {
               <span>{item?.referralId}</span>
               <span className="title">{item?.phone}</span>
               <span className="title">{item.email}</span>
-              <span className="title">{item.address || "-"}</span>
+              <span className="title">
+                {item.stage.type || "-"}{" "}
+                <span
+                  className={`status ${
+                    item.stage.status === "assigned" ||
+                    item.stage.status === "scheduled" ||
+                    item.stage.status === "unassigned" ||
+                    item.stage.status === "pending"
+                      ? "pending"
+                      : item.stage.status === "approval" ||
+                          item.stage.status === "new" ||
+                          item.stage.status === "rescheduled"
+                        ? "pending2"
+                        : item.stage.status === "completed" ||
+                            item.stage.status === "confirmed" ||
+                            item.stage.status === "converted"
+                          ? "active"
+                          : item.stage.status === "lost" ||
+                              item.stage.status === "rejected"
+                            ? "lost"
+                            : item.stage.status
+                  }`}
+                >
+                  {item.stage.status}
+                </span>
+              </span>
               <span
                 className={`status ${item.status === "approval" ? "pending" : item.status}`}
               >
