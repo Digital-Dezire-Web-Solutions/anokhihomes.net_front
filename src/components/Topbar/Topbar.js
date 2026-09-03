@@ -227,8 +227,8 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
             </div>
           )}
         </div>
-        {/* {mood !== "admin" && (
-          <> */}
+        {mood !== "admin" && (
+          <>
             <Floating />
             <div
               className="floating-menu-btn"
@@ -236,8 +236,8 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
             >
               <span>Offers & Bonenza</span>
             </div>
-          {/* </>
-        )} */}
+          </>
+        )}
         <div
           className={`sidebar-overlay ${sidebarOpen ? "active" : ""}`}
           onClick={() => setSidebarOpen(false)}
