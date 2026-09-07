@@ -654,20 +654,7 @@ const Overview = ({ userData, mood, setAlert }) => {
               <p>{localUser.directIncomePercent || 0}%</p>
             </div>
 
-            <div>
-              <label>Wallet</label>
-              <p>₹{formatCurrency(localUser.wallet)}</p>
-            </div>
-
-            <div>
-              <label>Total Income</label>
-              <p>₹{formatCurrency(localUser.totalIncome)}</p>
-            </div>
-
-            <div>
-              <label>Total Withdraw</label>
-              <p>₹{formatCurrency(localUser.totalWithdraw)}</p>
-            </div>
+            
 
             <div>
               <label>Total Team</label>
@@ -801,7 +788,7 @@ const Overview = ({ userData, mood, setAlert }) => {
               <p>{localUser.totalCustomerRatings || 0}</p>
             </div>
           </div>
-          <h4>Business Statistics</h4>
+          {/* <h4>Business Statistics</h4>
 
           <div className="overview-grid">
             <div>
@@ -833,7 +820,7 @@ const Overview = ({ userData, mood, setAlert }) => {
               <label>Cycle 2 Business</label>
               <p>₹{formatCurrency(localUser.cycle2Business)}</p>
             </div>
-          </div>
+          </div> */}
 
           <div className="section-header">
             <h4>

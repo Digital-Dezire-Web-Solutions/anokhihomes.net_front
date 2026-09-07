@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getAccountDetails,
   getIncome,
+  getIncomeSummary,
   getUserById,
   updateUser,
 } from "../../Redux/Slices/AppSlices";
@@ -28,10 +29,11 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   const navigate = useNavigate();
   const userId = location.state;
   const dispatch = useDispatch();
-  const { userDetail,incomeHistory, userById } = useSelector((state) => state.app);
+  const { userDetail,incomeHistory, incomeSummary, userById } = useSelector((state) => state.app);
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
+     dispatch(getIncomeSummary());
     if (userId) {
       dispatch(getUserById(userId));
     }
@@ -260,7 +262,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         return (
           <>
             <h4>Performance Report</h4>
-            <Report userData={userData} incomeHistory={incomeHistory}/>
+            <Report userData={userData} incomeHistory={incomeHistory} incomeSummary={incomeSummary}/>
           </>
         );
 

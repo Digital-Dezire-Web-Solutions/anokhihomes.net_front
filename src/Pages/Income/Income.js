@@ -163,7 +163,7 @@ const Income = ({ mood, setAlert }) => {
             />
             <DashboardCard
               title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
-              value={`₹${formatCurrency(currentUser?.incomeSummary?.totalCommission || 0)}`}
+              value={`₹${formatCurrency(currentUser?.incomeSummary?.payableAmount || 0)}`}
               icons={<NiPayments />}
             />
             <DashboardCard

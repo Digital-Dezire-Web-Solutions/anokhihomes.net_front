@@ -9,7 +9,7 @@ import NiPayments from "../../icons/ni-payments";
 import NiManagement from "../../icons/ni-management";
 import { formatCurrency } from "../Utils/FormatCurrency";
 
-const Report = ({ userData, incomeHistory }) => {
+const Report = ({ userData, incomeHistory, incomeSummary }) => {
   const totalIncome =
     incomeHistory?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
@@ -50,6 +50,8 @@ const Report = ({ userData, incomeHistory }) => {
     );
   }
 
+   const currentUser = incomeSummary?.find((item) => item._id === userData?._id);
+
   return (
     <div className="agent-report">
       {/* =======================
@@ -71,6 +73,11 @@ const Report = ({ userData, incomeHistory }) => {
         <DashboardCard
           title="Total Team Business"
           value={`₹${formatCurrency(userData?.totalBusiness || 0)}`}
+          icons={<NiPayments />}
+        />
+        <DashboardCard
+          title={`My Wallet`}
+          value={`₹${formatCurrency(currentUser?.incomeSummary?.payableAmount || 0)}`}
           icons={<NiPayments />}
         />
         {/* <DashboardCard
