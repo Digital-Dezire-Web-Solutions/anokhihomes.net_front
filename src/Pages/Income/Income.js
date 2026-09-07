@@ -130,7 +130,7 @@ const Income = ({ mood, setAlert }) => {
       ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
 
 
-  // console.log(incomeHistory, "incomeHistory");
+  console.log(userDetail, "incomeHistory");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -150,34 +150,20 @@ const Income = ({ mood, setAlert }) => {
             />
 
             <DashboardCard
-              title="Credited Income"
-              value={`₹${formatCurrency(creditedIncome)}`}
+              title="Total Self Business"
+              value={`₹${formatCurrency(userDetail?.selfBusiness || 0)}`}
               icons={<NiPayments />}
             />
-
+            <DashboardCard
+              title="Total Team Business"
+              value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
+              icons={<NiPayments />}
+            />
             {/* <DashboardCard
-              title="Pending Income"
-              value={`₹${formatCurrency(pendingIncome)}`}
-              icons={<NiPayments />}
-            /> */}
-
-            <DashboardCard
-              title="Today's Income"
-              value={`₹${formatCurrency(todayIncome)}`}
-              icons={<NiPayments />}
-            />
-
-            <DashboardCard
-              title="Total Transactions"
-              value={incomeHistory?.length || 0}
-              icons={<NiPayments />}
-            />
-
-            <DashboardCard
               title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
               value={`₹${formatCurrency(userDetail?.wallet || 0)}`}
               icons={<NiPayments />}
-            />
+            /> */}
             <DashboardCard
               title="Total Referral Income"
               value={`₹${formatCurrency(referralIncome || 0)}`}
@@ -186,6 +172,16 @@ const Income = ({ mood, setAlert }) => {
             <DashboardCard
               title="Other Incomes"
               value={`₹${formatCurrency(otherIncome || 0)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Total Transactions"
+              value={incomeHistory?.length || 0}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Today's Income"
+              value={`₹${formatCurrency(todayIncome)}`}
               icons={<NiPayments />}
             />
           </div>

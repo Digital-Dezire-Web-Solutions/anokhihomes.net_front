@@ -13,6 +13,7 @@ import NiUser from "../../icons/ni-user";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAccountDetails,
+  getIncome,
   getUserById,
   updateUser,
 } from "../../Redux/Slices/AppSlices";
@@ -27,9 +28,10 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   const navigate = useNavigate();
   const userId = location.state;
   const dispatch = useDispatch();
-  const { userDetail, userById } = useSelector((state) => state.app);
+  const { userDetail,incomeHistory, userById } = useSelector((state) => state.app);
   useEffect(() => {
     dispatch(getAccountDetails());
+    dispatch(getIncome());
     if (userId) {
       dispatch(getUserById(userId));
     }
@@ -258,7 +260,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         return (
           <>
             <h4>Performance Report</h4>
-            <Report userData={userData} />
+            <Report userData={userData} incomeHistory={incomeHistory}/>
           </>
         );
 
