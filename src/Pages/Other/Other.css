@@ -75,6 +75,7 @@
   padding: 12px 10px;
   /* border-left: 1px solid #e3e2e2; */
   border-right: 1px solid #e3e2e2;
+  text-transform: capitalize;
 }
 .table-head span:last-child,
 .table-row span:last-child {

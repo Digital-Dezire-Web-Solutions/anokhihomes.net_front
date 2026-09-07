@@ -3,7 +3,7 @@ import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import NiPayments from "../../icons/ni-payments";
 import PaymentCard from "../../components/Cards/PaymentCard";
-import { getAccountDetails, getIncome } from "../../Redux/Slices/AppSlices";
+import { getAccountDetails, getIncome, getIncomeSummary } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import NiSearch from "../../icons/ni-search";
 import InvoiceCard from "../../components/Cards/InvoiceCard";
@@ -16,7 +16,7 @@ import Pagination from "../../components/Pagination/Pagination";
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { userDetail, incomeHistory } = useSelector((state) => state.app);
+  const { userDetail, incomeHistory, incomeSummary } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewOpen, setViewOpen] = useState(false);
@@ -29,6 +29,7 @@ const Income = ({ mood, setAlert }) => {
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
+    dispatch(getIncomeSummary());
   }, []);
 
   const [tabActive, setTabActive] = useState("other");
@@ -129,8 +130,9 @@ const Income = ({ mood, setAlert }) => {
       ?.filter((i) => i.type !== "referal_income")
       ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
 
+  // console.log(incomeSummary,"incomeSummary")
+  const currentUser = incomeSummary.find((item) => item._id === userDetail?._id);
 
-  console.log(userDetail, "incomeHistory");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -159,18 +161,18 @@ const Income = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
               icons={<NiPayments />}
             />
-            {/* <DashboardCard
+            <DashboardCard
               title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
-              value={`₹${formatCurrency(userDetail?.wallet || 0)}`}
+              value={`₹${formatCurrency(currentUser?.incomeSummary?.totalCommission || 0)}`}
               icons={<NiPayments />}
-            /> */}
+            />
             <DashboardCard
               title="Total Referral Income"
               value={`₹${formatCurrency(referralIncome || 0)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Other Incomes"
+              title="Plot's Income"
               value={`₹${formatCurrency(otherIncome || 0)}`}
               icons={<NiPayments />}
             />
