@@ -238,8 +238,9 @@ const MyCustomers = ({ mood, setAlert, data }) => {
               <span className="title">{item?.phone}</span>
               <span className="title">{item.email}</span>
               <span className="title">
-                {item.stage.type || "-"}{" "}
+                
                 <span
+                style={{textTransform:"capitalize"}}
                   className={`status ${
                     item.stage.status === "assigned" ||
                     item.stage.status === "scheduled" ||
@@ -260,7 +261,7 @@ const MyCustomers = ({ mood, setAlert, data }) => {
                             : item.stage.status
                   }`}
                 >
-                  {item.stage.status}
+                  {item.stage.type || "-"}{" "}{item.stage.status}
                 </span>
               </span>
               <span

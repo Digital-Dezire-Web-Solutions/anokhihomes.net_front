@@ -111,7 +111,7 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
           ₹{formatCurrency(item.incomeSummary?.adminChargeAmount || 0)}
         </span>
         <span>₹{formatCurrency(item.incomeSummary?.payableAmount || 0)}</span>
-        <span>₹{formatCurrency(item.payoutSummary?.holdCommission || 0)}</span>
+        {/* <span>₹{formatCurrency(item.payoutSummary?.holdCommission || 0)}</span> */}
         <span>
           <span
             style={{ textTransform: "capitalize" }}

@@ -67,8 +67,18 @@
   display: grid;
   grid-template-columns: 40px 60px 100px 1fr 1fr 1fr 1.5fr 1fr 100px 60px;
   align-items: center;
-  padding: 12px 0;
+  /* padding: 12px 0; */
   border-bottom: 1px solid #e3e2e2;
+}
+.table-head span,
+.table-row span {
+  padding: 12px 10px;
+  /* border-left: 1px solid #e3e2e2; */
+  border-right: 1px solid #e3e2e2;
+}
+.table-head span:last-child,
+.table-row span:last-child {
+  border: none;
 }
 
 .table-head {

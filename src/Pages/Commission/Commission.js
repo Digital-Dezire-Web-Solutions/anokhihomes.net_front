@@ -172,7 +172,7 @@ const Commission = ({ mood, setAlert }) => {
             <span>TDS</span>
             <span>Admin Charge</span>
             <span>Payout Amount</span>
-            <span>Hold</span>
+            {/* <span>Hold</span> */}
             <span>Status</span>
             <span>Action</span>
           </div>
