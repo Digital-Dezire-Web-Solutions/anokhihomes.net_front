@@ -131,7 +131,7 @@ const Income = ({ mood, setAlert }) => {
       ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
 
   // console.log(incomeSummary,"incomeSummary")
-  const currentUser = incomeSummary.find((item) => item._id === userDetail?._id);
+  const currentUser = incomeSummary?.find((item) => item._id === userDetail?._id);
 
   return (
     <div className="plot-container">
