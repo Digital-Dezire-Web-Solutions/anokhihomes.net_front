@@ -41,6 +41,8 @@ const Commission = ({ mood, setAlert }) => {
 
   const filteredData = useMemo(() => {
     return commissionData.filter((item) => {
+      const matchPayable = Number(item?.incomeSummary?.payableAmount || 0) > 0;
+
       const searchText = search.toLowerCase();
 
       const matchSearch =
@@ -58,7 +60,7 @@ const Commission = ({ mood, setAlert }) => {
         (statusFilter === "credited" &&
           (item.incomeSummary?.creditedCommission || 0) > 0);
 
-      return matchSearch && matchCycle && matchStatus;
+      return matchPayable && matchSearch && matchCycle && matchStatus;
     });
   }, [commissionData, search, cycleFilter, statusFilter]);
 
@@ -184,11 +186,7 @@ const Commission = ({ mood, setAlert }) => {
         </div>
       </div>
 
-     <Pagination
-          page={page}
-          totalPages={totalPages}
-          setPage={setPage}
-        />
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
 
       <ViewModal
         open={exportOpen}

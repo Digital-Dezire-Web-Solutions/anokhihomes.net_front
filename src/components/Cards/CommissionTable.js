@@ -287,7 +287,9 @@ const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) 
               </p>
               <p>
                 <strong>Cycle Window :</strong> {formatDate(item.cycleStart)} -{" "}
-                {formatDate(item.cycleEnd)}
+                 {new Date(item.cycleEnd)
+                    .toLocaleDateString("en-GB")
+                    .replace(/\//g, "-")}
               </p>
             </div>
 
