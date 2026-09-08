@@ -43,7 +43,7 @@ const TeamNode = ({
           </div>
 
           <span>
-            {member.designation}({member.directIncomePercent}%)
+            {member.designation}
           </span>
         </div>
 

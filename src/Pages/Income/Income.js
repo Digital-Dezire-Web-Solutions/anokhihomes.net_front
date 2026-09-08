@@ -150,7 +150,11 @@ const Income = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(totalIncome)}`}
               icons={<NiPayments />}
             />
-
+<DashboardCard
+              title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
+              value={`₹${formatCurrency(currentUser?.incomeSummary?.payableAmount || 0)}`}
+              icons={<NiPayments />}
+            />
             <DashboardCard
               title="Total Self Business"
               value={`₹${formatCurrency(userDetail?.selfBusiness || 0)}`}
@@ -161,11 +165,7 @@ const Income = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
               icons={<NiPayments />}
             />
-            <DashboardCard
-              title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
-              value={`₹${formatCurrency(currentUser?.incomeSummary?.payableAmount || 0)}`}
-              icons={<NiPayments />}
-            />
+            
             <DashboardCard
               title="Total Referral Income"
               value={`₹${formatCurrency(referralIncome || 0)}`}

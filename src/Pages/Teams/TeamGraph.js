@@ -44,9 +44,7 @@ const TeamGraphNode = ({ data }) => {
 
       <div className="team-graph-info">
         <span>{member?.designation || "Sales Executive"}</span>
-        {member?.directIncomePercent !== undefined && (
-          <small>{member.directIncomePercent}%</small>
-        )}
+      
       </div>
 
       {!isRoot && (

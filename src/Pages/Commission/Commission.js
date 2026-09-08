@@ -27,11 +27,6 @@ const Commission = ({ mood, setAlert }) => {
     dispatch(getIncomeSummary());
   }, []);
 
-  // GET /commission/summary returns a flat array of per-agent
-  // objects: root User fields spread, plus incomeSummary,
-  // businessSummary, rankSummary, rewardSummary, payoutSummary,
-  // walletSummary, ratingSummary, histories, payouts, cycleStart,
-  // cycleEnd, cycleDate (next pending cycleDate, may be null).
   const commissionData = incomeSummary || [];
 
   const formatCycleDate = (date) => {
@@ -74,12 +69,6 @@ const Commission = ({ mood, setAlert }) => {
     page * ITEMS_PER_PAGE,
   );
 
-  // Exports exactly what the table shows — one row per agent, the
-  // same income/payout columns visible in CommissionTable. The old
-  // version exported item.user.*, item.type, item.businessAmount,
-  // item.amount — those fields don't exist on this response shape
-  // (that shape belongs to a single IncomeHistory row, not the
-  // per-agent summary object this page actually receives).
   const exportToExcel = (rowsData = filteredData) => {
     setSaving(true);
 
@@ -187,6 +176,8 @@ const Commission = ({ mood, setAlert }) => {
                 item={item}
                 mood={mood}
                 setAlert={setAlert}
+                page={page}
+                ITEMS_PER_PAGE={ITEMS_PER_PAGE}
               />
             ))
           )}

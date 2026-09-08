@@ -89,8 +89,7 @@ const Teams = () => {
                 </div>
                 <div className="dots">
                   <span>
-                    {currentData.designation} ({currentData.directIncomePercent}
-                    %)
+                    {currentData.designation}
                   </span>
                 </div>
               </div>

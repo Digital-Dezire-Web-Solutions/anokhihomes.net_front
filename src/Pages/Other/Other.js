@@ -765,7 +765,7 @@ const Other = ({ mood, setAlert, data }) => {
                 <span className="title">
                   {item.role === "agent" || item.role === "admin" ? (
                     <>
-                      {item.designation}({item.directIncomePercent}%){" "}
+                      {item.designation}{" "}
                     </>
                   ) : item.role === "staff" ? (
                     <>{item.staffRole?.name}</>

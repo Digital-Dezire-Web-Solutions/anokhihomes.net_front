@@ -27,12 +27,11 @@ const INCOME_TYPE_LABELS = {
 // A payout can only be paid while it's hold or released.
 const PAYABLE_STATUSES = ["hold", "released"];
 
-const CommissionTable = ({ index, item, mood, setAlert }) => {
+const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) => {
   const dispatch = useDispatch();
   const [viewOpen, setViewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("summary");
-
   const nextPayout = item.payoutSummary?.nextPayout || null;
 
   // PUT /payout/pay/:id (not POST) takes no request body — it marks
@@ -89,7 +88,7 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
         }`}
       >
         <span>
-          {index === 0 && "🏆 "}
+          {((page - 1) * ITEMS_PER_PAGE + index + 1) === 1 ? "🏆 " : ""}
           {item.name}
         </span>
         <span>{item.designation}</span>
@@ -166,16 +165,18 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
           </button>
         </div>
 
-        {mood === "admin" && nextPayout && PAYABLE_STATUSES.includes(nextPayout.status) && (
-          <div className="modal-actions">
-            <button
-              className={activeTab === "makepayout" ? "active" : ""}
-              onClick={() => setActiveTab("makepayout")}
-            >
-              Make Payout
-            </button>
-          </div>
-        )}
+        {mood === "admin" &&
+          nextPayout &&
+          PAYABLE_STATUSES.includes(nextPayout.status) && (
+            <div className="modal-actions">
+              <button
+                className={activeTab === "makepayout" ? "active" : ""}
+                onClick={() => setActiveTab("makepayout")}
+              >
+                Make Payout
+              </button>
+            </div>
+          )}
 
         {activeTab === "summary" && (
           <div className="report-view-box-right active">
@@ -285,53 +286,8 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
                 {formatCurrency(item.incomeSummary?.payableAmount)}
               </p>
               <p>
-                <strong>Cycle Window :</strong>{" "}
-                {formatDate(item.cycleStart)} - {formatDate(item.cycleEnd)}
-              </p>
-            </div>
-
-            <div className="report-view-box-right active">
-              <h5>Payout History (all-time)</h5>
-              <p>
-                <strong>Gross Commission :</strong> ₹
-                {formatCurrency(item.payoutSummary?.grossCommission)}
-              </p>
-              <p>
-                <strong>Net Commission :</strong> ₹
-                {formatCurrency(item.payoutSummary?.totalNetCommission)}
-              </p>
-              <p>
-                <strong>TDS Deducted :</strong> ₹
-                {formatCurrency(item.payoutSummary?.tdsDeducted)}
-              </p>
-              <p>
-                <strong>Admin Deducted :</strong> ₹
-                {formatCurrency(item.payoutSummary?.adminDeducted)}
-              </p>
-              <p>
-                <strong>Paid :</strong> ₹
-                {formatCurrency(item.payoutSummary?.paidCommission)}
-              </p>
-              <p>
-                <strong>Released :</strong> ₹
-                {formatCurrency(item.payoutSummary?.releasedCommission)}
-              </p>
-              {/* <p>
-                <strong>Hold :</strong> ₹
-                {formatCurrency(item.payoutSummary?.holdCommission)}
-              </p> */}
-              <p>
-                <strong>Cancelled :</strong> ₹
-                {formatCurrency(item.payoutSummary?.cancelledCommission)}
-              </p>
-              <p>
-                <strong>Total Payouts :</strong>{" "}
-                {item.payoutSummary?.totalPayouts ?? 0}
-                {" ("}
-                {item.payoutSummary?.paidPayouts ?? 0} paid,{" "}
-                {item.payoutSummary?.releasedPayouts ?? 0} released,{" "}
-                {item.payoutSummary?.holdPayouts ?? 0} hold,{" "}
-                {item.payoutSummary?.cancelledPayouts ?? 0} cancelled)
+                <strong>Cycle Window :</strong> {formatDate(item.cycleStart)} -{" "}
+                {formatDate(item.cycleEnd)}
               </p>
             </div>
 
@@ -341,16 +297,14 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
                 <strong>Level :</strong> {item.rankSummary?.level}
               </p>
               <p>
-                <strong>Designation :</strong>{" "}
-                {item.rankSummary?.designation}
+                <strong>Designation :</strong> {item.rankSummary?.designation}
               </p>
               <p>
                 <strong>Direct Income % :</strong>{" "}
                 {item.rankSummary?.directIncomePercent}%
               </p>
               <p>
-                <strong>Current Rate :</strong> {item.rankSummary?.currentRate}
-                %
+                <strong>Current Rate :</strong> {item.rankSummary?.currentRate}%
               </p>
               <p>
                 <strong>Next Designation :</strong>{" "}
@@ -364,9 +318,9 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
                 <strong>Remaining for Next Rank :</strong> ₹
                 {formatCurrency(item.rankSummary?.remainingForNextRank)}
               </p>
-              <p>
+              {/* <p>
                 <strong>Progress :</strong> {item.rankSummary?.progress}%
-              </p>
+              </p> */}
             </div>
 
             {/* <div className="report-view-box-right active">
@@ -391,8 +345,7 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
             <div className="report-view-box-right active">
               <h5>Rewards</h5>
               <p>
-                <strong>Total :</strong>{" "}
-                {item.rewardSummary?.totalRewards ?? 0}
+                <strong>Total :</strong> {item.rewardSummary?.totalRewards ?? 0}
               </p>
               <p>
                 <strong>Claimed :</strong>{" "}
@@ -415,9 +368,7 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
             {item.histories?.length > 0 ? (
               item.histories.map((history) => (
                 <div className="history-card" key={history._id}>
-                  <h5>
-                    {INCOME_TYPE_LABELS[history.type] || history.type}
-                  </h5>
+                  <h5>{INCOME_TYPE_LABELS[history.type] || history.type}</h5>
                   <p>
                     <strong>Amount :</strong> ₹{formatCurrency(history.amount)}
                   </p>
@@ -603,7 +554,9 @@ const CommissionTable = ({ index, item, mood, setAlert }) => {
 
             <div className="modal-actions">
               <button
-                disabled={saving || !PAYABLE_STATUSES.includes(nextPayout.status)}
+                disabled={
+                  saving || !PAYABLE_STATUSES.includes(nextPayout.status)
+                }
                 onClick={handlePay}
               >
                 {saving ? "Processing..." : "Confirm Payout"}
