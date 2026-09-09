@@ -27,7 +27,14 @@ const INCOME_TYPE_LABELS = {
 // A payout can only be paid while it's hold or released.
 const PAYABLE_STATUSES = ["hold", "released"];
 
-const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) => {
+const CommissionTable = ({
+  index,
+  item,
+  mood,
+  setAlert,
+  page,
+  ITEMS_PER_PAGE,
+}) => {
   const dispatch = useDispatch();
   const [viewOpen, setViewOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -80,6 +87,15 @@ const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) 
     setSaving(false);
   };
 
+  const formatUTCDate = (date) => {
+  if (!date) return "-";
+  const d = new Date(date);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  return `${day}-${month}-${year}`;
+};
+
   return (
     <>
       <div
@@ -87,8 +103,9 @@ const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) 
           index === 0 ? "best-performer-row" : ""
         }`}
       >
+        <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
         <span>
-          {((page - 1) * ITEMS_PER_PAGE + index + 1) === 1 ? "🏆 " : ""}
+          {(page - 1) * ITEMS_PER_PAGE + index + 1 === 1 ? "🏆 " : ""}
           {item.name}
         </span>
         <span>{item.designation}</span>
@@ -287,9 +304,7 @@ const CommissionTable = ({ index, item, mood, setAlert, page, ITEMS_PER_PAGE }) 
               </p>
               <p>
                 <strong>Cycle Window :</strong> {formatDate(item.cycleStart)} -{" "}
-                 {new Date(item.cycleEnd)
-                    .toLocaleDateString("en-GB")
-                    .replace(/\//g, "-")}
+                {formatUTCDate(item.cycleEnd)}
               </p>
             </div>
 

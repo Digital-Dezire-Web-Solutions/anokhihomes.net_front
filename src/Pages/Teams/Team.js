@@ -47,7 +47,7 @@ const Teams = () => {
     dispatch(getTeamTree(search));
   };
 
-  // console.log(currentData, "currentData");
+  console.log(currentData, "currentData");
   return (
     <div className="plot-container">
       <div className="table-filters">
