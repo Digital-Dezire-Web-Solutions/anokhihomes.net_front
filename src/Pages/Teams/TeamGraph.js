@@ -161,7 +161,7 @@ const TeamGraph = ({ member }) => {
             type: "smoothstep",
             animated: false,
             style: {
-              stroke: "#8e5cf6", // purple
+              stroke: "#a70304", // purple
               strokeWidth: 2.5,
             },
           });
@@ -180,7 +180,7 @@ const TeamGraph = ({ member }) => {
             type: "smoothstep",
             animated: false,
             style: {
-              stroke: "#1abc9c", // green
+              stroke: "#67bb3a", // green
               strokeWidth: 2.5,
             },
           });

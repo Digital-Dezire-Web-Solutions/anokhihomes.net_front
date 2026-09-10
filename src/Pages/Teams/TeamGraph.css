@@ -126,12 +126,12 @@
 ========================================================== */
 
 .team-graph-left .team-graph-avatar {
-  background: #f0e7fd;
-  color: #8e5cf6;
+  background: #f9cfcf;
+  color: var(--mood-color);
 }
 
 .team-graph-left .team-graph-card {
-  border-top: 3px solid #8e5cf6;
+  border-top: 3px solid var(--mood-color);
 }
 
 /* ==========================================================
@@ -139,12 +139,12 @@
 ========================================================== */
 
 .team-graph-right .team-graph-avatar {
-  background: #e1f8f1;
-  color: #1abc9c;
+  background: #e6f9dc;
+  color: #67bb3a;
 }
 
 .team-graph-right .team-graph-card {
-  border-top: 3px solid #1abc9c;
+  border-top: 3px solid #67bb3a;
 }
 
 /* ==========================================================
