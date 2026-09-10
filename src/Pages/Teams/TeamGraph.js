@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
   ReactFlow,
   Background,
@@ -8,18 +8,39 @@ import {
   Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import "./TeamGraph.css"
+import "./TeamGraph.css";
+
+/* Simple inline person icon so we don't depend on external assets */
+const PersonIcon = () => (
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z" />
+  </svg>
+);
 
 const TeamGraphNode = ({ data }) => {
-  const { member, side, isRoot } = data;
+  const {
+    member,
+    colorSide,
+    isRoot,
+    hasHiddenChildren,
+    hiddenCount,
+    expanded,
+    onToggle,
+  } = data;
+
+  const sideClass =
+    colorSide === "left"
+      ? "team-graph-left"
+      : colorSide === "right"
+        ? "team-graph-right"
+        : "";
+
+  const clickable = hasHiddenChildren || expanded;
 
   return (
     <div
-      className={`team-graph-node ${
-        isRoot ? "team-graph-root" : ""
-      } ${side === "left" ? "team-graph-left" : ""} ${
-        side === "right" ? "team-graph-right" : ""
-      }`}
+      className={`team-graph-node ${isRoot ? "team-graph-root" : ""} ${sideClass}`}
     >
       {!isRoot && (
         <Handle
@@ -29,31 +50,30 @@ const TeamGraphNode = ({ data }) => {
         />
       )}
 
-      {isRoot && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="team-graph-handle"
-        />
-      )}
+      <div
+        className={`team-graph-card ${clickable ? "clickable" : ""}`}
+        onClick={() => clickable && onToggle && onToggle()}
+      >
+        <div className="team-graph-avatar">
+          
+          <PersonIcon />
+        </div>
+        <strong className="team-graph-name">{member?.name || "Unknown"}</strong>
+        <span className="team-graph-designation">
+          {isRoot ? "Leader" : member?.designation || "Member"}
+        </span>
+        <span className="team-graph-refid">{member?.referralId || "-"}</span>
 
-      <div className="team-graph-circle">
-        <strong>{member?.name || "Unknown"}</strong>
-        <span>{member?.referralId || "-"}</span>
+        {hasHiddenChildren && (
+          <div className="team-graph-badge">+{hiddenCount}</div>
+        )}
       </div>
 
-      <div className="team-graph-info">
-        <span>{member?.designation || "Sales Executive"}</span>
-      
-      </div>
-
-      {!isRoot && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="team-graph-handle"
-        />
-      )}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="team-graph-handle"
+      />
     </div>
   );
 };
@@ -62,128 +82,138 @@ const nodeTypes = {
   teamMember: TeamGraphNode,
 };
 
-/* How many "slots" a subtree needs — used to size its angular wedge
-   so branches with more people get proportionally more space. */
-const countLeaves = (node) => {
-  const children = [
-    ...(node?.leftChildren || []),
-    ...(node?.rightChildren || []),
-  ];
-  if (!children.length) return 1;
-  return children.reduce((sum, c) => sum + countLeaves(c), 0);
+const LEVEL_HEIGHT = 190; // vertical distance between levels
+const NODE_SPACING = 170; // horizontal distance between sibling leaves
+const DEFAULT_EXPANDED_LEVEL = 1; // root(0) + level1 expanded => level2 visible => 3 levels shown
+
+/* Collect the ids that should be expanded by default so that
+   exactly 3 levels (0, 1, 2) are visible on first render. */
+const getDefaultExpandedIds = (node, level = 0, acc = new Set()) => {
+  if (!node) return acc;
+  if (level <= DEFAULT_EXPANDED_LEVEL && node._id) {
+    acc.add(node._id);
+  }
+  if (level < DEFAULT_EXPANDED_LEVEL) {
+    const kids = [...(node.leftChildren || []), ...(node.rightChildren || [])];
+    kids.forEach((k) => getDefaultExpandedIds(k, level + 1, acc));
+  }
+  return acc;
 };
 
-const RADIUS_STEP = 260; // distance between each ring / level
-
 const TeamGraph = ({ member }) => {
+  const [expandedIds, setExpandedIds] = useState(new Set());
+
+  // Reset/seed default-expanded state whenever the root member changes
+  useEffect(() => {
+    if (member?._id) {
+      setExpandedIds(getDefaultExpandedIds(member));
+    }
+  }, [member?._id]);
+
+  const toggleExpand = useCallback((id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
   const { nodes, edges } = useMemo(() => {
     const nodes = [];
     const edges = [];
+    if (!member) return { nodes, edges };
 
-    if (!member) {
-      return { nodes, edges };
-    }
+    let leafCursor = 0;
 
-    /* =====================================================
-       RADIAL LAYOUT
+    const layoutNode = (node, level, colorSide) => {
+      const id = node._id;
+      const isExpanded = expandedIds.has(id);
+      const realLeftKids = node.leftChildren || [];
+      const realRightKids = node.rightChildren || [];
+      const totalRealChildren = realLeftKids.length + realRightKids.length;
 
-       - level 0 (root) is always at (0,0)
-       - every other node sits at:
-           radius = level * RADIUS_STEP
-           angle  = midpoint of the wedge it was assigned
-       - a node's wedge is split between its left/right
-         children proportionally to their subtree size,
-         so nothing overlaps as the tree grows
-    ===================================================== */
+      const leftKids = isExpanded ? realLeftKids : [];
+      const rightKids = isExpanded ? realRightKids : [];
+      const hasVisibleChildren = leftKids.length + rightKids.length > 0;
 
-    const layoutNode = (node, level, angleStart, angleEnd, side) => {
-      const nodeId = node._id;
+      let x;
 
-      let x = 0;
-      let y = 0;
+      if (!hasVisibleChildren) {
+        x = leafCursor * NODE_SPACING;
+        leafCursor += 1;
+      } else {
+        const childXs = [];
 
-      if (level > 0) {
-        const angle = (angleStart + angleEnd) / 2;
-        const radius = level * RADIUS_STEP;
-        x = radius * Math.cos(angle);
-        y = radius * Math.sin(angle);
+        leftKids.forEach((child) => {
+          if (!child?._id) return;
+          // color is based on THIS child's own left/right slot, not inherited from an ancestor
+          const childColorSide = "left";
+          const cx = layoutNode(child, level + 1, childColorSide);
+          childXs.push(cx);
+          edges.push({
+            id: `${id}-${child._id}`,
+            source: id,
+            target: child._id,
+            type: "smoothstep",
+            animated: false,
+            style: {
+              stroke: "#8e5cf6", // purple
+              strokeWidth: 2.5,
+            },
+          });
+        });
+
+        rightKids.forEach((child) => {
+          if (!child?._id) return;
+          // color is based on THIS child's own left/right slot, not inherited from an ancestor
+          const childColorSide = "right";
+          const cx = layoutNode(child, level + 1, childColorSide);
+          childXs.push(cx);
+          edges.push({
+            id: `${id}-${child._id}`,
+            source: id,
+            target: child._id,
+            type: "smoothstep",
+            animated: false,
+            style: {
+              stroke: "#1abc9c", // green
+              strokeWidth: 2.5,
+            },
+          });
+        });
+
+        x = (Math.min(...childXs) + Math.max(...childXs)) / 2;
       }
 
+      const y = level * LEVEL_HEIGHT;
+      const hasHiddenChildren = totalRealChildren > 0 && !isExpanded;
+
       nodes.push({
-        id: nodeId,
+        id,
         type: "teamMember",
         position: { x, y },
         data: {
           member: node,
-          side: side || "",
+          colorSide,
           isRoot: level === 0,
+          expanded: isExpanded,
+          hasHiddenChildren,
+          hiddenCount: totalRealChildren,
+          onToggle: () => toggleExpand(id),
         },
       });
 
-      const leftChildren = node?.leftChildren || [];
-      const rightChildren = node?.rightChildren || [];
-
-      const leftLeaves = leftChildren.reduce(
-        (sum, c) => sum + countLeaves(c),
-        0,
-      );
-      const rightLeaves = rightChildren.reduce(
-        (sum, c) => sum + countLeaves(c),
-        0,
-      );
-      const totalLeaves = leftLeaves + rightLeaves;
-
-      if (!totalLeaves) return;
-
-      const fullSpan = angleEnd - angleStart;
-      const leftSpan = fullSpan * (leftLeaves / totalLeaves);
-
-      const leftRange = [angleStart, angleStart + leftSpan];
-      const rightRange = [angleStart + leftSpan, angleEnd];
-
-      const placeChildren = (children, [rangeStart, rangeEnd], childSide) => {
-        if (!children.length) return;
-
-        const totalChildLeaves = children.reduce(
-          (sum, c) => sum + countLeaves(c),
-          0,
-        );
-
-        let cursor = rangeStart;
-
-        children.forEach((child) => {
-          const childId = child?._id;
-          if (!childId) return;
-
-          const leaves = countLeaves(child);
-          const span = ((rangeEnd - rangeStart) * leaves) / totalChildLeaves;
-
-          edges.push({
-            id: `${nodeId}-${childId}`,
-            source: nodeId,
-            target: childId,
-            type: "smoothstep",
-            animated: false,
-            style: {
-              stroke: childSide === "left" ? "#1abc9c" : "#8e5cf6",
-              strokeWidth: 2,
-            },
-          });
-
-          layoutNode(child, level + 1, cursor, cursor + span, childSide);
-
-          cursor += span;
-        });
-      };
-
-      placeChildren(leftChildren, leftRange, "left");
-      placeChildren(rightChildren, rightRange, "right");
+      return x;
     };
 
-    layoutNode(member, 0, 0, Math.PI * 2, "");
+    layoutNode(member, 0, null);
 
     return { nodes, edges };
-  }, [member]);
+  }, [member, expandedIds, toggleExpand]);
 
   return (
     <div className="team-graph-wrapper">
@@ -192,13 +222,13 @@ const TeamGraph = ({ member }) => {
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.25 }}
+        fitViewOptions={{ padding: 0.3 }}
         minZoom={0.15}
         maxZoom={1.5}
       >
         <Background gap={25} />
         <Controls />
-        <MiniMap />
+        {/* <MiniMap /> */}
       </ReactFlow>
     </div>
   );

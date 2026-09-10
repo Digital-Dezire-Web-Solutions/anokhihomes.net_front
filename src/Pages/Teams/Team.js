@@ -6,7 +6,11 @@ import DashboardCard from "../../components/Cards/DashboardCard";
 import NiTeams from "../../icons/ni-teams";
 import NiSearch from "../../icons/ni-search";
 import { useDispatch, useSelector } from "react-redux";
-import { getAccountDetails, getTeamTree } from "../../Redux/Slices/AppSlices";
+import {
+  getAccountDetails,
+  getIncomeSummary,
+  getTeamTree,
+} from "../../Redux/Slices/AppSlices";
 import NiPayments from "../../icons/ni-payments";
 import TeamNode from "./TeamTree";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
@@ -17,11 +21,14 @@ import NiCard from "../../icons/ni-card";
 const Teams = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userDetail, teamTree } = useSelector((state) => state.app);
+  const { userDetail, teamTree, incomeSummary } = useSelector(
+    (state) => state.app,
+  );
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     dispatch(getAccountDetails());
+    dispatch(getIncomeSummary());
   }, []);
 
   useEffect(() => {
@@ -47,7 +54,11 @@ const Teams = () => {
     dispatch(getTeamTree(search));
   };
 
-  console.log(currentData, "currentData");
+  const currentUser = incomeSummary?.find(
+    (item) => item._id === currentData?._id,
+  );
+
+  console.log(currentData,"currentData")
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -88,9 +99,7 @@ const Teams = () => {
                   </div>
                 </div>
                 <div className="dots">
-                  <span>
-                    {currentData.designation}
-                  </span>
+                  <span>{currentData.designation}</span>
                 </div>
               </div>
               <div className="user-card-bottom">
@@ -104,7 +113,7 @@ const Teams = () => {
                     {currentData?.position || "N/A"})
                   </p>
                   <p>
-                    <strong>Left Team:</strong> {leftTeam.length || 0}
+                    <strong>Left Team:</strong> {currentData.totalLeftTeam|| 0}
                   </p>
                   <p>
                     <strong>Team Members:</strong> {currentData.totalTeam || 0}
@@ -116,14 +125,16 @@ const Teams = () => {
                 <div className="user-card-bottom-right">
                   <p>
                     <strong>Wallet:</strong> ₹
-                    {formatCurrency(currentData.wallet || 0)}
+                    {formatCurrency(
+                      currentUser?.incomeSummary?.payableAmount || 0,
+                    )}
                   </p>
                   <p>
                     <strong>Total Income:</strong> ₹
                     {formatCurrency(currentData.totalIncome || 0)}
                   </p>
                   <p>
-                    <strong>Right Team:</strong> {rightTeam.length || 0}
+                    <strong>Right Team:</strong> {currentData.totalRightTeam || 0}
                   </p>
                   <p>
                     <strong>Self Business:</strong> ₹
@@ -173,7 +184,7 @@ const Teams = () => {
       <div className="dashboard-wrapper">
         <div className="team-hierarchy-header">
           <h4>Team Hierarchy</h4>
-<div className="page-toggle">
+          <div className="page-toggle">
             <span
               className={`${teamView === "node" ? "active" : ""}`}
               onClick={() => setTeamView("node")}

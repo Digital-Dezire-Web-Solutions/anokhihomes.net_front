@@ -1,24 +1,20 @@
 /* ==========================================================
-   WRAPPER / CANVAS
+   WRAPPER / CANVAS — dark navy background like the reference
 ========================================================== */
 
 .team-graph-wrapper {
   width: 100%;
   height: 100vh;
-  background: #f0f0f0;
+  background: white;
 }
 
-.team-graph-wrapper .react-flow__renderer {
-  background: #f0f0f0;
-}
-
-/* dotted background like the reference image */
+.team-graph-wrapper .react-flow__renderer,
 .team-graph-wrapper .react-flow__background {
-  background-color: #f0f0f0;
+  background-color: white;
 }
 
 .team-graph-wrapper .react-flow__background circle {
-  fill: #d4d4d4;
+  fill: white;
 }
 
 /* ==========================================================
@@ -26,33 +22,20 @@
 ========================================================== */
 
 .team-graph-wrapper .react-flow__edge-path {
-  stroke-width: 2;
-  opacity: 0.85;
-}
-
-.team-graph-wrapper .react-flow__edge-text {
-  font-size: 10px;
-  fill: #555;
-}
-
-.team-graph-wrapper .react-flow__edge-textbg {
-  fill: #f0f0f0;
-}
-
-.team-graph-wrapper .react-flow__arrowhead path {
-  fill: #999;
+  stroke-width: 2.5;
+  opacity: 0.9;
 }
 
 /* ==========================================================
-   NODE — outer wrapper (circle + label stacked)
+   NODE — outer wrapper (card stacked under handles)
 ========================================================== */
 
 .team-graph-node {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 150px;
-  pointer-events: none; /* let clicks pass through to canvas; circle re-enables below */
+  width: 140px;
+  pointer-events: none;
 }
 
 .team-graph-node * {
@@ -60,118 +43,131 @@
 }
 
 /* ==========================================================
-   THE CIRCLE
+   THE CARD
 ========================================================== */
 
-.team-graph-circle {
+.team-graph-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 130px;
-  height: 130px;
-  border-radius: 50%;
+  min-height: 120px;
+  border-radius: 16px;
   text-align: center;
-  padding: 12px;
+  padding: 14px 10px;
   box-sizing: border-box;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  border: 3px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.team-graph-card.clickable {
   cursor: pointer;
-
-  /* default (no side) */
-  background: #5b8def;
-  color: #fff;
 }
 
-.team-graph-circle:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+.team-graph-card.clickable:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
-.team-graph-circle strong {
-  font-size: 13px;
+.team-graph-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  background: #eceefb;
+  color: #222;
+}
+
+.team-graph-name {
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  max-width: 100%;
   word-break: break-word;
-  max-width: 100%;
 }
 
-.team-graph-circle span {
+.team-graph-designation {
   font-size: 10px;
-  opacity: 0.85;
-  margin-top: 4px;
-}
-
-/* ==========================================================
-   ROOT NODE — the current agent, dead center, bigger + distinct
-========================================================== */
-
-.team-graph-root .team-graph-circle {
-  width: 160px;
-  height: 160px;
-  background: #e64545;
-  border-color: #fff;
-  box-shadow: 0 4px 14px rgba(230, 69, 69, 0.45);
-  z-index: 10;
-}
-
-.team-graph-root .team-graph-circle strong {
-  font-size: 15px;
-}
-
-/* ==========================================================
-   LEFT TEAM — teal
-========================================================== */
-
-.team-graph-left .team-graph-circle {
-  background: #1abc9c;
-}
-
-/* ==========================================================
-   RIGHT TEAM — purple
-========================================================== */
-
-.team-graph-right .team-graph-circle {
-  background: #8e5cf6;
-}
-
-/* ==========================================================
-   INFO PILL — designation + % under the circle
-========================================================== */
-
-.team-graph-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 6px;
-  background: #fff;
-  border-radius: 10px;
-  padding: 4px 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-  max-width: 140px;
-  text-align: center;
-}
-
-.team-graph-info span {
-  font-size: 10px;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.team-graph-info small {
-  font-size: 9px;
   color: #888;
+  margin-top: 3px;
+  text-transform: capitalize;
+}
+
+.team-graph-refid {
+  font-size: 9px;
+  color: #b0b0b0;
   margin-top: 2px;
 }
 
 /* ==========================================================
-   HANDLES — invisible connectors (keep react-flow happy,
-   don't show ugly dots)
+   ROOT NODE — center, distinct accent
+========================================================== */
+
+.team-graph-root .team-graph-card {
+  min-height: 130px;
+  border: 2px solid #ffb020;
+}
+
+.team-graph-root .team-graph-avatar {
+  background: #fff3dc;
+  color: #b8760a;
+}
+
+/* ==========================================================
+   LEFT TEAM — purple
+========================================================== */
+
+.team-graph-left .team-graph-avatar {
+  background: #f0e7fd;
+  color: #8e5cf6;
+}
+
+.team-graph-left .team-graph-card {
+  border-top: 3px solid #8e5cf6;
+}
+
+/* ==========================================================
+   RIGHT TEAM — green
+========================================================== */
+
+.team-graph-right .team-graph-avatar {
+  background: #e1f8f1;
+  color: #1abc9c;
+}
+
+.team-graph-right .team-graph-card {
+  border-top: 3px solid #1abc9c;
+}
+
+/* ==========================================================
+   EXPAND BADGE — shows count of hidden children
+========================================================== */
+
+.team-graph-badge {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff5a5f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   HANDLES — invisible connectors
 ========================================================== */
 
 .team-graph-handle {
@@ -183,36 +179,36 @@
 }
 
 /* ==========================================================
-   CONTROLS / MINIMAP — restyle to match light theme
+   CONTROLS / MINIMAP
 ========================================================== */
 
 .team-graph-wrapper .react-flow__controls {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .team-graph-wrapper .react-flow__controls-button {
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  background: #1e1f3c;
+  border-bottom: 1px solid #2c2d4e;
 }
 
 .team-graph-wrapper .react-flow__controls-button:hover {
-  background: #f5f5f5;
+  background: #292a4d;
 }
 
 .team-graph-wrapper .react-flow__controls-button svg {
-  fill: #444;
+  fill: #ddd;
 }
 
 .team-graph-wrapper .react-flow__minimap {
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: #1e1f3c;
 }
 
 /* ==========================================================
-   RESPONSIVE — shrink nodes a bit on small screens
+   RESPONSIVE
 ========================================================== */
 
 @media (max-width: 768px) {
@@ -220,18 +216,17 @@
     width: 110px;
   }
 
-  .team-graph-circle {
-    width: 95px;
-    height: 95px;
-    padding: 8px;
+  .team-graph-card {
+    width: 100px;
+    min-height: 100px;
+    padding: 10px 6px;
   }
 
-  .team-graph-root .team-graph-circle {
-    width: 115px;
-    height: 115px;
+  .team-graph-root .team-graph-card {
+    min-height: 110px;
   }
 
-  .team-graph-circle strong {
-    font-size: 11px;
+  .team-graph-name {
+    font-size: 10px;
   }
 }
