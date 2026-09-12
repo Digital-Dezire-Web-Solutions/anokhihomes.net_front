@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import ProjectDetail from "../Plot/ProjectDetail";
 import LBreadcrumb from "../../components/LandingPage/LBreadcrumb";
 import PlotCardUsers from "../../components/Cards/PlotCardUsers";
-import PlotDrawCard from "../../components/Cards/PlotDrawCard";
+// import PlotDrawCard from "../../components/Cards/PlotDrawCard";
 import ProjectData from "../Plot/PlotData";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getPlots } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
+import PlotDrawCard from "../../components/plot-draw-xyflow/Cards/PlotDrawCard";
 
 const LandingProjectDetail = ({ data, mood, setAlert }) => {
   const location = useLocation();

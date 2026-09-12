@@ -88,13 +88,13 @@ const CommissionTable = ({
   };
 
   const formatUTCDate = (date) => {
-  if (!date) return "-";
-  const d = new Date(date);
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-  return `${day}-${month}-${year}`;
-};
+    if (!date) return "-";
+    const d = new Date(date);
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const year = d.getUTCFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   return (
     <>
@@ -105,7 +105,9 @@ const CommissionTable = ({
       >
         <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
         <span>
-          {(page - 1) * ITEMS_PER_PAGE + index + 1 === 1 ? "🏆 " : ""}
+          {mood === "admin" && (page - 1) * ITEMS_PER_PAGE + index + 1 === 1
+            ? "🏆 "
+            : ""}
           {item.name}
         </span>
         <span>{item.designation}</span>
