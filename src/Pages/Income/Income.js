@@ -13,6 +13,24 @@ import "./Income.css";
 import NiOpenEye from "../../icons/ni-openEye";
 import ViewModal from "../../components/Modals/ViewModal";
 import Pagination from "../../components/Pagination/Pagination";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import AddLocationModal from "../../components/Modals/AddLocationModal";
+
+
+const EXPORT_COLUMNS = [
+  "S.No",
+  "Date",
+  "Name",
+  "Phone",
+  "Referral ID",
+  "Income Type",
+  "Amount",
+  "From",
+  "From Phone",
+];
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -26,6 +44,11 @@ const Income = ({ mood, setAlert }) => {
   const [designationFilter, setDesignationFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  // Which agent's FULL history to export ("" = use current filtered/table results)
+  const [exportAgentId, setExportAgentId] = useState("");
+
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
@@ -101,16 +124,6 @@ const Income = ({ mood, setAlert }) => {
   const totalIncome =
     incomeHistory?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
-  const creditedIncome =
-    incomeHistory
-      ?.filter((i) => i.status === "credited")
-      ?.reduce((acc, item) => acc + item.amount, 0) || 0;
-
-  const pendingIncome =
-    incomeHistory
-      ?.filter((i) => i.status === "pending")
-      ?.reduce((acc, item) => acc + item.amount, 0) || 0;
-
   const todayIncome =
     incomeHistory
       ?.filter((i) => {
@@ -133,6 +146,180 @@ const Income = ({ mood, setAlert }) => {
   // console.log(incomeSummary,"incomeSummary")
   const currentUser = incomeSummary?.find((item) => item._id === userDetail?._id);
 
+  // Unique list of agents present in the income history, used to populate
+  // the "select agent" dropdown inside the export modal.
+  const agentOptions = useMemo(() => {
+    const map = new Map();
+
+    (incomeHistory || []).forEach((item) => {
+      const u = item?.user;
+      const id = u?._id;
+
+      if (id && !map.has(id)) {
+        map.set(id, {
+          id,
+          name: u?.name || "Unnamed",
+          referralId: u?.referralId || "-",
+        });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) =>
+      (a.name || "").localeCompare(b.name || ""),
+    );
+  }, [incomeHistory]);
+
+  const selectedAgent = useMemo(
+    () => agentOptions.find((a) => a.id === exportAgentId) || null,
+    [agentOptions, exportAgentId],
+  );
+
+  const fmt2 = (n) => (Number(n) || 0).toFixed(2);
+  // console.log(paginated, "paginated")
+  const getExportRows = (rows) => {
+    return (rows || []).map((item, index) => ({
+      "S.No": index + 1,
+      "Date": formatDate(item.createdAt) || "",
+      "Name": item?.user?.name || "-",
+      "Phone": item?.user?.phone || "",
+      "Referral ID": item?.user?.referralId || "-",
+      "Income Type": item.type || "",
+      "Amount": fmt2(item.amount) || "",
+      "From": item.fromUser ? item.fromUser.name : item?.payment?.customer?.name || "",
+      "From Phone": item.fromUser ? item.fromUser.phone : item?.payment?.customer?.phone || "",
+    }));
+  };
+
+  const getExportSourceRecords = () => {
+    if (exportAgentId) {
+      return (incomeHistory || [])
+        .filter((item) => item?.user?._id === exportAgentId)
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    return filtered;
+  };
+
+  const buildExportFileBaseName = () => {
+    if (selectedAgent) {
+      const safeName = (selectedAgent.referralId !== "-" ? selectedAgent.referralId : selectedAgent.name)
+        .toString()
+        .trim()
+        .replace(/[^a-zA-Z0-9]+/g, "_");
+
+      return `commission-report-${safeName}`;
+    }
+
+    return "commission-report";
+  };
+
+  /* =====================================================
+     EXPORT EXCEL
+  ===================================================== */
+  const exportToExcel = () => {
+    const sourceRecords = getExportSourceRecords();
+    const rows = getExportRows(sourceRecords);
+
+    if (!rows.length) {
+      setAlert({ message: "No commission data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) => String(row[key] ?? "").length),
+      );
+      return { wch: Math.min(maxLength + 3, 40) };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Commission");
+
+    XLSX.writeFile(workbook, `${buildExportFileBaseName()}.xlsx`);
+
+    setAlert({ message: "Excel exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+     EXPORT PDF
+  ===================================================== */
+  const exportToPDF = () => {
+    const sourceRecords = getExportSourceRecords();
+    const rows = getExportRows(sourceRecords);
+
+    if (!rows.length) {
+      setAlert({ message: "No commission data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(18);
+    doc.text(
+      selectedAgent
+        ? `Commission Report - ${selectedAgent.name} (${selectedAgent.referralId})`
+        : "Commission Report",
+      14,
+      15,
+    );
+
+    doc.setFontSize(9);
+    doc.text(`Total Records: ${rows.length}`, 14, 22);
+
+    const columns = Object.keys(rows[0]);
+    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+
+    autoTable(doc, {
+      head: [columns],
+      body,
+      startY: 27,
+      theme: "grid",
+      tableWidth: "auto", // let it fill the printable width, not exceed it
+      styles: {
+        fontSize: 6,
+        cellPadding: 1,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+      headStyles: { fontSize: 6, fontStyle: "bold", valign: "middle" },
+      bodyStyles: { valign: "middle" },
+      // let autoTable distribute width proportionally to content instead
+      // of hardcoded mm values that summed to more than the page
+      columnStyles: {
+        0: { cellWidth: 8 }, // S.No stays narrow
+      },
+      margin: { top: 27, left: 5, right: 5, bottom: 8 },
+    });
+
+    doc.save(`${buildExportFileBaseName()}.pdf`);
+
+    setAlert({ message: "PDF exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
+  const closeExportModal = () => {
+    setExportOpen(false);
+    setExportAgentId("");
+  };
+
+
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -150,7 +337,7 @@ const Income = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(totalIncome)}`}
               icons={<NiPayments />}
             />
-<DashboardCard
+            <DashboardCard
               title={`My Wallet (${mood === "admin" ? "Admin" : mood === "agent" ? "Associate" : mood === "staff" ? "Staff" : "User"})`}
               value={`₹${formatCurrency(currentUser?.incomeSummary?.payableAmount || 0)}`}
               icons={<NiPayments />}
@@ -165,7 +352,7 @@ const Income = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
               icons={<NiPayments />}
             />
-            
+
             <DashboardCard
               title="Total Referral Income"
               value={`₹${formatCurrency(referralIncome || 0)}`}
@@ -301,6 +488,10 @@ const Income = ({ mood, setAlert }) => {
                 }}
               />
             </div>
+            <button className="add-button" onClick={() => setExportOpen(true)}>
+              <Download size={18} />
+              Export
+            </button>
           </div>
           <div className="income-tabs">
             <button
@@ -542,6 +733,63 @@ const Income = ({ mood, setAlert }) => {
               </div>
             </>}
         </ViewModal>
+        <AddLocationModal
+          open={exportOpen}
+          onClose={closeExportModal}
+          title="Export Commission Report"
+        >
+          <div className="export-modal-body">
+            <div className="searchItem" style={{ marginBottom: "1rem" }}>
+              <label>Agent</label>
+              <select
+                value={exportAgentId}
+                onChange={(e) => setExportAgentId(e.target.value)}
+              >
+                <option value="">All (current table filters)</option>
+                {agentOptions.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name} ({agent.referralId})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+              {selectedAgent
+                ? `This will export the complete income history for ${selectedAgent.name} (${selectedAgent.referralId}), regardless of the search, status, date or tab filters currently applied to the table.`
+                : "This will export whatever is currently shown by the table's search, status, date and tab filters."}
+            </p>
+
+            <div className="export-fields">
+              <p>Export includes:</p>
+              {EXPORT_COLUMNS.map((col) => (
+                <span key={col}>{col}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="export-excel-btn"
+              disabled={saving}
+              onClick={exportToExcel}
+            >
+              <FileSpreadsheet size={18} />
+              Excel
+            </button>
+
+            <button
+              type="button"
+              className="export-pdf-btn"
+              disabled={saving}
+              onClick={exportToPDF}
+            >
+              <FileText size={18} />
+              PDF
+            </button>
+          </div>
+        </AddLocationModal>
       </div>
     </div>
   );
