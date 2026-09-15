@@ -125,13 +125,15 @@ const Income = ({ mood, setAlert }) => {
     incomeHistory?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
   const todayIncome =
-    incomeHistory
-      ?.filter((i) => {
-        const today = new Date().toDateString();
-
-        return new Date(i.createdAt).toDateString() === today;
-      })
-      ?.reduce((acc, item) => acc + item.amount, 0) || 0;
+  incomeHistory
+    ?.filter((i) => {
+      const today = new Date().toDateString();
+      return (
+        i.type !== "referal_income" &&
+        new Date(i.createdAt).toDateString() === today
+      );
+    })
+    ?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
   const referralIncome =
     incomeHistory
@@ -369,22 +371,31 @@ const Income = ({ mood, setAlert }) => {
   );
 
   const currentColIncome = useMemo(() => {
-    return (incomeHistory || [])
-      .filter((i) => {
-        const d = new Date(i.createdAt);
-        return d >= currentStart && d <= currentEnd;
-      })
-      .reduce((acc, item) => acc + (item.amount || 0), 0);
-  }, [incomeHistory, currentStart, currentEnd]);
+  return (incomeHistory || [])
+    .filter((i) => {
+      const d = new Date(i.createdAt);
+      return (
+        i.type !== "referal_income" &&
+        d >= currentStart &&
+        d <= currentEnd
+      );
+    })
+    .reduce((acc, item) => acc + (item.amount || 0), 0);
+}, [incomeHistory, currentStart, currentEnd]);
 
-  const previousColIncome = useMemo(() => {
-    return (incomeHistory || [])
-      .filter((i) => {
-        const d = new Date(i.createdAt);
-        return d >= previousStart && d <= previousEnd;
-      })
-      .reduce((acc, item) => acc + (item.amount || 0), 0);
-  }, [incomeHistory, previousStart, previousEnd]);
+const previousColIncome = useMemo(() => {
+  return (incomeHistory || [])
+    .filter((i) => {
+      const d = new Date(i.createdAt);
+      return (
+        i.type !== "referal_income" &&
+        d >= previousStart &&
+        d <= previousEnd
+      );
+    })
+    .reduce((acc, item) => acc + (item.amount || 0), 0);
+}, [incomeHistory, previousStart, previousEnd]);
+
   return (
     <div className="plot-container">
       <div className="table-filters">
