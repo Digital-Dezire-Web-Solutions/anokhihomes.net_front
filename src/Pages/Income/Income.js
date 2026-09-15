@@ -319,7 +319,72 @@ const Income = ({ mood, setAlert }) => {
     setExportAgentId("");
   };
 
+  /* =====================================================
+     FORTNIGHT (1-15 / 16-end) COLLECTION PERIODS
+  ===================================================== */
+  const getFortnightRanges = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+    const day = now.getDate();
 
+    const lastDayOfThisMonth = new Date(year, month + 1, 0).getDate();
+
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevMonthYear = month === 0 ? year - 1 : year;
+    const lastDayOfPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
+
+    let currentStart, currentEnd, previousStart, previousEnd;
+
+    if (day <= 15) {
+      // Current period: 1st - 15th of this month
+      currentStart = new Date(year, month, 1, 0, 0, 0);
+      currentEnd = new Date(year, month, 15, 23, 59, 59, 999);
+
+      // Previous period: 16th - end of PREVIOUS month
+      previousStart = new Date(prevMonthYear, prevMonth, 16, 0, 0, 0);
+      previousEnd = new Date(prevMonthYear, prevMonth, lastDayOfPrevMonth, 23, 59, 59, 999);
+    } else {
+      // Current period: 16th - end of THIS month
+      currentStart = new Date(year, month, 16, 0, 0, 0);
+      currentEnd = new Date(year, month, lastDayOfThisMonth, 23, 59, 59, 999);
+
+      // Previous period: 1st - 15th of this month
+      previousStart = new Date(year, month, 1, 0, 0, 0);
+      previousEnd = new Date(year, month, 15, 23, 59, 59, 999);
+    }
+
+    return { currentStart, currentEnd, previousStart, previousEnd };
+  };
+
+  // Short "1 Sep - 15 Sep" style label for the card subtitle
+  const formatRangeLabel = (start, end) => {
+    const opts = { day: "numeric", month: "short" };
+    return `${start.toLocaleDateString("en-IN", opts)} - ${end.toLocaleDateString("en-IN", opts)}`;
+  };
+
+  const { currentStart, currentEnd, previousStart, previousEnd } = useMemo(
+    () => getFortnightRanges(),
+    [], // period only changes day-to-day; fine to compute once per mount
+  );
+
+  const currentColIncome = useMemo(() => {
+    return (incomeHistory || [])
+      .filter((i) => {
+        const d = new Date(i.createdAt);
+        return d >= currentStart && d <= currentEnd;
+      })
+      .reduce((acc, item) => acc + (item.amount || 0), 0);
+  }, [incomeHistory, currentStart, currentEnd]);
+
+  const previousColIncome = useMemo(() => {
+    return (incomeHistory || [])
+      .filter((i) => {
+        const d = new Date(i.createdAt);
+        return d >= previousStart && d <= previousEnd;
+      })
+      .reduce((acc, item) => acc + (item.amount || 0), 0);
+  }, [incomeHistory, previousStart, previousEnd]);
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -369,8 +434,18 @@ const Income = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Today's Income"
+              title="Today's Collection"
               value={`₹${formatCurrency(todayIncome)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title={`Previous Col. (${formatRangeLabel(previousStart, previousEnd)})`}
+              value={`₹${formatCurrency(previousColIncome)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title={`Current Col. (${formatRangeLabel(currentStart, currentEnd)})`}
+              value={`₹${formatCurrency(currentColIncome)}`}
               icons={<NiPayments />}
             />
           </div>

@@ -291,10 +291,8 @@ const Other = ({ mood, setAlert, data }) => {
         return {
           Name: user?.name || "-",
           Phone: user?.phone || "-",
-          Email: user?.email || "-",
           "User Type": role,
           UserID: user?.referralId || "-",
-          Address: user?.address || "-",
         };
       }
 
@@ -305,19 +303,16 @@ const Other = ({ mood, setAlert, data }) => {
         return {
           Name: user?.name || "-",
           Phone: user?.phone || "-",
-          Email: user?.email || "-",
           "User Type": "Associate",
           UserID: user?.referralId || "-",
 
           "Referred By Name": referredBy?.name || "-",
-          "Referred By Email": referredBy?.email || "-",
           "Referred By Phone": referredBy?.phone || "-",
           "Referred By UserID": referredBy?.referralId || "-",
 
           Designation: user?.designation || "-",
           "Direct Income %": `${user?.directIncomePercent ?? 0}%`,
 
-          Address: user?.address || "-",
         };
       }
 
@@ -328,11 +323,9 @@ const Other = ({ mood, setAlert, data }) => {
         return {
           Name: user?.name || "-",
           Phone: user?.phone || "-",
-          Email: user?.email || "-",
           "User Type": "Staff",
           UserID: user?.referralId || "-",
-          Role: user?.staffRole?.name || "-",
-          Address: user?.address || "-",
+          // Raw role code (distinct from the friendly "User Type" label above)
         };
       }
 
@@ -342,18 +335,12 @@ const Other = ({ mood, setAlert, data }) => {
       return {
         Name: user?.name || "-",
         Phone: user?.phone || "-",
-        Email: user?.email || "-",
         "User Type": role,
         UserID: user?.referralId || "-",
 
         "Referred By Name":
           user?.role === "agent"
             ? referredBy?.name || "-"
-            : "-",
-
-        "Referred By Email":
-          user?.role === "agent"
-            ? referredBy?.email || "-"
             : "-",
 
         "Referred By Phone":
@@ -375,13 +362,6 @@ const Other = ({ mood, setAlert, data }) => {
           user?.role === "agent" || user?.role === "admin"
             ? `${user?.directIncomePercent ?? 0}%`
             : "-",
-
-        Role:
-          user?.role === "staff"
-            ? user?.staffRole?.name || "-"
-            : "-",
-
-        Address: user?.address || "-",
       };
     });
   };
@@ -491,11 +471,7 @@ const Other = ({ mood, setAlert, data }) => {
     doc.text(title, 14, 15);
 
     doc.setFontSize(9);
-    doc.text(
-      `Total Records: ${rows.length}`,
-      14,
-      22
-    );
+    doc.text(`Total Records: ${rows.length}`, 10, 22);
 
     const columns = Object.keys(rows[0]);
 
@@ -503,111 +479,67 @@ const Other = ({ mood, setAlert, data }) => {
       columns.map((column) => row[column] ?? "-")
     );
 
+    // Base widths (proportions relative to each other, not final mm)
+    const baseWidths = {
+      Name: 20,
+      Phone: 17,
+      "User Type": 17,
+      UserID: 20,
+      "Referred By Name": 20,
+      "Referred By Phone": 17,
+      "Referred By UserID": 20,
+      Designation: 25,
+      "Direct Income %": 17,
+    };
+
+    const margin = { top: 27, left: 5, right: 5, bottom: 8 };
+
+    // Work out how much horizontal space we actually have to fill
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    // Sum of base widths for only the columns actually being exported
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0
+    );
+
+    // Scale factor so the columns always add up to the full available width
+    const scale = availableWidth / totalBase;
+
     const columnStyles = {};
-
     columns.forEach((column, index) => {
-      let width = 18;
-
-      switch (column) {
-        case "Name":
-          width = 20;
-          break;
-
-        case "Phone":
-          width = 17;
-          break;
-
-        case "Email":
-          width = 28;
-          break;
-
-        case "User Type":
-          width = 17;
-          break;
-
-        case "UserID":
-          width = 20;
-          break;
-
-        case "Referred By Name":
-          width = 20;
-          break;
-
-        case "Referred By Email":
-          width = 28;
-          break;
-
-        case "Referred By Phone":
-          width = 17;
-          break;
-
-        case "Referred By UserID":
-          width = 20;
-          break;
-
-        case "Designation":
-          width = 25;
-          break;
-
-        case "Direct Income %":
-          width = 17;
-          break;
-
-        case "Role":
-          width = 20;
-          break;
-
-        case "Address":
-          width = 45;
-          break;
-
-        default:
-          width = 18;
-      }
-
+      const base = baseWidths[column] || 18;
       columnStyles[index] = {
-        cellWidth: width,
+        cellWidth: base * scale,
       };
     });
 
     autoTable(doc, {
-  head: [columns],
-  body,
-
-  startY: 27,
-
-  theme: "grid",
-
-  tableWidth: "wrap",
-
-  styles: {
-    fontSize: 5.5,
-    cellPadding: 1.2,
-    overflow: "linebreak",
-    valign: "middle",
-    halign: "left",
-    lineWidth: 0.1,
-  },
-
-  headStyles: {
-    fontSize: 5.5,
-    fontStyle: "bold",
-    valign: "middle",
-  },
-
-  bodyStyles: {
-    valign: "middle",
-  },
-
-  columnStyles,
-
-  margin: {
-    top: 27,
-    left: 5,
-    right: 5,
-    bottom: 8,
-  },
-});
+      head: [columns],
+      body,
+      startY: margin.top,
+      theme: "grid",
+      tableWidth: "auto", // let it use the full available width instead of "wrap"
+      styles: {
+        fontSize: 7,          // bumped up now that there's room
+        cellPadding: 1.5,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fontSize: 7,
+        fontStyle: "bold",
+        valign: "middle",
+      },
+      bodyStyles: {
+        valign: "middle",
+      },
+      columnStyles,
+      margin,
+    });
 
     const fileName =
       exportRole === "all"
@@ -972,10 +904,10 @@ const Other = ({ mood, setAlert, data }) => {
 
         {totalPages > 1 && (
           <Pagination
-          page={currentPage}
-          totalPages={totalPages}
-          setPage={setCurrentPage}
-        />
+            page={currentPage}
+            totalPages={totalPages}
+            setPage={setCurrentPage}
+          />
         )}
       </div>
       <AddLocationModal
@@ -1100,10 +1032,8 @@ const Other = ({ mood, setAlert, data }) => {
               <>
                 <span>Name</span>
                 <span>Phone</span>
-                <span>Email</span>
                 <span>User Type</span>
                 <span>UserID</span>
-                <span>Address</span>
               </>
             )}
 
@@ -1114,16 +1044,13 @@ const Other = ({ mood, setAlert, data }) => {
               <>
                 <span>Name</span>
                 <span>Phone</span>
-                <span>Email</span>
                 <span>User Type</span>
                 <span>UserID</span>
                 <span>Referred By Name</span>
-                <span>Referred By Email</span>
                 <span>Referred By Phone</span>
                 <span>Referred By UserID</span>
                 <span>Designation</span>
                 <span>Direct Income %</span>
-                <span>Address</span>
               </>
             )}
 
@@ -1134,11 +1061,8 @@ const Other = ({ mood, setAlert, data }) => {
               <>
                 <span>Name</span>
                 <span>Phone</span>
-                <span>Email</span>
                 <span>User Type</span>
                 <span>UserID</span>
-                <span>Role</span>
-                <span>Address</span>
               </>
             )}
 
@@ -1149,24 +1073,20 @@ const Other = ({ mood, setAlert, data }) => {
               <>
                 <span>Name</span>
                 <span>Phone</span>
-                <span>Email</span>
                 <span>User Type</span>
                 <span>UserID</span>
                 <span>Referred By Name</span>
-                <span>Referred By Email</span>
                 <span>Referred By Phone</span>
                 <span>Referred By UserID</span>
                 <span>Designation</span>
                 <span>Direct Income %</span>
-                <span>Role</span>
-                <span>Address</span>
               </>
             )}
           </div>
 
         </div>
 
-        <div className="modal-actions" style={{marginTop:"1rem"}}>
+        <div className="modal-actions" style={{ marginTop: "1rem" }}>
           <button
             type="button"
             className="export-excel-btn"
