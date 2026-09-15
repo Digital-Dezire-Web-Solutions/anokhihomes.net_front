@@ -456,6 +456,24 @@ const Payout = ({ mood, setAlert }) => {
     setExportOpen(false);
   };
 
+  // Total payable (hold + released) net amount per associate — used to
+  // decide whether to show the Pay button even when a single payout's
+  // netAmount is below the ₹1000 threshold.
+  const payableTotalsByUser = useMemo(() => {
+    const totals = {};
+
+    (payout || []).forEach((item) => {
+      if (!PAYABLE_STATUSES.includes(item.status)) return;
+
+      const id = item.user?._id;
+      if (!id) return;
+
+      totals[id] = (totals[id] || 0) + (item.netAmount || 0);
+    });
+
+    return totals;
+  }, [payout]);
+
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -614,22 +632,28 @@ const Payout = ({ mood, setAlert }) => {
                     </span>
 
                     <div className="dots">
-                      <span onClick={() => openView(item)}>
+                      <span
+                        onClick={() => openView(item)}
+                        style={{ border: "none" }}
+                      >
                         <NiOpenEye />
                       </span>
                       {mood === "admin" && (
                         <div className="modal-actions">
-                          {PAYABLE_STATUSES.includes(item.status) && (
-                            <button
-                              className="table-btn"
-                              onClick={() => {
-                                setSelectedExpense(item);
-                                setOpen(true);
-                              }}
-                            >
-                              Pay
-                            </button>
-                          )}
+                          {PAYABLE_STATUSES.includes(item.status) &&
+                            (item.netAmount >= 1000 ||
+                              (payableTotalsByUser[item.user?._id] || 0) >
+                                1000) && (
+                              <button
+                                className="table-btn"
+                                onClick={() => {
+                                  setSelectedExpense(item);
+                                  setOpen(true);
+                                }}
+                              >
+                                Pay
+                              </button>
+                            )}
                         </div>
                       )}
                     </div>

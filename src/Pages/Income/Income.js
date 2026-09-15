@@ -3,7 +3,7 @@ import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import NiPayments from "../../icons/ni-payments";
 import PaymentCard from "../../components/Cards/PaymentCard";
-import { getAccountDetails, getIncome, getIncomeSummary } from "../../Redux/Slices/AppSlices";
+import { getAccountDetails, getIncome, getIncomeSummary, getPayments } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import NiSearch from "../../icons/ni-search";
 import InvoiceCard from "../../components/Cards/InvoiceCard";
@@ -34,7 +34,7 @@ const EXPORT_COLUMNS = [
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { userDetail, incomeHistory, incomeSummary } = useSelector((state) => state.app);
+  const { userDetail, incomeHistory, incomeSummary, payment } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewOpen, setViewOpen] = useState(false);
@@ -53,6 +53,7 @@ const Income = ({ mood, setAlert }) => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
     dispatch(getIncomeSummary());
+    dispatch(getPayments());
   }, []);
 
   const [tabActive, setTabActive] = useState("other");
@@ -125,15 +126,15 @@ const Income = ({ mood, setAlert }) => {
     incomeHistory?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
   const todayIncome =
-  incomeHistory
-    ?.filter((i) => {
-      const today = new Date().toDateString();
-      return (
-        i.type !== "referal_income" &&
-        new Date(i.createdAt).toDateString() === today
-      );
-    })
-    ?.reduce((acc, item) => acc + item.amount, 0) || 0;
+    incomeHistory
+      ?.filter((i) => {
+        const today = new Date().toDateString();
+        return (
+          i.type !== "referal_income" &&
+          new Date(i.createdAt).toDateString() === today
+        );
+      })
+      ?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
   const referralIncome =
     incomeHistory
@@ -254,6 +255,9 @@ const Income = ({ mood, setAlert }) => {
   /* =====================================================
      EXPORT PDF
   ===================================================== */
+  /* =====================================================
+   EXPORT PDF
+===================================================== */
   const exportToPDF = () => {
     const sourceRecords = getExportSourceRecords();
     const rows = getExportRows(sourceRecords);
@@ -285,28 +289,62 @@ const Income = ({ mood, setAlert }) => {
     const columns = Object.keys(rows[0]);
     const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
 
+    // Relative proportions for each column - wider ones get more real width
+    const baseWidths = {
+      "S.No": 8,
+      "Date": 16,
+      "Name": 24,
+      "Phone": 18,
+      "Referral ID": 18,
+      "Income Type": 22,
+      "Amount": 16,
+      "From": 24,
+      "From Phone": 18,
+    };
+
+    const margin = { top: 27, left: 8, right: 8, bottom: 10 };
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0,
+    );
+
+    const scale = availableWidth / totalBase;
+
+    const columnStyles = {};
+    columns.forEach((column, index) => {
+      const base = baseWidths[column] || 18;
+      columnStyles[index] = {
+        cellWidth: base * scale,
+      };
+    });
+
     autoTable(doc, {
       head: [columns],
       body,
-      startY: 27,
+      startY: margin.top,
       theme: "grid",
-      tableWidth: "auto", // let it fill the printable width, not exceed it
+      tableWidth: "auto",
       styles: {
-        fontSize: 6,
-        cellPadding: 1,
+        fontSize: 9,           // bumped up from 6
+        cellPadding: 2.2,       // bumped up from 1
         overflow: "linebreak",
         valign: "middle",
         halign: "left",
         lineWidth: 0.1,
       },
-      headStyles: { fontSize: 6, fontStyle: "bold", valign: "middle" },
-      bodyStyles: { valign: "middle" },
-      // let autoTable distribute width proportionally to content instead
-      // of hardcoded mm values that summed to more than the page
-      columnStyles: {
-        0: { cellWidth: 8 }, // S.No stays narrow
+      headStyles: {
+        fontSize: 9.5,
+        fontStyle: "bold",
+        valign: "middle",
+        fillColor: [30, 30, 30],
       },
-      margin: { top: 27, left: 5, right: 5, bottom: 8 },
+      bodyStyles: { valign: "middle" },
+      columnStyles,
+      margin,
     });
 
     doc.save(`${buildExportFileBaseName()}.pdf`);
@@ -371,30 +409,44 @@ const Income = ({ mood, setAlert }) => {
   );
 
   const currentColIncome = useMemo(() => {
-  return (incomeHistory || [])
-    .filter((i) => {
-      const d = new Date(i.createdAt);
-      return (
-        i.type !== "referal_income" &&
-        d >= currentStart &&
-        d <= currentEnd
-      );
-    })
-    .reduce((acc, item) => acc + (item.amount || 0), 0);
-}, [incomeHistory, currentStart, currentEnd]);
+    return (payment || [])
+      .filter((i) => {
+        const d = new Date(i.createdAt);
+        return (
+          d >= currentStart &&
+          d <= currentEnd
+        );
+      })
+      .reduce((acc, item) => acc + (item.amount || 0), 0);
+  }, [incomeHistory, currentStart, currentEnd]);
 
-const previousColIncome = useMemo(() => {
-  return (incomeHistory || [])
-    .filter((i) => {
-      const d = new Date(i.createdAt);
+  const previousColIncome = useMemo(() => {
+    return (payment || [])
+      .filter((i) => {
+        const d = new Date(i.createdAt);
+        return (
+          d >= previousStart &&
+          d <= previousEnd
+        );
+      })
+      .reduce((acc, item) => acc + (item.amount || 0), 0);
+  }, [incomeHistory, previousStart, previousEnd]);
+
+  const now = new Date();
+
+  // Today's Collection
+  const todaysCollection = payment
+    ?.filter((p) => {
+      const date = new Date(p.paymentDate || p.createdAt);
+
       return (
-        i.type !== "referal_income" &&
-        d >= previousStart &&
-        d <= previousEnd
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear() &&
+        p.status === "approved"
       );
     })
-    .reduce((acc, item) => acc + (item.amount || 0), 0);
-}, [incomeHistory, previousStart, previousEnd]);
+    .reduce((sum, p) => sum + (p.amount || 0), 0);
 
   return (
     <div className="plot-container">
@@ -446,7 +498,7 @@ const previousColIncome = useMemo(() => {
             />
             <DashboardCard
               title="Today's Collection"
-              value={`₹${formatCurrency(todayIncome)}`}
+              value={`₹${formatCurrency(todaysCollection)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
