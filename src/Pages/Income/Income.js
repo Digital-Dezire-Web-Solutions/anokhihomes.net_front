@@ -34,7 +34,7 @@ const EXPORT_COLUMNS = [
 
 const Income = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { userDetail, incomeHistory, incomeSummary, payment } = useSelector((state) => state.app);
+  const { userDetail, incomeHistory, incomeSummary } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewOpen, setViewOpen] = useState(false);
@@ -359,83 +359,10 @@ const Income = ({ mood, setAlert }) => {
     setExportAgentId("");
   };
 
-  /* =====================================================
-     FORTNIGHT (1-15 / 16-end) COLLECTION PERIODS
-  ===================================================== */
-  const getFortnightRanges = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth(); // 0-indexed
-    const day = now.getDate();
-
-    const lastDayOfThisMonth = new Date(year, month + 1, 0).getDate();
-
-    const prevMonth = month === 0 ? 11 : month - 1;
-    const prevMonthYear = month === 0 ? year - 1 : year;
-    const lastDayOfPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
-
-    let currentStart, currentEnd, previousStart, previousEnd;
-
-    if (day <= 15) {
-      // Current period: 1st - 15th of this month
-      currentStart = new Date(year, month, 1, 0, 0, 0);
-      currentEnd = new Date(year, month, 15, 23, 59, 59, 999);
-
-      // Previous period: 16th - end of PREVIOUS month
-      previousStart = new Date(prevMonthYear, prevMonth, 16, 0, 0, 0);
-      previousEnd = new Date(prevMonthYear, prevMonth, lastDayOfPrevMonth, 23, 59, 59, 999);
-    } else {
-      // Current period: 16th - end of THIS month
-      currentStart = new Date(year, month, 16, 0, 0, 0);
-      currentEnd = new Date(year, month, lastDayOfThisMonth, 23, 59, 59, 999);
-
-      // Previous period: 1st - 15th of this month
-      previousStart = new Date(year, month, 1, 0, 0, 0);
-      previousEnd = new Date(year, month, 15, 23, 59, 59, 999);
-    }
-
-    return { currentStart, currentEnd, previousStart, previousEnd };
-  };
-
-  // Short "1 Sep - 15 Sep" style label for the card subtitle
-  const formatRangeLabel = (start, end) => {
-    const opts = { day: "numeric", month: "short" };
-    return `${start.toLocaleDateString("en-IN", opts)} - ${end.toLocaleDateString("en-IN", opts)}`;
-  };
-
-  const { currentStart, currentEnd, previousStart, previousEnd } = useMemo(
-    () => getFortnightRanges(),
-    [], // period only changes day-to-day; fine to compute once per mount
-  );
-
-  const currentColIncome = useMemo(() => {
-    return (payment || [])
-      .filter((i) => {
-        const d = new Date(i.createdAt);
-        return (
-          d >= currentStart &&
-          d <= currentEnd
-        );
-      })
-      .reduce((acc, item) => acc + (item.amount || 0), 0);
-  }, [incomeHistory, currentStart, currentEnd]);
-
-  const previousColIncome = useMemo(() => {
-    return (payment || [])
-      .filter((i) => {
-        const d = new Date(i.createdAt);
-        return (
-          d >= previousStart &&
-          d <= previousEnd
-        );
-      })
-      .reduce((acc, item) => acc + (item.amount || 0), 0);
-  }, [incomeHistory, previousStart, previousEnd]);
-
   const now = new Date();
 
   // Today's Collection
-  const todaysCollection = payment
+  const todaysCollection = incomeHistory
     ?.filter((p) => {
       const date = new Date(p.paymentDate || p.createdAt);
 
@@ -447,6 +374,73 @@ const Income = ({ mood, setAlert }) => {
       );
     })
     .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  const getIncomeCycle = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    if (day <= 15) {
+      return {
+        cycleStart: new Date(year, month, 1, 0, 0, 0, 0),
+        cycleEnd: new Date(year, month, 15, 23, 59, 59, 999),
+      };
+    }
+
+    const lastDay = new Date(year, month + 1, 0).getDate(); // last day of this month
+    return {
+      cycleStart: new Date(year, month, 16, 0, 0, 0, 0),
+      cycleEnd: new Date(year, month, lastDay, 23, 59, 59, 999),
+    };
+  };
+
+  // Previous cycle = the 15-day window immediately before the current one
+  const getPreviousIncomeCycle = (date = new Date()) => {
+    const { cycleStart } = getIncomeCycle(date);
+    // Step back 1 day from the current cycle's start to land in the previous cycle
+    const prevAnchor = new Date(cycleStart);
+    prevAnchor.setDate(prevAnchor.getDate() - 1);
+    return getIncomeCycle(prevAnchor);
+  };
+
+  const { cycleStart: currentCycleStart, cycleEnd: currentCycleEnd } =
+    useMemo(() => getIncomeCycle(now), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { cycleStart: prevCycleStart, cycleEnd: prevCycleEnd } =
+    useMemo(() => getPreviousIncomeCycle(now), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentCycleIncome =
+    incomeHistory
+      ?.filter((i) => {
+        const d = new Date(i.createdAt);
+        return (
+          i.type !== "referal_income" &&
+          d >= currentCycleStart &&
+          d <= currentCycleEnd
+        );
+      })
+      ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+
+  const previousCycleIncome =
+    incomeHistory
+      ?.filter((i) => {
+        const d = new Date(i.createdAt);
+        return (
+          i.type !== "referal_income" &&
+          d >= prevCycleStart &&
+          d <= prevCycleEnd
+        );
+      })
+      ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
+
+  // Human-readable labels for the card titles, e.g. "16 Sep - 30 Sep"
+  const formatCycleLabel = (start, end) => {
+    const opts = { day: "2-digit", month: "short" };
+    return `${start.toLocaleDateString("en-IN", opts)} - ${end.toLocaleDateString("en-IN", opts)}`;
+  };
+
+  const currentCycleLabel = formatCycleLabel(currentCycleStart, currentCycleEnd);
+  const previousCycleLabel = formatCycleLabel(prevCycleStart, prevCycleEnd);
 
   return (
     <div className="plot-container">
@@ -502,13 +496,13 @@ const Income = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
             <DashboardCard
-              title={`Previous Col. (${formatRangeLabel(previousStart, previousEnd)})`}
-              value={`₹${formatCurrency(previousColIncome)}`}
+              title={`Previous Cycle Income (${previousCycleLabel})`}
+              value={`₹${formatCurrency(previousCycleIncome)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
-              title={`Current Col. (${formatRangeLabel(currentStart, currentEnd)})`}
-              value={`₹${formatCurrency(currentColIncome)}`}
+              title={`Current Cycle Income (${currentCycleLabel})`}
+              value={`₹${formatCurrency(currentCycleIncome)}`}
               icons={<NiPayments />}
             />
           </div>
