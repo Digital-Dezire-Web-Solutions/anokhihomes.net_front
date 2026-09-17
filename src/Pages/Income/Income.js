@@ -122,6 +122,13 @@ const Income = ({ mood, setAlert }) => {
     page * ITEMS_PER_PAGE,
   );
 
+  // Add this near your other useMemo hooks, after userDetail/incomeHistory are available
+  const ownIncomeHistory = useMemo(() => {
+    return (incomeHistory || []).filter(
+      (item) => item?.user?._id === userDetail?._id
+    );
+  }, [incomeHistory, userDetail]);
+
   const totalIncome =
     incomeHistory?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
@@ -137,7 +144,7 @@ const Income = ({ mood, setAlert }) => {
       ?.reduce((acc, item) => acc + item.amount, 0) || 0;
 
   const referralIncome =
-    incomeHistory
+    ownIncomeHistory
       ?.filter((i) => i.type === "referal_income")
       ?.reduce((acc, item) => acc + (item.amount || 0), 0) || 0;
 
