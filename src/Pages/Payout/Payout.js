@@ -68,6 +68,13 @@ const Payout = ({ mood, setAlert }) => {
   const summary = useMemo(() => {
     const data = payout || [];
 
+    // hold + released = still owed, not yet paid and not cancelled
+    const unpaidData = data.filter((i) => PAYABLE_STATUSES.includes(i.status));
+
+    // of that unpaid amount, split by whether it clears the ₹1000 payout threshold
+    const payableData = unpaidData.filter((i) => (i.netAmount || 0) >= 1000);
+    const notPayableData = unpaidData.filter((i) => (i.netAmount || 0) < 1000);
+
     return {
       released: data
         ?.filter((i) => i.status === "released")
@@ -80,6 +87,14 @@ const Payout = ({ mood, setAlert }) => {
       cancelled: data
         ?.filter((i) => i.status === "cancelled")
         ?.reduce((s, i) => s + (i.netAmount || 0), 0),
+
+      unpaid: unpaidData.reduce((s, i) => s + (i.netAmount || 0), 0),
+
+      payoutCount: data.length,
+
+      payable: payableData.reduce((s, i) => s + (i.netAmount || 0), 0),
+
+      notPayable: notPayableData.reduce((s, i) => s + (i.netAmount || 0), 0),
     };
   }, [payout]);
 
@@ -500,8 +515,23 @@ const Payout = ({ mood, setAlert }) => {
             />
 
             <DashboardCard
-              title="Cancelled"
-              value={`₹${formatCurrency(summary.cancelled)}`}
+              title="Unpaid"
+              value={`₹${formatCurrency(summary.unpaid)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="No. of Payout"
+              value={summary.payoutCount}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Payable Amount"
+              value={`₹${formatCurrency(summary.payable)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Not Payable Amount"
+              value={`₹${formatCurrency(summary.notPayable)}`}
               icons={<NiPayments />}
             />
           </div>
@@ -519,7 +549,7 @@ const Payout = ({ mood, setAlert }) => {
                 }}
               />
             </div>
-            <div className="searchItem">
+            {/* <div className="searchItem">
               <label>From</label>
               <input
                 type="date"
@@ -535,7 +565,7 @@ const Payout = ({ mood, setAlert }) => {
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
               />
-            </div>
+            </div> */}
             <div className="searchItem">
               <select
                 value={statusFilter}

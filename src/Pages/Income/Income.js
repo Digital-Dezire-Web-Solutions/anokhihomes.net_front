@@ -462,6 +462,11 @@ const Income = ({ mood, setAlert }) => {
           {/* ================= STATS ================= */}
           <div className="dashboard-grid">
             <DashboardCard
+              title="Total Team Business"
+              value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
               title="Total Income"
               value={`₹${formatCurrency(totalIncome)}`}
               icons={<NiPayments />}
@@ -472,34 +477,28 @@ const Income = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Total Self Business"
-              value={`₹${formatCurrency(userDetail?.selfBusiness || 0)}`}
+              title="Plot's Income"
+              value={`₹${formatCurrency(otherIncome || 0)}`}
               icons={<NiPayments />}
             />
-            <DashboardCard
-              title="Total Team Business"
-              value={`₹${formatCurrency(userDetail?.totalBusiness || 0)}`}
-              icons={<NiPayments />}
-            />
-
             <DashboardCard
               title="Total Referral Income"
               value={`₹${formatCurrency(referralIncome || 0)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Plot's Income"
-              value={`₹${formatCurrency(otherIncome || 0)}`}
-              icons={<NiPayments />}
-            />
-            <DashboardCard
-              title="Total Transactions"
-              value={incomeHistory?.length || 0}
+              title="Total Self Business"
+              value={`₹${formatCurrency(userDetail?.selfBusiness || 0)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
               title="Today's Collection"
               value={`₹${formatCurrency(todaysCollection)}`}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="Total Transactions"
+              value={incomeHistory?.length || 0}
               icons={<NiPayments />}
             />
             <DashboardCard
@@ -684,7 +683,7 @@ const Income = ({ mood, setAlert }) => {
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
                       <span>{!item?.fromUser ?
-                        `${item?.payment?.customer?.name} (Payment)` || "-" :
+                        `${item?.payment?.customer?.name ? item?.payment?.customer?.name : "Anokhi Homes"} (Payment)` || "-" :
                         `${item?.fromUser?.name} (${item?.fromUser?.referralId})`}</span>
                       <span
                         className={`status ${item.status === "credited" ? "active" : "pending"

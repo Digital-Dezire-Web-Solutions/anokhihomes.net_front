@@ -115,7 +115,7 @@ const Accounts = ({ mood, setAlert }) => {
             <div className="dashboard-container">
                 <div className="dashboard-wrapper">
                     <div className="dashboard-grid">
-                        <DashboardCard
+                        {/* <DashboardCard
                             title="Credit"
                             value={`₹${formatCurrency(ledger?.summary?.totalCredit || 0)}`}
                             icons={<NiPayments />}
@@ -125,13 +125,31 @@ const Accounts = ({ mood, setAlert }) => {
                             title="Debit"
                             value={`₹${formatCurrency(ledger?.summary?.totalDebit || 0)}`}
                             icons={<NiPayments />}
-                        />
+                        /> */}
 
                         <DashboardCard
                             title={ledger?.summary?.status}
-                            value={`₹${formatCurrency(ledger?.summary?.profit || 0)}`}
+                            value={`₹${formatCurrency(filteredSummary.profit)}`}
                             icons={<NiPayments />}
                         />
+                        <DashboardCard
+                            title={"Total Credit"}
+                            value={`₹${formatCurrency(filteredSummary.totalCredit)}`}
+                            icons={<NiPayments />}
+                        />
+                        <DashboardCard
+                            title={"Total Debit"}
+                            value={`₹${formatCurrency(filteredSummary.totalDebit)}`}
+                            icons={<NiPayments />}
+                        />
+
+                        {projectFilter &&
+                            <DashboardCard
+                                title={"Pending Plots For Sale"}
+                                value={forSalePlots}
+                                icons={<NiPayments />}
+                            />
+                        }
                     </div>
                     <h4>Ledger History</h4>
                     <div className="filter-grid page-tools table-filters">
