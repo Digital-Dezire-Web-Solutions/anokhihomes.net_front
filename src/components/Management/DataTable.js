@@ -92,26 +92,36 @@ const DataTable = ({ data, mood, setAlert }) => {
 
   // 🔥 FILTER LOGIC
   const filteredData = useMemo(() => {
-    return data?.filter((lead) => {
+    return (data || []).filter((lead) => {
       const matchesSearch =
         lead?.name?.toLowerCase().includes(search?.toLowerCase()) ||
         lead?.phone?.includes(search);
       const matchesStatus =
         statusFilter === "" || lead?.status === statusFilter;
       const matchesAgent = agentFilter === "" || lead?.agent === agentFilter;
-      const matchFrom = !fromDate || lead >= new Date(fromDate);
 
-      const matchTo = !toDate || lead <= new Date(`${toDate}T23:59:59`);
+      const leadDate = new Date(lead?.createdAt);
+      const matchFrom = !fromDate || leadDate >= new Date(fromDate);
+      const matchTo = !toDate || leadDate <= new Date(`${toDate}T23:59:59`);
+
       return (
         matchesSearch && matchesStatus && matchesAgent && matchFrom && matchTo
       );
     });
   }, [search, statusFilter, agentFilter, fromDate, toDate, data]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const aNew = a?.status?.toLowerCase() === "new" ? 0 : 1;
+      const bNew = b?.status?.toLowerCase() === "new" ? 0 : 1;
+      if (aNew !== bNew) return aNew - bNew;
+      return new Date(b?.createdAt) - new Date(a?.createdAt);
+    });
+  }, [filteredData]);
 
-  const paginatedData = filteredData.slice(
+  // Pagination
+  const totalPages = Math.ceil(sortedData.length / ITEMS_PER_PAGE);
+  const paginatedData = sortedData.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
@@ -143,7 +153,7 @@ const DataTable = ({ data, mood, setAlert }) => {
         name: "",
         phone: "",
         email: "",
-        address: ""
+        address: "",
       });
       dispatch(getLeads());
       setSaving(false);
@@ -348,19 +358,17 @@ const DataTable = ({ data, mood, setAlert }) => {
         {paginatedData.length === 0 ? (
           <p>No Leads Found</p>
         ) : (
-          paginatedData
-            ?.reverse()
-            .map((item) => (
-              <ManagementCard
-                item={item}
-                setSelectedLead={setSelectedLead}
-                setIsEditMode={setIsEditMode}
-                setOpen={setOpen}
-                mood={mood}
-                setAlert={setAlert}
-                agentsList={agentsList}
-              />
-            ))
+          paginatedData.map((item) => (
+            <ManagementCard
+              item={item}
+              setSelectedLead={setSelectedLead}
+              setIsEditMode={setIsEditMode}
+              setOpen={setOpen}
+              mood={mood}
+              setAlert={setAlert}
+              agentsList={agentsList}
+            />
+          ))
         )}
       </div>
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
@@ -442,17 +450,17 @@ const DataTable = ({ data, mood, setAlert }) => {
             </div>
             <div className="field">
               <label>Address</label>
-                <input
-                  placeholder="Address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      address: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              <input
+                placeholder="Address"
+                value={formData.address}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    address: e.target.value,
+                  })
+                }
+              />
+            </div>
           </>
         ) : (
           <>

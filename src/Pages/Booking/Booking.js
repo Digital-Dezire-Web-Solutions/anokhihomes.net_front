@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./Booking.css";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import { useNavigate } from "react-router-dom";
@@ -95,13 +95,30 @@ const Booking = ({ mood, setAlert, landingPage }) => {
   const [currentPage, setCurrentPage] = useState(1);
   // console.log(filter, "filter");
 
-  const filteredData =
-    filter === "all" ? booking : booking.filter((d) => d.status === filter);
+  const PRIORITY_STATUS = "pending"; // status that pins to the top
+
+  const filteredData = useMemo(() => {
+    const base = (booking || []).filter((d) => {
+      const matchStatus = filter === "all" || d?.status === filter;
+      const matchSearch =
+        !search ||
+        d?.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        d?.customer?.phone?.includes(search);
+      return matchStatus && matchSearch;
+    });
+
+    return base.sort((a, b) => {
+      const aTop = a?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      const bTop = b?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      if (aTop !== bTop) return aTop - bTop;
+      return new Date(b?.createdAt) - new Date(a?.createdAt);
+    });
+  }, [booking, filter, search]);
 
   // reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter]);
+  }, [filter, search]);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
@@ -270,18 +287,16 @@ const Booking = ({ mood, setAlert, landingPage }) => {
         {currentData.length === 0 ? (
           <p>No Bookings Found</p>
         ) : (
-          currentData
-            .reverse()
-            .map((item) => (
-              <BookingCard
-                item={item}
-                setSelectedBooking={setSelectedBooking}
-                setIsEditMode={setIsEditMode}
-                setOpen={setOpen}
-                mood={mood}
-                setAlert={setAlert}
-              />
-            ))
+          currentData.map((item) => (
+            <BookingCard
+              item={item}
+              setSelectedBooking={setSelectedBooking}
+              setIsEditMode={setIsEditMode}
+              setOpen={setOpen}
+              mood={mood}
+              setAlert={setAlert}
+            />
+          ))
         )}
       </div>
       {/* Pagination */}
@@ -310,7 +325,7 @@ const Booking = ({ mood, setAlert, landingPage }) => {
         onClose={() => setPolicyOpen(false)}
         title="Cancellation Policy"
       >
-        <CancellationPolicy landingPage={landingPage}/>
+        <CancellationPolicy landingPage={landingPage} />
       </AddLocationModal>
     </div>
   );

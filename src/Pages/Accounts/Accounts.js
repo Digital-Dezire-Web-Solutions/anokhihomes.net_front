@@ -84,6 +84,19 @@ const Accounts = ({ mood, setAlert }) => {
             return matchSearch && matchProject && matchFrom && matchTo;
         });
     }, [ledger, search, projectFilter, fromDate, toDate]);
+    const filteredSummary = useMemo(() => {
+        const rows = filtered || [];
+        const totalCredit = rows.reduce((s, i) => s + (i.credit || 0), 0);
+        const totalDebit = rows.reduce((s, i) => s + (i.debit || 0), 0);
+        const profit = totalCredit - totalDebit;
+
+        return {
+            totalCredit,
+            totalDebit,
+            profit: Math.abs(profit),
+            status: profit < 0 ? "Loss" : "Profit",
+        };
+    }, [filtered]);
 
     const totalPages = Math.ceil(filtered?.length / ITEMS_PER_PAGE);
     const paginated = filtered?.slice(
@@ -234,19 +247,22 @@ const Accounts = ({ mood, setAlert }) => {
                         <div className="account-status-item">
                             <b>Total Credit : </b>
                             <div className="account-status Profit">
-                                <NiCredit /> ₹{formatCurrency(ledger?.summary?.totalCredit)}
+                                <NiCredit /> ₹{formatCurrency(filteredSummary.totalCredit)}
                             </div>
                         </div>
 
                         <div className="account-status-item">
                             <b>Total Debit : </b>
-                            <div className="account-status Loss"><NiDebit /> ₹{formatCurrency(ledger?.summary?.totalDebit)}</div>
+                            <div className="account-status Loss">
+                                <NiDebit /> ₹{formatCurrency(filteredSummary.totalDebit)}
+                            </div>
                         </div>
                         <div className="account-status-item">
-                            <b>{ledger?.summary?.status} : </b>
-                            <div className={`account-status ${ledger?.summary?.status}`}>{ledger?.summary?.status === "Loss" ? <NiDebit /> : <NiCredit />} ₹{formatCurrency(ledger?.summary?.profit)}</div>
+                            <b>{filteredSummary.status} : </b>
+                            <div className={`account-status ${filteredSummary.status}`}>
+                                {filteredSummary.status === "Loss" ? <NiDebit /> : <NiCredit />} ₹{formatCurrency(filteredSummary.profit)}
+                            </div>
                         </div>
-
                     </div>
                     <Pagination
                         page={page}

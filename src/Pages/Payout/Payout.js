@@ -101,7 +101,7 @@ const Payout = ({ mood, setAlert }) => {
   }, [payout]);
 
   const filtered = useMemo(() => {
-    return (payout || []).filter((item) => {
+    const base = (payout || []).filter((item) => {
       const keyword = search.toLowerCase();
 
       const matchSearch =
@@ -116,6 +116,8 @@ const Payout = ({ mood, setAlert }) => {
         !cycleFilter || `${item.cycleStart}_${item.cycleEnd}` === cycleFilter;
       return matchSearch && matchFrom && matchTo && matchStatus && matchCycle;
     });
+
+    return base.sort((a, b) => (b.netAmount || 0) - (a.netAmount || 0));
   }, [payout, search, fromDate, toDate, statusFilter, cycleFilter]);
 
   const totalPages = Math.ceil(filtered?.length / ITEMS_PER_PAGE);

@@ -72,8 +72,10 @@ const PaymentTable = ({ data, mood, setAlert }) => {
 
   // console.log(booking, "booking");
 
+  const PRIORITY_STATUS = "pending"; // status that pins to the top
+
   const filtered = useMemo(() => {
-    return (data || []).filter((payment) => {
+    const base = (data || []).filter((payment) => {
       const matchSearch =
         payment?.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
         payment?.customer?.phone?.includes(search);
@@ -81,14 +83,21 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       const matchStatus =
         statusFilter === "" || payment.status === statusFilter;
 
-      // Use paymentDate if available, otherwise createdAt
       const paymentDate = new Date(payment.paymentDate || payment.createdAt);
-
       const matchFrom = !fromDate || paymentDate >= new Date(fromDate);
-
       const matchTo = !toDate || paymentDate <= new Date(`${toDate}T23:59:59`);
 
       return matchSearch && matchStatus && matchFrom && matchTo;
+    });
+
+    return base.sort((a, b) => {
+      const aTop = a?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      const bTop = b?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      if (aTop !== bTop) return aTop - bTop;
+
+      const aDate = new Date(a.paymentDate || a.createdAt);
+      const bDate = new Date(b.paymentDate || b.createdAt);
+      return bDate - aDate;
     });
   }, [data, search, statusFilter, fromDate, toDate]);
 
@@ -196,15 +205,15 @@ const PaymentTable = ({ data, mood, setAlert }) => {
   const getExportRows = (rows) => {
     return (rows || []).map((item, index) => ({
       "S.No": index + 1,
-      "Date": formatDate(item?.createdAt) || "-",
-      "Customer": item?.customer?.name || "-",
+      Date: formatDate(item?.createdAt) || "-",
+      Customer: item?.customer?.name || "-",
       "C Phone": item?.customer?.phone || "-",
-      "Associate": item.agent?.name || "",
+      Associate: item.agent?.name || "",
       "A Phone": item.agent?.phone || "",
-      "Amount": fmt2(item.amount) || "-",
-      "Mode": item?.paymentMode || "",
-      "Plot": getPlotLabel(item),
-      "Status": item.status || "",
+      Amount: fmt2(item.amount) || "-",
+      Mode: item?.paymentMode || "",
+      Plot: getPlotLabel(item),
+      Status: item.status || "",
     }));
   };
 
@@ -241,11 +250,21 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     const parts = ["commission-report"];
 
     if (selectedExportCustomer) {
-      parts.push(selectedExportCustomer.name.toString().trim().replace(/[^a-zA-Z0-9]+/g, "_"));
+      parts.push(
+        selectedExportCustomer.name
+          .toString()
+          .trim()
+          .replace(/[^a-zA-Z0-9]+/g, "_"),
+      );
     }
 
     if (selectedExportAgent) {
-      parts.push(selectedExportAgent.name.toString().trim().replace(/[^a-zA-Z0-9]+/g, "_"));
+      parts.push(
+        selectedExportAgent.name
+          .toString()
+          .trim()
+          .replace(/[^a-zA-Z0-9]+/g, "_"),
+      );
     }
 
     return parts.join("-");
@@ -257,8 +276,10 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     }
 
     const bits = [];
-    if (selectedExportCustomer) bits.push(`Customer: ${selectedExportCustomer.name}`);
-    if (selectedExportAgent) bits.push(`Associate: ${selectedExportAgent.name}`);
+    if (selectedExportCustomer)
+      bits.push(`Customer: ${selectedExportCustomer.name}`);
+    if (selectedExportAgent)
+      bits.push(`Associate: ${selectedExportAgent.name}`);
 
     return `Commission Report (${bits.join(", ")})`;
   };
@@ -439,18 +460,16 @@ const PaymentTable = ({ data, mood, setAlert }) => {
         {paginated.length === 0 ? (
           <p>No Payment Found</p>
         ) : (
-          paginated
-            ?.reverse()
-            .map((item) => (
-              <PaymentCard
-                item={item}
-                setSelectedPayment={setSelectedPayment}
-                setIsEditMode={setIsEditMode}
-                setOpen={setOpen}
-                mood={mood}
-                setAlert={setAlert}
-              />
-            ))
+          paginated.map((item) => (
+            <PaymentCard
+              item={item}
+              setSelectedPayment={setSelectedPayment}
+              setIsEditMode={setIsEditMode}
+              setOpen={setOpen}
+              mood={mood}
+              setAlert={setAlert}
+            />
+          ))
         )}
       </div>
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />

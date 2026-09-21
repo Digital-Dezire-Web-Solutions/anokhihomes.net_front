@@ -96,9 +96,22 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
       return matchSearch && matchStatus && matchFrom && matchTo;
     });
   }, [data, search, statusFilter, fromDate, toDate]);
+  const PRIORITY_STATUS = "approval"; // change to whichever status should pin to the top
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice(
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const aTop = a?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      const bTop = b?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
+      if (aTop !== bTop) return aTop - bTop;
+
+      const aDate = new Date(a?.visitDate || a?.createdAt);
+      const bDate = new Date(b?.visitDate || b?.createdAt);
+      return bDate - aDate;
+    });
+  }, [filtered]);
+
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
+  const paginated = sorted.slice(
     (page - 1) * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE,
   );
@@ -238,19 +251,17 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
         {paginated.length === 0 ? (
           <p>No Site Visits Found</p>
         ) : (
-          paginated
-            .reverse()
-            .map((item) => (
-              <SiteVisitCard
-                item={item}
-                setSelectedVisit={setSelectedVisit}
-                setIsEditMode={setIsEditMode}
-                setOpen={setOpen}
-                mood={mood}
-                setAlert={setAlert}
-                landingPage={landingPage}
-              />
-            ))
+          paginated.map((item) => (
+            <SiteVisitCard
+              item={item}
+              setSelectedVisit={setSelectedVisit}
+              setIsEditMode={setIsEditMode}
+              setOpen={setOpen}
+              mood={mood}
+              setAlert={setAlert}
+              landingPage={landingPage}
+            />
+          ))
         )}
       </div>
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />

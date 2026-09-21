@@ -164,5 +164,6 @@
   .plot-container {
     overflow: auto;
     height: 90%;
+        padding: 1rem;
   }
 }
