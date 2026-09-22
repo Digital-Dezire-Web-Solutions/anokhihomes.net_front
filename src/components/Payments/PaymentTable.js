@@ -24,7 +24,6 @@ const EXPORT_COLUMNS = [
   "S.No",
   "Date",
   "Customer",
-  "C Phone",
   "Associate",
   "A Phone",
   "Amount",
@@ -207,7 +206,6 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       "S.No": index + 1,
       Date: formatDate(item?.createdAt) || "-",
       Customer: item?.customer?.name || "-",
-      "C Phone": item?.customer?.phone || "-",
       Associate: item.agent?.name || "",
       "A Phone": item.agent?.phone || "",
       Amount: fmt2(item.amount) || "-",
@@ -247,7 +245,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
   };
 
   const buildExportFileBaseName = () => {
-    const parts = ["commission-report"];
+    const parts = ["Payment-report"];
 
     if (selectedExportCustomer) {
       parts.push(
@@ -272,7 +270,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
 
   const buildExportTitle = () => {
     if (!selectedExportCustomer && !selectedExportAgent) {
-      return "Commission Report";
+      return "Payment Report";
     }
 
     const bits = [];
@@ -281,7 +279,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     if (selectedExportAgent)
       bits.push(`Associate: ${selectedExportAgent.name}`);
 
-    return `Commission Report (${bits.join(", ")})`;
+    return `Payment Report (${bits.join(", ")})`;
   };
 
   /* =====================================================
@@ -292,7 +290,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     const rows = getExportRows(sourceRecords);
 
     if (!rows.length) {
-      setAlert({ message: "No commission data to export", status: "Error" });
+      setAlert({ message: "No Payment data to export", status: "Error" });
       setTimeout(() => setAlert(null), 3000);
       return;
     }
@@ -310,7 +308,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     worksheet["!cols"] = columnWidths;
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Commission");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Payment");
 
     XLSX.writeFile(workbook, `${buildExportFileBaseName()}.xlsx`);
 
@@ -327,7 +325,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     const rows = getExportRows(sourceRecords);
 
     if (!rows.length) {
-      setAlert({ message: "No commission data to export", status: "Error" });
+      setAlert({ message: "No Payment data to export", status: "Error" });
       setTimeout(() => setAlert(null), 3000);
       return;
     }
@@ -338,14 +336,25 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       format: "a4",
     });
 
-    doc.setFontSize(18);
+    doc.setFontSize(25);
     doc.text(buildExportTitle(), 14, 15);
 
-    doc.setFontSize(9);
+    doc.setFontSize(16);
     doc.text(`Total Records: ${rows.length}`, 14, 22);
 
     const columns = Object.keys(rows[0]);
-    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+    const body = rows.map((row) =>
+      columns.map((column) => {
+        const value = row[column] ?? "-";
+
+        // uppercase the payment mode specifically for the PDF (Excel keeps its own casing)
+        if (column === "Mode" && typeof value === "string") {
+          return value.toUpperCase();
+        }
+
+        return value;
+      }),
+    );
 
     autoTable(doc, {
       head: [columns],
@@ -354,7 +363,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       theme: "grid",
       tableWidth: "auto", // let it fill the printable width, not exceed it
       styles: {
-        fontSize: 6,
+        fontSize: 8,
         cellPadding: 1,
         overflow: "linebreak",
         valign: "middle",
@@ -488,7 +497,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       <AddLocationModal
         open={exportOpen}
         onClose={closeExportModal}
-        title="Export Commission Report"
+        title="Export Payment Report"
       >
         <div className="export-modal-body">
           <div className="searchItem" style={{ marginBottom: "0.75rem" }}>

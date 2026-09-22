@@ -67,34 +67,30 @@ const Payout = ({ mood, setAlert }) => {
 
   const summary = useMemo(() => {
     const data = payout || [];
-
-    // hold + released = still owed, not yet paid and not cancelled
     const unpaidData = data.filter((i) => PAYABLE_STATUSES.includes(i.status));
-
-    // of that unpaid amount, split by whether it clears the ₹1000 payout threshold
-    const payableData = unpaidData.filter((i) => (i.netAmount || 0) >= 1000);
-    const notPayableData = unpaidData.filter((i) => (i.netAmount || 0) < 1000);
-
+    const totalsByUser = {};
+    unpaidData.forEach((item) => {
+      const id = item.user?._id;
+      if (!id) return;
+      totalsByUser[id] = (totalsByUser[id] || 0) + (item.netAmount || 0);
+    });
+    const userTotals = Object.values(totalsByUser);
+    const payableCount = userTotals.filter((total) => total >= 1000).length;
+    const notPayableCount = userTotals.filter((total) => total < 1000).length;
     return {
       released: data
         ?.filter((i) => i.status === "released")
         ?.reduce((s, i) => s + (i.netAmount || 0), 0),
-
       paid: data
         ?.filter((i) => i.status === "paid")
         ?.reduce((s, i) => s + (i.netAmount || 0), 0),
-
       cancelled: data
         ?.filter((i) => i.status === "cancelled")
         ?.reduce((s, i) => s + (i.netAmount || 0), 0),
-
       unpaid: unpaidData.reduce((s, i) => s + (i.netAmount || 0), 0),
-
       payoutCount: data.length,
-
-      payable: payableData.reduce((s, i) => s + (i.netAmount || 0), 0),
-
-      notPayable: notPayableData.reduce((s, i) => s + (i.netAmount || 0), 0),
+      payableCount,
+      notPayableCount,
     };
   }, [payout]);
 
@@ -219,33 +215,34 @@ const Payout = ({ mood, setAlert }) => {
       return [];
     }
 
-    if (!exportCycle) {
-      return payout;
-    }
+    const base = exportCycle
+      ? payout.filter(
+          (item) => `${item.cycleStart}_${item.cycleEnd}` === exportCycle,
+        )
+      : payout;
 
-    return payout.filter(
-      (item) => `${item.cycleStart}_${item.cycleEnd}` === exportCycle,
-    );
+    // match the table's own sort order (highest netAmount first)
+    return [...base].sort((a, b) => (b.netAmount || 0) - (a.netAmount || 0));
   };
 
   /* =====================================================
      FORMAT USER DATA FOR EXPORT
   ===================================================== */
-
+  const fmt2 = (n) => (Number(n) || 0).toFixed(2);
   const getExportRows = () => {
     const selectedUsers = getExportUsers();
 
-    return selectedUsers.map((item) => {
+    return selectedUsers.map((item, index) => {
       return {
+        "S.No": index + 1,
         Name: item?.user?.name || "-",
-        Phone: item?.user?.phone || "-",
         Email: item?.user?.email || "-",
         UserID: item?.user?.referralId || "-",
         Cycle: `${formatDate(item.cycleStart)} - ${formatDate(item.cycleEnd)}`,
-        Gross: item?.grossAmount,
-        TDS: item?.tdsAmount,
-        AdminCharge: item?.adminChargeAmount,
-        Net: item?.netAmount,
+        Gross: fmt2(item?.grossAmount),
+        TDS: fmt2(item?.tdsAmount),
+        AdminCharge: fmt2(item?.adminChargeAmount),
+        Net: fmt2(item?.netAmount),
         Status: item?.status,
         PaymentMode: item?.paymentMode || "-",
         TransactionId: item?.transactionId || "-",
@@ -325,11 +322,7 @@ const Payout = ({ mood, setAlert }) => {
         message: "No users found for selected filter",
         status: "Error",
       });
-
-      setTimeout(() => {
-        setAlert(null);
-      }, 3000);
-
+      setTimeout(() => setAlert(null), 3000);
       return;
     }
 
@@ -340,119 +333,71 @@ const Payout = ({ mood, setAlert }) => {
     });
 
     const cycleLabel = cycles.find((c) => c.value === exportCycle)?.label;
-
     const title = exportCycle ? `Payouts — ${cycleLabel}` : "All Payouts";
 
-    doc.setFontSize(18);
+    doc.setFontSize(25);
     doc.text(title, 14, 15);
 
-    doc.setFontSize(9);
+    doc.setFontSize(24);
     doc.text(`Total Records: ${rows.length}`, 14, 22);
 
     const columns = Object.keys(rows[0]);
-
     const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
 
+    // relative proportions — scaled below to always fill the printable width
+    const baseWidths = {
+      "S.No": 8,
+      Name: 20,
+      Email: 28,
+      UserID: 20,
+      Cycle: 20,
+      Gross: 16,
+      TDS: 14,
+      AdminCharge: 18,
+      Net: 18,
+      Status: 15,
+      PaymentMode: 18,
+      TransactionId: 30,
+    };
+
+    const margin = { top: 27, left: 5, right: 5, bottom: 8 };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0,
+    );
+    const scale = availableWidth / totalBase;
+
     const columnStyles = {};
-
     columns.forEach((column, index) => {
-      let width = 18;
-
-      switch (column) {
-        case "Name":
-          width = 20;
-          break;
-
-        case "Phone":
-          width = 17;
-          break;
-
-        case "Email":
-          width = 28;
-          break;
-
-        case "UserID":
-          width = 20;
-          break;
-
-        case "Cycle":
-          width = 20;
-          break;
-
-        case "Gross":
-          width = 28;
-          break;
-
-        case "TDS":
-          width = 17;
-          break;
-
-        case "Admin Charge":
-          width = 20;
-          break;
-
-        case "Net":
-          width = 25;
-          break;
-
-        case "Status":
-          width = 17;
-          break;
-
-        case "Payment Mode":
-          width = 20;
-          break;
-
-        case "Transaction Id":
-          width = 45;
-          break;
-
-        default:
-          width = 18;
-      }
-
-      columnStyles[index] = {
-        cellWidth: width,
-      };
+      const base = baseWidths[column] || 18;
+      columnStyles[index] = { cellWidth: base * scale };
     });
 
     autoTable(doc, {
       head: [columns],
       body,
-
-      startY: 27,
-
+      startY: margin.top,
       theme: "grid",
-
-      tableWidth: "wrap",
-
+      tableWidth: "auto",
       styles: {
-        fontSize: 5.5,
-        cellPadding: 1.2,
+        fontSize: 8,
+        cellPadding: 1.4,
         overflow: "linebreak",
         valign: "middle",
         halign: "left",
         lineWidth: 0.1,
       },
-
       headStyles: {
-        fontSize: 5.5,
+        fontSize: 6,
         fontStyle: "bold",
         valign: "middle",
       },
-
-      bodyStyles: {
-        valign: "middle",
-      },
-
+      bodyStyles: { valign: "middle" },
       columnStyles,
-
-      margin: {
-        top: 27,
-        left: 5,
-        right: 5,
-        bottom: 8,
-      },
+      margin,
     });
 
     const fileName = exportCycle
@@ -465,11 +410,7 @@ const Payout = ({ mood, setAlert }) => {
       message: "PDF exported successfully",
       status: "Success",
     });
-
-    setTimeout(() => {
-      setAlert(null);
-    }, 3000);
-
+    setTimeout(() => setAlert(null), 3000);
     setExportOpen(false);
   };
 
@@ -525,13 +466,13 @@ const Payout = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Payable Amount"
-              value={`₹${formatCurrency(summary.payable)}`}
+              title="No. of Payable(Person)"
+              value={summary.payableCount}
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="Not Payable Amount"
-              value={`₹${formatCurrency(summary.notPayable)}`}
+              title="No. of UnPayable(Person)"
+              value={summary.notPayableCount}
               icons={<NiPayments />}
             />
           </div>
@@ -1032,8 +973,8 @@ const Payout = ({ mood, setAlert }) => {
 
             <div className="export-fields">
               <p>Export includes:</p>
+              <span>S.No</span>
               <span>Name</span>
-              <span>Phone</span>
               <span>Email</span>
               <span>UserID</span>
               <span>Cycle</span>

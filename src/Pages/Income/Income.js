@@ -218,11 +218,16 @@ const Income = ({ mood, setAlert }) => {
         .trim()
         .replace(/[^a-zA-Z0-9]+/g, "_");
 
-      return `commission-report-${safeName}`;
+      return `Income-report-${safeName}`;
     }
 
-    return "commission-report";
+    return "Income-report";
   };
+
+  const formatIncomeType = (type) =>
+    (type || "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
 
   /* =====================================================
      EXPORT EXCEL
@@ -232,7 +237,7 @@ const Income = ({ mood, setAlert }) => {
     const rows = getExportRows(sourceRecords);
 
     if (!rows.length) {
-      setAlert({ message: "No commission data to export", status: "Error" });
+      setAlert({ message: "No Income data to export", status: "Error" });
       setTimeout(() => setAlert(null), 3000);
       return;
     }
@@ -250,7 +255,7 @@ const Income = ({ mood, setAlert }) => {
     worksheet["!cols"] = columnWidths;
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Commission");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Income");
 
     XLSX.writeFile(workbook, `${buildExportFileBaseName()}.xlsx`);
 
@@ -270,7 +275,7 @@ const Income = ({ mood, setAlert }) => {
     const rows = getExportRows(sourceRecords);
 
     if (!rows.length) {
-      setAlert({ message: "No commission data to export", status: "Error" });
+      setAlert({ message: "No Income data to export", status: "Error" });
       setTimeout(() => setAlert(null), 3000);
       return;
     }
@@ -284,8 +289,8 @@ const Income = ({ mood, setAlert }) => {
     doc.setFontSize(18);
     doc.text(
       selectedAgent
-        ? `Commission Report - ${selectedAgent.name} (${selectedAgent.referralId})`
-        : "Commission Report",
+        ? `Income Report - ${selectedAgent.name} (${selectedAgent.referralId})`
+        : "Income Report",
       14,
       15,
     );
@@ -294,7 +299,18 @@ const Income = ({ mood, setAlert }) => {
     doc.text(`Total Records: ${rows.length}`, 14, 22);
 
     const columns = Object.keys(rows[0]);
-    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+    const body = rows.map((row) =>
+      columns.map((column) => {
+        const value = row[column] ?? "-";
+
+        // match how "Income Type" is shown in the on-screen table
+        if (column === "Income Type" && typeof value === "string") {
+          return formatIncomeType(value);
+        }
+
+        return value;
+      }),
+    );
 
     // Relative proportions for each column - wider ones get more real width
     const baseWidths = {
@@ -874,7 +890,7 @@ const Income = ({ mood, setAlert }) => {
         <AddLocationModal
           open={exportOpen}
           onClose={closeExportModal}
-          title="Export Commission Report"
+          title="Export Income Report"
         >
           <div className="export-modal-body">
             <div className="searchItem" style={{ marginBottom: "1rem" }}>

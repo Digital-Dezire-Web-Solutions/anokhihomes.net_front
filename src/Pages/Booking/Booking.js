@@ -23,6 +23,11 @@ import Host from "../../Host/Host";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import AddBookingForm from "../../components/UserForm/AddBookingForm";
 import Pagination from "../../components/Pagination/Pagination";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import formatDate from "../../components/DateFormate/DateFormate";
 const ITEMS_PER_PAGE = 12;
 
 const Booking = ({ mood, setAlert, landingPage }) => {
@@ -236,6 +241,166 @@ const Booking = ({ mood, setAlert, landingPage }) => {
     name: item.customer?.name,
   }));
 
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const EXPORT_COLUMNS = [
+    "S.No",
+    "Date",
+    "Customer",
+    "Phone",
+    "Associate",
+    "Location",
+    "Colony",
+    "Plot",
+    "Total Amount",
+    "Amount Paid",
+    "Status",
+  ];
+
+  const fmt2 = (n) => (Number(n) || 0).toFixed(2);
+
+  const capitalize = (str) => {
+    if (!str) return "-";
+    return str
+      .toString()
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const getExportRows = () => {
+    return (filteredData || []).map((item, index) => ({
+      "S.No": index + 1,
+      Date: formatDate(item?.createdAt) || "-",
+      Customer: item?.customer?.name || "-",
+      Phone: item?.customer?.phone || "-",
+      Associate: item?.agent?.name || "-",
+      Location: item?.location?.name || "-",
+      Colony: item?.colony?.name || "-",
+      Plot: item?.plot?.plotNumber || "-",
+      "Total Amount": fmt2(item?.finalAmount),
+      "Amount Paid": fmt2(item?.amountPaid),
+      Status: capitalize(item?.status),
+    }));
+  };
+
+  /* =====================================================
+   EXPORT EXCEL
+===================================================== */
+  const exportToExcel = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No booking data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) => String(row[key] ?? "").length),
+      );
+      return { wch: Math.min(maxLength + 3, 40) };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+
+    XLSX.writeFile(workbook, "bookings-report.xlsx");
+
+    setAlert({ message: "Excel exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+   EXPORT PDF
+===================================================== */
+  const exportToPDF = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No booking data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(18);
+    doc.text("Bookings Report", 14, 15);
+
+    doc.setFontSize(9);
+    doc.text(`Total Records: ${rows.length}`, 14, 22);
+
+    const columns = Object.keys(rows[0]);
+    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+
+    const baseWidths = {
+      "S.No": 8,
+      Date: 18,
+      Customer: 24,
+      Phone: 18,
+      Associate: 22,
+      Location: 20,
+      Colony: 22,
+      Plot: 14,
+      "Total Amount": 20,
+      "Amount Paid": 20,
+      Status: 16,
+    };
+
+    const margin = { top: 27, left: 8, right: 8, bottom: 10 };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0,
+    );
+    const scale = availableWidth / totalBase;
+
+    const columnStyles = {};
+    columns.forEach((column, index) => {
+      const base = baseWidths[column] || 18;
+      columnStyles[index] = { cellWidth: base * scale };
+    });
+
+    autoTable(doc, {
+      head: [columns],
+      body,
+      startY: margin.top,
+      theme: "grid",
+      tableWidth: "auto",
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 1.4,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+      headStyles: { fontSize: 8, fontStyle: "bold", valign: "middle" },
+      bodyStyles: { valign: "middle" },
+      columnStyles,
+      margin,
+    });
+
+    doc.save("bookings-report.pdf");
+
+    setAlert({ message: "PDF exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
   // console.log(siteVisit, "siteVisit")
   // console.log(selectedCustomer, "selectedCustomer")
   // console.log(selectedPlot, "selectedPlot")
@@ -280,6 +445,10 @@ const Booking = ({ mood, setAlert, landingPage }) => {
               {f.toUpperCase()}
             </button>
           ))}
+          <button className="add-button" onClick={() => setExportOpen(true)}>
+            <Download size={18} />
+            Export
+          </button>
         </div>
       </div>
 
@@ -327,6 +496,42 @@ const Booking = ({ mood, setAlert, landingPage }) => {
       >
         <CancellationPolicy landingPage={landingPage} />
       </AddLocationModal>
+      <AddLocationModal
+  open={exportOpen}
+  onClose={() => setExportOpen(false)}
+  title="Export Bookings Report"
+>
+  <div className="export-modal-body">
+    <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+      This will export whatever is currently shown by the search and
+      status filters ({filteredData?.length || 0} record
+      {filteredData?.length === 1 ? "" : "s"}).
+    </p>
+
+    <div className="export-fields">
+      <p>Export includes:</p>
+      {EXPORT_COLUMNS.map((col) => (
+        <span key={col}>{col}</span>
+      ))}
+    </div>
+  </div>
+
+  <div className="modal-actions" style={{ marginTop: "1rem" }}>
+    <button
+      type="button"
+      className="export-excel-btn"
+      onClick={exportToExcel}
+    >
+      <FileSpreadsheet size={18} />
+      Excel
+    </button>
+
+    <button type="button" className="export-pdf-btn" onClick={exportToPDF}>
+      <FileText size={18} />
+      PDF
+    </button>
+  </div>
+</AddLocationModal>
     </div>
   );
 };

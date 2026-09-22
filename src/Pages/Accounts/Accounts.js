@@ -33,6 +33,10 @@ import SearchSelect from "../../components/SearchItems/SearchSelect";
 import NiCredit from "../../icons/ni-credit";
 import NiDebit from "../../icons/ni-debit";
 import Pagination from "../../components/Pagination/Pagination";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Accounts = ({ mood, setAlert }) => {
     const dispatch = useDispatch();
@@ -104,6 +108,189 @@ const Accounts = ({ mood, setAlert }) => {
         page * ITEMS_PER_PAGE,
     );
 
+    const projectCreditSummary = useMemo(() => {
+        const rows = ledger?.ledger || [];
+
+        // seed with every known project (so a project with zero credit still shows a ₹0 card)
+        const totals = {};
+        (allColonies || []).forEach((project) => {
+            totals[project._id] = {
+                name: project.name,
+                credit: 0,
+            };
+        });
+
+        rows.forEach((item) => {
+            const id = item.project?._id;
+            if (!id) return;
+
+            if (!totals[id]) {
+                // fallback in case a project isn't in allColonies for some reason
+                totals[id] = { name: item.projectName || "Unknown Project", credit: 0 };
+            }
+
+            totals[id].credit += item.credit || 0;
+        });
+
+        return Object.values(totals);
+    }, [ledger, allColonies]);
+
+    const [exportOpen, setExportOpen] = useState(false);
+
+    const fmt2 = (n) => (Number(n) || 0).toFixed(2);
+
+    const EXPORT_COLUMNS = [
+        "S.No",
+        "Date",
+        "Project",
+        "Particular",
+        "Name",
+        "Credit",
+        "Debit",
+        "Balance",
+        "Mode",
+    ];
+
+    const capitalize = (str) => {
+        if (!str) return "-";
+        const value = str.toString();
+        if (value.toLowerCase() === "upi") return "UPI";
+
+        return value
+            .toLowerCase()
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+    };
+
+    const getExportRows = () => {
+        return (filtered || []).map((item, index) => ({
+            "S.No": index + 1,
+            Date: formatDate(item.date) || "-",
+            Project: item.projectName || "-",
+            Particular: capitalize(item.particular),
+            Name: item.customer || "-",
+            Credit: fmt2(item.credit),
+            Debit: fmt2(item.debit),
+            Balance: fmt2(item.balance),
+            Mode: capitalize(item.paymentMode),
+        }));
+    };
+
+    /* =====================================================
+       EXPORT EXCEL
+    ===================================================== */
+    const exportToExcel = () => {
+        const rows = getExportRows();
+
+        if (!rows.length) {
+            setAlert({ message: "No ledger data to export", status: "Error" });
+            setTimeout(() => setAlert(null), 3000);
+            return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+
+        const columnWidths = Object.keys(rows[0]).map((key) => {
+            const maxLength = Math.max(
+                key.length,
+                ...rows.map((row) => String(row[key] ?? "").length),
+            );
+            return { wch: Math.min(maxLength + 3, 40) };
+        });
+
+        worksheet["!cols"] = columnWidths;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Ledger");
+
+        XLSX.writeFile(workbook, "ledger-report.xlsx");
+
+        setAlert({ message: "Excel exported successfully", status: "Success" });
+        setTimeout(() => setAlert(null), 3000);
+        setExportOpen(false);
+    };
+
+    /* =====================================================
+       EXPORT PDF
+    ===================================================== */
+    const exportToPDF = () => {
+        const rows = getExportRows();
+
+        if (!rows.length) {
+            setAlert({ message: "No ledger data to export", status: "Error" });
+            setTimeout(() => setAlert(null), 3000);
+            return;
+        }
+
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4",
+        });
+
+        doc.setFontSize(18);
+        doc.text("Ledger Report", 14, 15);
+
+        doc.setFontSize(9);
+        doc.text(`Total Records: ${rows.length}`, 14, 22);
+
+        const columns = Object.keys(rows[0]);
+        const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+
+        const baseWidths = {
+            "S.No": 8,
+            Date: 18,
+            Project: 26,
+            Particular: 30,
+            Name: 24,
+            Credit: 18,
+            Debit: 18,
+            Balance: 18,
+            Mode: 16,
+        };
+
+        const margin = { top: 27, left: 8, right: 8, bottom: 10 };
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const availableWidth = pageWidth - margin.left - margin.right;
+
+        const totalBase = columns.reduce(
+            (sum, col) => sum + (baseWidths[col] || 18),
+            0,
+        );
+        const scale = availableWidth / totalBase;
+
+        const columnStyles = {};
+        columns.forEach((column, index) => {
+            const base = baseWidths[column] || 18;
+            columnStyles[index] = { cellWidth: base * scale };
+        });
+
+        autoTable(doc, {
+            head: [columns],
+            body,
+            startY: margin.top,
+            theme: "grid",
+            tableWidth: "auto",
+            styles: {
+                fontSize: 8,
+                cellPadding: 1.4,
+                overflow: "linebreak",
+                valign: "middle",
+                halign: "left",
+                lineWidth: 0.1,
+            },
+            headStyles: { fontSize: 8.5, fontStyle: "bold", valign: "middle" },
+            bodyStyles: { valign: "middle" },
+            columnStyles,
+            margin,
+        });
+
+        doc.save("ledger-report.pdf");
+
+        setAlert({ message: "PDF exported successfully", status: "Success" });
+        setTimeout(() => setAlert(null), 3000);
+        setExportOpen(false);
+    };
+
     return (
         <div className="plot-container">
             <div className="table-filters">
@@ -115,7 +302,7 @@ const Accounts = ({ mood, setAlert }) => {
             <div className="dashboard-container">
                 <div className="dashboard-wrapper">
                     <div className="dashboard-grid">
-                        {/* <DashboardCard
+                        <DashboardCard
                             title="Credit"
                             value={`₹${formatCurrency(ledger?.summary?.totalCredit || 0)}`}
                             icons={<NiPayments />}
@@ -125,31 +312,39 @@ const Accounts = ({ mood, setAlert }) => {
                             title="Debit"
                             value={`₹${formatCurrency(ledger?.summary?.totalDebit || 0)}`}
                             icons={<NiPayments />}
-                        /> */}
-
-                        <DashboardCard
-                            title={ledger?.summary?.status}
-                            value={`₹${formatCurrency(filteredSummary.profit)}`}
-                            icons={<NiPayments />}
                         />
-                        <DashboardCard
-                            title={"Total Credit"}
-                            value={`₹${formatCurrency(filteredSummary.totalCredit)}`}
-                            icons={<NiPayments />}
-                        />
-                        <DashboardCard
-                            title={"Total Debit"}
-                            value={`₹${formatCurrency(filteredSummary.totalDebit)}`}
-                            icons={<NiPayments />}
-                        />
-
-                        {projectFilter &&
+                        {projectCreditSummary.map((project) => (
                             <DashboardCard
-                                title={"Pending Plots For Sale"}
-                                value={forSalePlots}
+                                key={project.name}
+                                title={`${project.name} — Credit`}
+                                value={`₹${formatCurrency(project.credit)}`}
                                 icons={<NiPayments />}
                             />
-                        }
+                        ))}
+                        {projectFilter && (
+                            <>
+                                <DashboardCard
+                                    title={"Pending Plots For Sale"}
+                                    value={forSalePlots}
+                                    icons={<NiPayments />}
+                                />
+                                <DashboardCard
+                                    title={ledger?.summary?.status}
+                                    value={`₹${formatCurrency(filteredSummary.profit)}`}
+                                    icons={<NiPayments />}
+                                />
+                                <DashboardCard
+                                    title={"Total Credit"}
+                                    value={`₹${formatCurrency(filteredSummary.totalCredit)}`}
+                                    icons={<NiPayments />}
+                                />
+                                <DashboardCard
+                                    title={"Total Debit"}
+                                    value={`₹${formatCurrency(filteredSummary.totalDebit)}`}
+                                    icons={<NiPayments />}
+                                />
+                            </>
+                        )}
                     </div>
                     <h4>Ledger History</h4>
                     <div className="filter-grid page-tools table-filters">
@@ -199,7 +394,10 @@ const Accounts = ({ mood, setAlert }) => {
                                 onChange={(e) => setToDate(e.target.value)}
                             />
                         </div>
-
+                        <button className="add-button" onClick={() => setExportOpen(true)}>
+                            <Download size={18} />
+                            Export
+                        </button>
                     </div>
                     <div className="card table-box">
                         <div className="table account-table">
@@ -238,7 +436,7 @@ const Accounts = ({ mood, setAlert }) => {
                                                 ₹{formatCurrency(item.balance)}
                                             </span>
                                         </p>
-                                        <span>{item.paymentMode}</span>
+                                        <span>{item.paymentMode === "upi" ? "UPI" : item.paymentMode}</span>
                                         <span
                                             onClick={() => {
                                                 setSelectedExpense(item);
@@ -452,6 +650,42 @@ const Accounts = ({ mood, setAlert }) => {
                         </div>
                     )}
                 </ViewModal>
+                <AddLocationModal
+                    open={exportOpen}
+                    onClose={() => setExportOpen(false)}
+                    title="Export Ledger Report"
+                >
+                    <div className="export-modal-body">
+                        <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+                            This will export whatever is currently shown by the search, project
+                            and date filters ({filtered?.length || 0} record
+                            {filtered?.length === 1 ? "" : "s"}).
+                        </p>
+
+                        <div className="export-fields">
+                            <p>Export includes:</p>
+                            {EXPORT_COLUMNS.map((col) => (
+                                <span key={col}>{col}</span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="modal-actions" style={{ marginTop: "1rem" }}>
+                        <button
+                            type="button"
+                            className="export-excel-btn"
+                            onClick={exportToExcel}
+                        >
+                            <FileSpreadsheet size={18} />
+                            Excel
+                        </button>
+
+                        <button type="button" className="export-pdf-btn" onClick={exportToPDF}>
+                            <FileText size={18} />
+                            PDF
+                        </button>
+                    </div>
+                </AddLocationModal>
             </div>
         </div>
     );

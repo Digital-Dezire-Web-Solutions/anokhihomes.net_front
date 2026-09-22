@@ -16,6 +16,11 @@ import axios from "axios";
 import NiClosseye from "../../icons/ni-closseye";
 import NiOpenEye from "../../icons/ni-openEye";
 import Pagination from "../Pagination/Pagination";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import formatDate from "../DateFormate/DateFormate";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -273,6 +278,152 @@ const DataTable = ({ data, mood, setAlert }) => {
     }
   };
 
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const EXPORT_COLUMNS = [
+    "S.No",
+    "Date",
+    "Name",
+    "Phone",
+    "Email",
+    "Status",
+    "Associate",
+  ];
+
+  const capitalize = (str) => {
+    if (!str) return "-";
+    return str
+      .toString()
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const getExportRows = () => {
+    return (sortedData || []).map((lead, index) => ({
+      "S.No": index + 1,
+      Date: formatDate(lead?.createdAt) || "-",
+      Name: lead?.name || "-",
+      Phone: lead?.phone || "-",
+      Email: lead?.email || "-",
+      Status: capitalize(lead?.status),
+      Associate: lead?.agent?.name,
+    }));
+  };
+
+  /* =====================================================
+   EXPORT EXCEL
+===================================================== */
+  const exportToExcel = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No lead data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) => String(row[key] ?? "").length),
+      );
+      return { wch: Math.min(maxLength + 3, 40) };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+
+    XLSX.writeFile(workbook, "leads-report.xlsx");
+
+    setAlert({ message: "Excel exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+   EXPORT PDF
+===================================================== */
+  const exportToPDF = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No lead data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(18);
+    doc.text("Leads Report", 14, 15);
+
+    doc.setFontSize(9);
+    doc.text(`Total Records: ${rows.length}`, 14, 22);
+
+    const columns = Object.keys(rows[0]);
+    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+
+    const baseWidths = {
+      "S.No": 8,
+      Date: 18,
+      Name: 26,
+      Phone: 20,
+      Email: 32,
+      Status: 18,
+      Associate: 26,
+    };
+
+    const margin = { top: 27, left: 8, right: 8, bottom: 10 };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0,
+    );
+    const scale = availableWidth / totalBase;
+
+    const columnStyles = {};
+    columns.forEach((column, index) => {
+      const base = baseWidths[column] || 18;
+      columnStyles[index] = { cellWidth: base * scale };
+    });
+
+    autoTable(doc, {
+      head: [columns],
+      body,
+      startY: margin.top,
+      theme: "grid",
+      tableWidth: "auto",
+      styles: {
+        fontSize: 8,
+        cellPadding: 1.4,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+      headStyles: { fontSize: 8.5, fontStyle: "bold", valign: "middle" },
+      bodyStyles: { valign: "middle" },
+      columnStyles,
+      margin,
+    });
+
+    doc.save("leads-report.pdf");
+
+    setAlert({ message: "PDF exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
   return (
     <div>
       <div className="filter-grid page-tools table-filters">
@@ -352,6 +503,10 @@ const DataTable = ({ data, mood, setAlert }) => {
             }}
           />
         </div>
+        <button className="add-button" onClick={() => setExportOpen(true)}>
+          <Download size={18} />
+          Export
+        </button>
       </div>
 
       <div className="user-card-box">
@@ -546,6 +701,46 @@ const DataTable = ({ data, mood, setAlert }) => {
               : isEditMode
                 ? "Update Lead"
                 : "Add Lead"}
+          </button>
+        </div>
+      </AddLocationModal>
+      <AddLocationModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export Leads Report"
+      >
+        <div className="export-modal-body">
+          <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+            This will export whatever is currently shown by the search, status
+            and date filters ({sortedData?.length || 0} record
+            {sortedData?.length === 1 ? "" : "s"}).
+          </p>
+
+          <div className="export-fields">
+            <p>Export includes:</p>
+            {EXPORT_COLUMNS.map((col) => (
+              <span key={col}>{col}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="modal-actions" style={{ marginTop: "1rem" }}>
+          <button
+            type="button"
+            className="export-excel-btn"
+            onClick={exportToExcel}
+          >
+            <FileSpreadsheet size={18} />
+            Excel
+          </button>
+
+          <button
+            type="button"
+            className="export-pdf-btn"
+            onClick={exportToPDF}
+          >
+            <FileText size={18} />
+            PDF
           </button>
         </div>
       </AddLocationModal>
