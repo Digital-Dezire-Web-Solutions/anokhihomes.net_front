@@ -29,6 +29,10 @@ import { LucidePlus } from "lucide-react";
 import { uploadImage } from "../LandingSetting/LandingApi";
 import SearchSelect from "../../components/SearchItems/SearchSelect";
 import Pagination from "../../components/Pagination/Pagination";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Expense = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -299,6 +303,158 @@ const Expense = ({ mood, setAlert }) => {
     "Tour Expense",
   ];
 
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const EXPORT_COLUMNS = [
+    "S.No",
+    "Date",
+    "Expense Type",
+    "Project",
+    "Name",
+    "Amount",
+    "Payment Mode",
+    "Transaction ID",
+    "Cheque Number",
+    "Remark",
+    "Created By",
+  ];
+
+  const fmt2 = (n) => (Number(n) || 0).toFixed(2);
+
+  const getExportRows = () => {
+    return (filtered || []).map((item, index) => ({
+      "S.No": index + 1,
+      Date: formatDate(item.expenseDate) || "-",
+      "Expense Type": item.type || "-",
+      Project: item.project?.name || "-",
+      Name: item.name || "-",
+      Amount: fmt2(item.amount),
+      "Payment Mode": item.paymentMode || "-",
+      "Transaction ID": item.transactionId || "-",
+      "Cheque Number": item.chequeNumber || "-",
+      Remark: item.remark || "-",
+      "Created By": item.createdBy?.name || "-",
+    }));
+  };
+
+  /* =====================================================
+   EXPORT EXCEL
+===================================================== */
+  const exportToExcel = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No expense data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const columnWidths = Object.keys(rows[0]).map((key) => {
+      const maxLength = Math.max(
+        key.length,
+        ...rows.map((row) => String(row[key] ?? "").length),
+      );
+      return { wch: Math.min(maxLength + 3, 40) };
+    });
+
+    worksheet["!cols"] = columnWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Expenses");
+
+    XLSX.writeFile(workbook, "expenses-report.xlsx");
+
+    setAlert({ message: "Excel exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
+  /* =====================================================
+   EXPORT PDF
+===================================================== */
+  const exportToPDF = () => {
+    const rows = getExportRows();
+
+    if (!rows.length) {
+      setAlert({ message: "No expense data to export", status: "Error" });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(18);
+    doc.text("Expenses Report", 14, 15);
+
+    doc.setFontSize(9);
+    doc.text(`Total Records: ${rows.length}`, 14, 22);
+
+    const columns = Object.keys(rows[0]);
+    const body = rows.map((row) => columns.map((column) => row[column] ?? "-"));
+
+    const baseWidths = {
+      "S.No": 8,
+      Date: 16,
+      "Expense Type": 26,
+      Project: 22,
+      Name: 20,
+      Amount: 16,
+      "Payment Mode": 18,
+      "Transaction ID": 24,
+      "Cheque Number": 20,
+      Remark: 26,
+      "Created By": 18,
+    };
+
+    const margin = { top: 27, left: 8, right: 8, bottom: 10 };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const availableWidth = pageWidth - margin.left - margin.right;
+
+    const totalBase = columns.reduce(
+      (sum, col) => sum + (baseWidths[col] || 18),
+      0,
+    );
+    const scale = availableWidth / totalBase;
+
+    const columnStyles = {};
+    columns.forEach((column, index) => {
+      const base = baseWidths[column] || 18;
+      columnStyles[index] = { cellWidth: base * scale };
+    });
+
+    autoTable(doc, {
+      head: [columns],
+      body,
+      startY: margin.top,
+      theme: "grid",
+      tableWidth: "auto",
+      styles: {
+        fontSize: 7,
+        cellPadding: 1.3,
+        overflow: "linebreak",
+        valign: "middle",
+        halign: "left",
+        lineWidth: 0.1,
+      },
+      headStyles: { fontSize: 7.5, fontStyle: "bold", valign: "middle" },
+      bodyStyles: { valign: "middle" },
+      columnStyles,
+      margin,
+    });
+
+    doc.save("expenses-report.pdf");
+
+    setAlert({ message: "PDF exported successfully", status: "Success" });
+    setTimeout(() => setAlert(null), 3000);
+    setExportOpen(false);
+  };
+
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -399,6 +555,10 @@ const Expense = ({ mood, setAlert }) => {
                 ))}
               </select>
             </div>
+            <button className="add-button" onClick={() => setExportOpen(true)}>
+              <Download size={18} />
+              Export
+            </button>
           </div>
           <div className="card table-box">
             <div className="table expense-table">
@@ -459,11 +619,7 @@ const Expense = ({ mood, setAlert }) => {
               )}
             </div>
           </div>
-          <Pagination
-          page={page}
-          totalPages={totalPages}
-          setPage={setPage}
-        />
+          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
         </div>
         <ViewModal
           open={viewOpen}
@@ -480,8 +636,7 @@ const Expense = ({ mood, setAlert }) => {
                 {formatDate(selectedExpense.expenseDate)}
               </p>
               <p>
-                <strong>Name :</strong>{" "}
-                {selectedExpense?.name}
+                <strong>Name :</strong> {selectedExpense?.name}
               </p>
 
               <p>
@@ -766,6 +921,46 @@ const Expense = ({ mood, setAlert }) => {
             </button>
           </div>
         </DeleteModal>
+        <AddLocationModal
+          open={exportOpen}
+          onClose={() => setExportOpen(false)}
+          title="Export Expenses Report"
+        >
+          <div className="export-modal-body">
+            <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+              This will export whatever is currently shown by the search, type,
+              project and date filters ({filtered?.length || 0} record
+              {filtered?.length === 1 ? "" : "s"}).
+            </p>
+
+            <div className="export-fields">
+              <p>Export includes:</p>
+              {EXPORT_COLUMNS.map((col) => (
+                <span key={col}>{col}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="export-excel-btn"
+              onClick={exportToExcel}
+            >
+              <FileSpreadsheet size={18} />
+              Excel
+            </button>
+
+            <button
+              type="button"
+              className="export-pdf-btn"
+              onClick={exportToPDF}
+            >
+              <FileText size={18} />
+              PDF
+            </button>
+          </div>
+        </AddLocationModal>
       </div>
     </div>
   );
