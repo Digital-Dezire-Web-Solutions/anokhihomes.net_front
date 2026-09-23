@@ -36,7 +36,7 @@ const INCOME_TYPE_LABELS = {
 
 const Payout = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { payout } = useSelector((state) => state.app);
+  const { payout, userDetail } = useSelector((state) => state.app);
   const [search, setSearch] = useState("");
   const [viewOpen, setViewOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -432,6 +432,12 @@ const Payout = ({ mood, setAlert }) => {
     return totals;
   }, [payout]);
 
+  const myPayoutWallet = useMemo(() => {
+    const myId = userDetail?._id;
+    if (!myId) return 0;
+    return payableTotalsByUser[myId] || 0;
+  }, [payableTotalsByUser, userDetail]);
+
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -473,6 +479,11 @@ const Payout = ({ mood, setAlert }) => {
             <DashboardCard
               title="No. of UnPayable(Person)"
               value={summary.notPayableCount}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title={`Payout Wallet (${mood == "admin" ? "Admin" : mood === "agent" ? "Associate" : "Staff"})`}
+              value={`₹${formatCurrency(myPayoutWallet)}`}
               icons={<NiPayments />}
             />
           </div>

@@ -497,41 +497,45 @@ const Booking = ({ mood, setAlert, landingPage }) => {
         <CancellationPolicy landingPage={landingPage} />
       </AddLocationModal>
       <AddLocationModal
-  open={exportOpen}
-  onClose={() => setExportOpen(false)}
-  title="Export Bookings Report"
->
-  <div className="export-modal-body">
-    <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
-      This will export whatever is currently shown by the search and
-      status filters ({filteredData?.length || 0} record
-      {filteredData?.length === 1 ? "" : "s"}).
-    </p>
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export Bookings Report"
+      >
+        <div className="export-modal-body">
+          <p style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}>
+            This will export whatever is currently shown by the search and
+            status filters ({filteredData?.length || 0} record
+            {filteredData?.length === 1 ? "" : "s"}).
+          </p>
 
-    <div className="export-fields">
-      <p>Export includes:</p>
-      {EXPORT_COLUMNS.map((col) => (
-        <span key={col}>{col}</span>
-      ))}
-    </div>
-  </div>
+          <div className="export-fields">
+            <p>Export includes:</p>
+            {EXPORT_COLUMNS.map((col) => (
+              <span key={col}>{col}</span>
+            ))}
+          </div>
+        </div>
 
-  <div className="modal-actions" style={{ marginTop: "1rem" }}>
-    <button
-      type="button"
-      className="export-excel-btn"
-      onClick={exportToExcel}
-    >
-      <FileSpreadsheet size={18} />
-      Excel
-    </button>
+        <div className="modal-actions" style={{ marginTop: "1rem" }}>
+          <button
+            type="button"
+            className="export-excel-btn"
+            onClick={exportToExcel}
+          >
+            <FileSpreadsheet size={18} />
+            Excel
+          </button>
 
-    <button type="button" className="export-pdf-btn" onClick={exportToPDF}>
-      <FileText size={18} />
-      PDF
-    </button>
-  </div>
-</AddLocationModal>
+          <button
+            type="button"
+            className="export-pdf-btn"
+            onClick={exportToPDF}
+          >
+            <FileText size={18} />
+            PDF
+          </button>
+        </div>
+      </AddLocationModal>
     </div>
   );
 };
