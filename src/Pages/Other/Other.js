@@ -269,7 +269,7 @@ const Other = ({ mood, setAlert, data }) => {
   const getExportRows = () => {
     const selectedUsers = getExportUsers();
 
-    return selectedUsers.map((user) => {
+    return selectedUsers.map((user, index) => {
       const referredBy =
         user?.role === "agent" && user?.referredBy
           ? user.referredBy
@@ -289,6 +289,7 @@ const Other = ({ mood, setAlert, data }) => {
       ========================= */
       if (exportRole === "user") {
         return {
+          "S.No": index + 1,
           Name: user?.name || "-",
           Phone: user?.phone || "-",
           "User Type": role,
@@ -301,6 +302,7 @@ const Other = ({ mood, setAlert, data }) => {
       ========================= */
       if (exportRole === "agent") {
         return {
+          "S.No": index + 1,
           Name: user?.name || "-",
           Phone: user?.phone || "-",
           "User Type": "Associate",
@@ -321,6 +323,7 @@ const Other = ({ mood, setAlert, data }) => {
       ========================= */
       if (exportRole === "staff") {
         return {
+          "S.No": index + 1,
           Name: user?.name || "-",
           Phone: user?.phone || "-",
           "User Type": "Staff",
@@ -333,6 +336,7 @@ const Other = ({ mood, setAlert, data }) => {
          ALL USERS
       ========================= */
       return {
+        "S.No": index + 1,
         Name: user?.name || "-",
         Phone: user?.phone || "-",
         "User Type": role,
@@ -481,15 +485,16 @@ const Other = ({ mood, setAlert, data }) => {
 
     // Base widths (proportions relative to each other, not final mm)
     const baseWidths = {
-      Name: 20,
-      Phone: 17,
-      "User Type": 17,
-      UserID: 20,
-      "Referred By Name": 20,
-      "Referred By Phone": 17,
-      "Referred By UserID": 20,
+      "S.No": 8,
+      Name: 25,
+      Phone: 14,
+      "User Type": 12,
+      UserID: 14,
+      "Referred By Name": 25,
+      "Referred By Phone": 14,
+      "Referred By UserID": 14,
       Designation: 25,
-      "Direct Income %": 17,
+      "Direct Income %": 10,
     };
 
     const margin = { top: 27, left: 5, right: 5, bottom: 8 };
@@ -1030,6 +1035,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "user" && (
               <>
+              <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1042,6 +1048,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "agent" && (
               <>
+              <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1059,6 +1066,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "staff" && (
               <>
+              <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1071,6 +1079,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "all" && (
               <>
+              <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
