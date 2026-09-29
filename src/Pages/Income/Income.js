@@ -700,7 +700,16 @@ const Income = ({ mood, setAlert }) => {
                       <span>₹{formatCurrency(item.amount)}</span>
                       <span>{!item?.fromUser ?
                         `${item?.payment?.customer?.name ? item?.payment?.customer?.name : "Anokhi Homes"} (Payment)` || "-" :
-                        `${item?.fromUser?.name} (${item?.fromUser?.referralId})`}</span>
+                        `${item?.fromUser?.name} (${item?.fromUser?.referralId})`} {""}{tabActive === "other" ? <span
+                          className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                              ? "active"
+                              : "pending2"
+                            }`}
+                        >
+                          {item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                            ? "AH"
+                            : "PP"}
+                        </span> : ""}</span>
                       <span
                         className={`status ${item.status === "credited" ? "active" : "pending"
                           }`}

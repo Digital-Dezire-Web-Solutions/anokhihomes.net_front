@@ -37,6 +37,7 @@ const Projects = ({ mood, setAlert }) => {
     image: "",
     area: "",
     priceRange: "",
+    category: "",
   });
 
   useEffect(() => {
@@ -46,6 +47,7 @@ const Projects = ({ mood, setAlert }) => {
         image: selectedProject.image || "",
         area: selectedProject.area || "",
         priceRange: selectedProject.priceRange || "",
+        category: selectedProject.category || "",
       });
     } else {
       setFormData({
@@ -53,6 +55,7 @@ const Projects = ({ mood, setAlert }) => {
         image: "",
         area: "",
         priceRange: "",
+        category: "",
       });
     }
   }, [selectedProject]);
@@ -96,6 +99,7 @@ const Projects = ({ mood, setAlert }) => {
         image: imageUrl,
         area: formData.area,
         priceRange: formData.priceRange,
+        category: formData.category,
         locationId: plotId,
       };
 
@@ -120,6 +124,7 @@ const Projects = ({ mood, setAlert }) => {
         image: "",
         area: "",
         priceRange: "",
+        category: "",
       });
       setTimeout(() => setAlert(null), 3000);
       setSaving(false);
@@ -153,6 +158,7 @@ const Projects = ({ mood, setAlert }) => {
         image: imageUrl,
         area: formData.area,
         priceRange: formData.priceRange,
+        category: formData.category,
       };
 
       await axios.put(
@@ -320,6 +326,23 @@ const Projects = ({ mood, setAlert }) => {
         }}
         title={isEditMode ? "Edit Project" : "Add Project"}
       >
+        <div className="field">
+          <label>Category</label>
+
+          <select
+            value={formData.category}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                category: e.target.value,
+              })
+            }
+          >
+            <option value="">Select Category</option>
+            <option value="Anokhi Homes">Anokhi Homes</option>
+            <option value="Patliputra">Patliputra</option>
+          </select>
+        </div>
         <div className="field">
           <label>Project Name</label>
 

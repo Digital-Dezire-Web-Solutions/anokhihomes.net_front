@@ -453,7 +453,7 @@ const BookingCard = ({
               <NiOpenEye />
             </span>
 
-            {mood !== "user" && !dashboard && (
+            {/* {mood !== "user" && !dashboard && (
               <span
                 onClick={(e) => {
                   e.stopPropagation();
@@ -462,7 +462,7 @@ const BookingCard = ({
               >
                 <NiDots />
               </span>
-            )}
+            )} */}
 
             {activeRow === item.id && mood === "admin" && (
               <ActionModal
@@ -507,9 +507,21 @@ const BookingCard = ({
             <p>{formatDate(item?.createdAt)}</p>
             <p>
               {item?.plot?.plotNumber}, {item?.colony?.name},{" "}
-              {item?.location?.name}
+              {item?.location?.name} {""}
+              <span
+                className={`status ${
+                  item?.colony?.category === "Anokhi Homes"
+                    ? "active"
+                    : "pending2"
+                }`}
+              >
+                {item?.colony?.category === "Anokhi Homes"
+                    ? "AH"
+                    : "PP"}
+              </span>
             </p>
             {mood !== "agent" && <p>{item?.agent?.name}</p>}
+            {/* <p>{item?.colony?.category}</p> */}
             <p>{formatCurrency(item?.plotArea)} sqft</p>
             {!isApproval ? (
               <>

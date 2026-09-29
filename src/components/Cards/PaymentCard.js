@@ -155,12 +155,34 @@ const PaymentCard = ({
             {item?.booking ? (
               <>
                 {item?.booking?.plot?.plotNumber}, {item?.booking?.colony?.name}
-                , {item?.booking?.location?.name}
+                , {item?.booking?.location?.name}{" "}
+                <span
+                className={`status ${
+                  item?.booking?.colony?.category === "Anokhi Homes"
+                    ? "active"
+                    : "pending2"
+                }`}
+              >
+                {item?.booking?.colony?.category === "Anokhi Homes"
+                    ? "AH"
+                    : "PP"}
+              </span>
               </>
             ) : (
               <>
                 {item?.hold?.plot?.plotNumber}, {item?.hold?.colony?.name},{" "}
-                {item?.hold?.location?.name}
+                {item?.hold?.location?.name}{" "}
+                <span
+                className={`status ${
+                  item?.colony?.category === "Anokhi Homes"
+                    ? "active"
+                    : "pending2"
+                }`}
+              >
+                {item?.colony?.category === "Anokhi Homes"
+                    ? "AH"
+                    : "PP"}
+              </span>
               </>
             )}
           </p>

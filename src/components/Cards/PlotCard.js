@@ -49,6 +49,7 @@ const PlotCard = ({
           <h3>{p.name}</h3>
           <p className="plot-card-price">₹{p.priceRange} / sqft</p>
           <p>Area: {formatCurrency(p.area)} sqft</p>
+          <p>Company: {p.category}</p>
           {/* <p>{p.details}</p> */}
           {cashback && (
             <div className="cashback-badge">

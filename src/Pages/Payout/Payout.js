@@ -33,6 +33,10 @@ const INCOME_TYPE_LABELS = {
   referal_income: "Referral Income",
   reward_income: "Reward Income",
 };
+const CATEGORY_DISPLAY_LABELS = {
+  "Anokhi Homes": "Anokhi Homes + Other",
+  Patliputra: "Patliputra",
+};
 
 const Payout = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -53,6 +57,7 @@ const Payout = ({ mood, setAlert }) => {
   const [activeTab, setActiveTab] = useState("summary");
   const [formData, setFormData] = useState({});
   const [noteImage, setNoteImage] = useState(null);
+  const [payCategory, setPayCategory] = useState(null);
   const [imageModal, setImageModal] = useState({
     open: false,
     src: "",
@@ -137,6 +142,30 @@ const Payout = ({ mood, setAlert }) => {
     page * ITEMS_PER_PAGE,
   );
 
+  const fetchPayoutDetail = async (item) => {
+    setExpenseDetail(null);
+    setDetailLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${Host}/api/payout/${item._id}`, {
+        headers: { "auth-token": token },
+      });
+      setExpenseDetail(res.data);
+      return res.data;
+    } catch (err) {
+      console.log(err);
+      setAlert({
+        status: "Error",
+        message: "Unable to load payout details.",
+      });
+      setTimeout(() => setAlert(null), 3000);
+      return null;
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+  
   const openView = async (item) => {
     setSelectedExpense(item);
     setViewOpen(true);
@@ -162,6 +191,15 @@ const Payout = ({ mood, setAlert }) => {
   };
 
   const handlePay = async () => {
+    if (!payCategory) {
+      setAlert({
+        status: "Error",
+        message: "Please select a category to pay.",
+      });
+      setTimeout(() => setAlert(null), 3000);
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -171,39 +209,40 @@ const Payout = ({ mood, setAlert }) => {
         const upload = await uploadImage(noteImage);
         attachment = upload.url;
       }
+
       const payload = {
+        category: payCategory,
         paymentMode: formData.mode,
         transactionId: formData.transactionId || "",
         attachment: attachment || "",
       };
+
       await axios.put(
-        `${Host}/api/payout/pay/${selectedExpense._id}`,
+        `${Host}/api/payout/pay-category/${selectedExpense._id}`,
         payload,
-        {
-          headers: {
-            "auth-token": token,
-          },
-        },
+        { headers: { "auth-token": token } },
       );
-      console.log(payload, "payload");
+
       dispatch(getPayout());
+
+      if (viewOpen) {
+        await fetchPayoutDetail(selectedExpense);
+      }
 
       setAlert({
         status: "Success",
-        message: "Payout marked as paid.",
+        message: `${CATEGORY_DISPLAY_LABELS[payCategory] || payCategory} payout marked as paid.`,
       });
-
       setTimeout(() => setAlert(null), 3000);
 
       setOpen(false);
+      setPayCategory(null);
     } catch (err) {
       console.log(err);
-
       setAlert({
         status: "Error",
         message: err.response?.data?.message || "Unable to complete payout.",
       });
-
       setTimeout(() => setAlert(null), 3000);
     }
 
@@ -666,7 +705,12 @@ const Payout = ({ mood, setAlert }) => {
             >
               Summary
             </button>
-
+            <button
+              className={activeTab === "classification" ? "active" : ""}
+              onClick={() => setActiveTab("classification")}
+            >
+              Classification
+            </button>
             <button
               className={activeTab === "history" ? "active" : ""}
               onClick={() => setActiveTab("history")}
@@ -674,8 +718,90 @@ const Payout = ({ mood, setAlert }) => {
               Income History
             </button>
           </div>
-          {activeTab === "summary" ? (
-            <>
+          {activeTab === "classification" && (
+            <div className="report-view-box-right active">
+              {expenseDetail?.categoryDisplay?.map((i) => (
+                <div className="history-card" key={i._id}>
+                  <h5>{i.category}</h5>
+                  <p>
+                    <strong>Gross Amount : </strong>₹
+                    {formatCurrency(i.grossAmount)}
+                  </p>
+                  <p>
+                    <strong>Admin Charge : </strong>₹
+                    {formatCurrency(i.adminChargeAmount)}
+                  </p>
+                  <p>
+                    <strong>TDS : </strong>₹{formatCurrency(i.tdsAmount)}
+                  </p>
+                  <p>
+                    <strong>Net Amount : </strong>₹{formatCurrency(i.netAmount)}
+                  </p>
+                  <p>
+                    <strong>Status : </strong>
+                    <span
+                      style={{ textTransform: "capitalize" }}
+                      className={`status ${i.status === "paid" ? "active" : "pending"}`}
+                    >
+                      {i.status}
+                    </span>
+                  </p>
+
+                  {i.status === "paid" ? (
+                    <>
+                      {i.paymentMode && (
+                        <p>
+                          <strong>Payment Mode : </strong>
+                          {i.paymentMode}
+                        </p>
+                      )}
+                      {i.transactionId && (
+                        <p>
+                          <strong>Transaction Id : </strong>
+                          {i.transactionId}
+                        </p>
+                      )}
+                      {i.paidAt && (
+                        <p>
+                          <strong>Paid At : </strong>
+                          {formatDate(i.paidAt)}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    i.isPayable &&
+                    mood === "admin" && (
+                      <div className="modal-actions">
+                        <button
+                          className="table-btn"
+                          onClick={() => {
+                            setPayCategory(i.payBucket);
+                            setSelectedExpense(selectedExpense);
+                            setFormData({});
+                            setNoteImage(null);
+                            setOpen(true);
+                          }}
+                        >
+                          Pay{" "}
+                          {CATEGORY_DISPLAY_LABELS[i.payBucket] || i.payBucket}
+                        </button>
+                      </div>
+                    )
+                  )}
+
+                  {!i.isPayable && i.status !== "paid" && (
+                    <p style={{ fontSize: "0.85rem", color: "#777" }}>
+                      Included in the{" "}
+                      {CATEGORY_DISPLAY_LABELS[i.payBucket] || i.payBucket}{" "}
+                      payment above.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {activeTab === "summary" && (
+            <div className="report-view-box-right active">
               <p>
                 <strong>Associate :</strong>
                 {selectedExpense?.user?.name}
@@ -730,7 +856,6 @@ const Payout = ({ mood, setAlert }) => {
                   {selectedExpense?.status}
                 </span>
               </p>
-
               {selectedExpense?.status === "paid" && (
                 <p>
                   <strong>Paid At :</strong>
@@ -766,8 +891,9 @@ const Payout = ({ mood, setAlert }) => {
                   />
                 </p>
               )}
-            </>
-          ) : (
+            </div>
+          )}
+          {activeTab === "history" && (
             <div className="report-view-box-right active">
               {detailLoading ? (
                 <p>Loading...</p>
@@ -828,116 +954,149 @@ const Payout = ({ mood, setAlert }) => {
 
         <AddLocationModal
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={() => {
+            setOpen(false);
+            setPayCategory(null);
+          }}
           title="Pay Associate"
         >
           {selectedExpense && (
             <>
-              <div className="summary-card">
-                <h4>{selectedExpense.user?.name}</h4>
+              {(() => {
+                const categoryEntry = payCategory
+                  ? expenseDetail?.categoryBreakdown?.find(
+                      (c) => c.category === payCategory,
+                    )
+                  : null;
 
-                <p>
-                  <strong>Referral :</strong> {selectedExpense.user?.referralId}
-                </p>
+                const displayNet = categoryEntry
+                  ? categoryEntry.netAmount
+                  : selectedExpense.netAmount;
+                const displayGross = categoryEntry
+                  ? categoryEntry.grossAmount
+                  : selectedExpense.grossAmount;
+                const displayTds = categoryEntry
+                  ? categoryEntry.tdsAmount
+                  : selectedExpense.tdsAmount;
+                const displayAdmin = categoryEntry
+                  ? categoryEntry.adminChargeAmount
+                  : selectedExpense.adminChargeAmount;
 
-                <p>
-                  <strong>Cycle :</strong>{" "}
-                  {formatDate(selectedExpense.cycleStart)} -{" "}
-                  {formatDate(selectedExpense.cycleEnd)}
-                </p>
-
-                <p>
-                  <strong>Gross Amount :</strong> ₹
-                  {formatCurrency(selectedExpense.grossAmount)}
-                </p>
-
-                <p>
-                  <strong>TDS :</strong> ₹
-                  {formatCurrency(selectedExpense.tdsAmount)}
-                </p>
-
-                <p>
-                  <strong>Admin Charge :</strong> ₹
-                  {formatCurrency(selectedExpense.adminChargeAmount)}
-                </p>
-
-                <p style={{ color: "green", fontWeight: 600 }}>
-                  <strong>Net Amount to pay :</strong> ₹
-                  {formatCurrency(selectedExpense.netAmount)}
-                </p>
-              </div>
+                return (
+                  <div className="summary-card">
+                    <h4>{selectedExpense.user?.name}</h4>
+                    <p>
+                      <strong>Referral :</strong>{" "}
+                      {selectedExpense.user?.referralId}
+                    </p>
+                    <p>
+                      <strong>Cycle :</strong>{" "}
+                      {formatDate(selectedExpense.cycleStart)} -{" "}
+                      {formatDate(selectedExpense.cycleEnd)}
+                    </p>
+                    <p>
+                      <strong>Gross Amount :</strong> ₹
+                      {formatCurrency(displayGross)}
+                    </p>
+                    <p>
+                      <strong>TDS :</strong> ₹{formatCurrency(displayTds)}
+                    </p>
+                    <p>
+                      <strong>Admin Charge :</strong> ₹
+                      {formatCurrency(displayAdmin)}
+                    </p>
+                    <p style={{ color: "green", fontWeight: 600 }}>
+                      <strong>Net Amount to pay :</strong> ₹
+                      {formatCurrency(displayNet)}
+                    </p>
+                  </div>
+                );
+              })()}
 
               <p>
-                This will mark the full net amount as paid and cannot be undone.
+                This will mark the{" "}
+                {payCategory
+                  ? `${CATEGORY_DISPLAY_LABELS[payCategory] || payCategory} portion`
+                  : "selected category"}{" "}
+                as paid and cannot be undone.
               </p>
-              <>
-                <h4>Payment</h4>
 
+              <h4>Payment</h4>
+
+              <div className="field">
+                <label>Category</label>
+                <select
+                  value={payCategory || ""}
+                  onChange={(e) => setPayCategory(e.target.value)}
+                >
+                  <option value="">Select Category</option>
+                  {(expenseDetail?.categoryBreakdown || [])
+                    .filter((c) => c.grossAmount > 0)
+                    .map((c) => (
+                      <option
+                        key={c.category}
+                        value={c.category}
+                        disabled={c.status === "paid"}
+                      >
+                        {CATEGORY_DISPLAY_LABELS[c.category] || c.category}
+                        {c.status === "paid" ? " (Paid)" : ""}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label>Payment Mode</label>
+                <select
+                  value={formData.mode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mode: e.target.value })
+                  }
+                >
+                  <option value="">Select Mode</option>
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="bank">Bank Transfer</option>
+                </select>
+              </div>
+
+              {(formData.mode === "upi" || formData.mode === "bank") && (
                 <div className="field">
-                  <label>Payment Mode</label>
-                  <select
-                    value={formData.mode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, mode: e.target.value })
-                    }
-                  >
-                    <option value="">Select Mode</option>
-                    <option value="cash">Cash</option>
-                    <option value="upi">UPI</option>
-                    <option value="cheque">Cheque</option>
-                    <option value="bank">Bank Transfer</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label>
-                    Amount
-                    <small style={{ fontSize: "12px", color: "green" }}>
-                      ₹{formatCurrency(selectedExpense.netAmount)}
-                    </small>
-                  </label>
+                  <label>Transaction ID *</label>
                   <input
-                    type="number"
-                    value={selectedExpense.netAmount}
+                    placeholder="Enter Transaction ID"
+                    value={formData.transactionId || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
+                      setFormData({
+                        ...formData,
+                        transactionId: e.target.value,
+                      })
                     }
                   />
                 </div>
-                {(formData.mode === "upi" || formData.mode === "bank") && (
-                  <div className="field">
-                    <label>Transaction ID *</label>
-                    <input
-                      placeholder="Enter Transaction ID"
-                      value={formData.transactionId}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          transactionId: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                )}
-                {(formData.mode === "upi" ||
-                  formData.mode === "cash" ||
-                  formData.mode === "cheque" ||
-                  formData.mode === "bank") && (
-                  <div className="field">
-                    <label>Attachment *</label>
-                    <input
-                      id="site-note-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setNoteImage(e.target.files[0])}
-                    />
-                  </div>
-                )}
-                <div className="modal-actions">
-                  <button disabled={saving} onClick={handlePay}>
-                    {saving ? "Processing..." : "Confirm Payout"}
-                  </button>
+              )}
+
+              {["upi", "cash", "cheque", "bank"].includes(formData.mode) && (
+                <div className="field">
+                  <label>Attachment *</label>
+                  <input
+                    id="site-note-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setNoteImage(e.target.files[0])}
+                  />
                 </div>
-              </>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  disabled={saving || !payCategory || !formData.mode}
+                  onClick={handlePay}
+                >
+                  {saving ? "Processing..." : "Confirm Payout"}
+                </button>
+              </div>
             </>
           )}
         </AddLocationModal>
