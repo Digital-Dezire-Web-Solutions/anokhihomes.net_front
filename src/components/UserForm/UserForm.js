@@ -538,56 +538,66 @@ const UserForm = ({
   };
 
   useEffect(() => {
-    const checkEmail = async () => {
-      const email = formData.email.trim();
-      if (!email.includes("@") || !email.endsWith(".com")) {
-        setEmailStatus(null);
-        return;
-      }
-      try {
-        setCheckingEmail(true);
-        const res = await fetch(
-          `${Host}/api/auth/check-email/${encodeURIComponent(email)}`,
-        );
-        const data = await res.json();
-        setEmailStatus(data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setCheckingEmail(false);
-      }
-    };
+  const checkEmail = async () => {
+    const email = formData.email.trim();
+    if (!email.includes("@") || !email.endsWith(".com")) {
+      setEmailStatus(null);
+      return;
+    }
+    if (!currentRole) {
+      setEmailStatus(null);
+      return;
+    }
+    try {
+      setCheckingEmail(true);
+      const res = await fetch(
+        `${Host}/api/auth/check-email/${encodeURIComponent(email)}?role=${currentRole}`,
+      );
+      const data = await res.json();
+      setEmailStatus(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
 
-    const timer = setTimeout(checkEmail, 500);
+  const timer = setTimeout(checkEmail, 500);
 
-    return () => clearTimeout(timer);
-  }, [formData.email]);
+  return () => clearTimeout(timer);
+}, [formData.email, currentRole]);
 
-  // useEffect(() => {
-  //   const checkPhone = async () => {
-  //     const phone = formData.phone.trim();
+useEffect(() => {
+  const checkPhone = async () => {
+    const phone = formData.phone.trim();
 
-  //     if (phone.length !== 10) {
-  //       setPhoneStatus(null);
-  //       return;
-  //     }
+    if (phone.length !== 10) {
+      setPhoneStatus(null);
+      return;
+    }
+    if (!currentRole) {
+      setPhoneStatus(null);
+      return;
+    }
 
-  //     try {
-  //       setCheckingPhone(true);
-  //       const res = await fetch(`${Host}/api/auth/check-phone/${phone}`);
-  //       const data = await res.json();
-  //       setPhoneStatus(data);
-  //     } catch (err) {
-  //       console.log(err);
-  //     } finally {
-  //       setCheckingPhone(false);
-  //     }
-  //   };
+    try {
+      setCheckingPhone(true);
+      const res = await fetch(
+        `${Host}/api/auth/check-phone/${phone}?role=${currentRole}`,
+      );
+      const data = await res.json();
+      setPhoneStatus(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCheckingPhone(false);
+    }
+  };
 
-  //   const timer = setTimeout(checkPhone, 500);
+  const timer = setTimeout(checkPhone, 500);
 
-  //   return () => clearTimeout(timer);
-  // }, [formData.phone]);
+  return () => clearTimeout(timer);
+}, [formData.phone, currentRole]);
 
   const openPanModal = () => {
     setPanVerifyData({
