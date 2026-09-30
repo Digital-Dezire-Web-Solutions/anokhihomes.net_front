@@ -17,6 +17,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
+import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -317,10 +318,27 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     setExportOpen(false);
   };
 
+  const loadLogo = (src) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve({
+          data: canvas.toDataURL("image/png"),
+          ratio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => resolve(null); // export still works without the logo
+      img.src = src;
+    });
   /* =====================================================
        EXPORT PDF
     ===================================================== */
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const sourceRecords = getExportSourceRecords();
     const rows = getExportRows(sourceRecords);
 
@@ -335,6 +353,17 @@ const PaymentTable = ({ data, mood, setAlert }) => {
       unit: "mm",
       format: "a4",
     });
+
+    const logoImg = await loadLogo(logo);
+    const LOGO_HEIGHT = 14; // mm
+    const RIGHT_MARGIN = 5; // matches this table's right margin
+
+    const drawLogo = () => {
+      if (!logoImg) return;
+      const w = LOGO_HEIGHT * logoImg.ratio; // keeps the aspect ratio
+      const x = doc.internal.pageSize.getWidth() - RIGHT_MARGIN - w;
+      doc.addImage(logoImg.data, "PNG", x, 6, w, LOGO_HEIGHT);
+    };
 
     doc.setFontSize(25);
     doc.text(buildExportTitle(), 14, 15);
@@ -378,6 +407,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
         0: { cellWidth: 8 }, // S.No stays narrow
       },
       margin: { top: 27, left: 5, right: 5, bottom: 8 },
+      didDrawPage: drawLogo,
     });
 
     doc.save(`${buildExportFileBaseName()}.pdf`);

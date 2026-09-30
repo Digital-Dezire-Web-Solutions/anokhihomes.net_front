@@ -37,6 +37,7 @@ import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
 const Accounts = ({ mood, setAlert }) => {
     const dispatch = useDispatch();
@@ -212,7 +213,24 @@ const Accounts = ({ mood, setAlert }) => {
     /* =====================================================
        EXPORT PDF
     ===================================================== */
-    const exportToPDF = () => {
+    const loadLogo = (src) =>
+        new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                canvas.getContext("2d").drawImage(img, 0, 0);
+                resolve({
+                    data: canvas.toDataURL("image/png"),
+                    ratio: img.naturalWidth / img.naturalHeight,
+                });
+            };
+            img.onerror = () => resolve(null); // export still works without the logo
+            img.src = src;
+        });
+    const exportToPDF = async () => {
         const rows = getExportRows();
 
         if (!rows.length) {
@@ -226,6 +244,17 @@ const Accounts = ({ mood, setAlert }) => {
             unit: "mm",
             format: "a4",
         });
+
+        const logoImg = await loadLogo(logo);
+        const LOGO_HEIGHT = 14; // mm
+        const RIGHT_MARGIN = 5; // matches this table's right margin
+
+        const drawLogo = () => {
+            if (!logoImg) return;
+            const w = LOGO_HEIGHT * logoImg.ratio; // keeps the aspect ratio
+            const x = doc.internal.pageSize.getWidth() - RIGHT_MARGIN - w;
+            doc.addImage(logoImg.data, "PNG", x, 6, w, LOGO_HEIGHT);
+        };
 
         doc.setFontSize(18);
         doc.text("Ledger Report", 14, 15);
@@ -282,6 +311,7 @@ const Accounts = ({ mood, setAlert }) => {
             bodyStyles: { valign: "middle" },
             columnStyles,
             margin,
+            didDrawPage: drawLogo,
         });
 
         doc.save("ledger-report.pdf");

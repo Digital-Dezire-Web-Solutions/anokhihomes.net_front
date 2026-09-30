@@ -3,13 +3,9 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import React, { useEffect, useRef, useState } from "react";
 import "./Other.css";
-import SearchItems from "../../components/SearchItems/SearchItems";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import { useNavigate } from "react-router-dom";
 import NiOpenEye from "../../icons/ni-openEye";
-import NiDots from "../../icons/ni-dots";
-import NiDelete from "../../icons/ni-delete";
-import NiEdit from "../../icons/ni-edit";
 import NiSearch from "../../icons/ni-search";
 import NiCard from "../../icons/ni-card";
 import NiList from "../../icons/ni-list";
@@ -23,7 +19,6 @@ import {
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import ActionModal from "../../components/Modals/ActionModal";
 import DeleteModal from "../../components/Modals/DeleteModal";
-import NiClosseye from "../../icons/ni-closseye";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getUser,
@@ -38,6 +33,7 @@ import NiUser from "../../icons/ni-user";
 import Stars from "../../components/Utils/Stars";
 import UserForm from "../../components/UserForm/UserForm";
 import Pagination from "../../components/Pagination/Pagination";
+import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
 const ITEMS_PER_PAGE = 25;
 const Other = ({ mood, setAlert, data }) => {
@@ -60,7 +56,6 @@ const Other = ({ mood, setAlert, data }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedDeleteUser, setSelectedDeleteUser] = useState(null);
   const [referalMsg, setReferralMsg] = useState(null);
@@ -439,8 +434,24 @@ const Other = ({ mood, setAlert, data }) => {
   /* =====================================================
      EXPORT PDF
   ===================================================== */
-
-  const exportToPDF = () => {
+  const loadLogo = (src) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve({
+          data: canvas.toDataURL("image/png"),
+          ratio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => resolve(null); // export still works without the logo
+      img.src = src;
+    });
+  const exportToPDF = async () => {
     const rows = getExportRows();
 
     if (!rows.length) {
@@ -461,6 +472,17 @@ const Other = ({ mood, setAlert, data }) => {
       unit: "mm",
       format: "a4",
     });
+
+    const logoImg = await loadLogo(logo);
+    const LOGO_HEIGHT = 14; // mm
+    const RIGHT_MARGIN = 5; // matches this table's right margin
+
+    const drawLogo = () => {
+      if (!logoImg) return;
+      const w = LOGO_HEIGHT * logoImg.ratio; // keeps the aspect ratio
+      const x = doc.internal.pageSize.getWidth() - RIGHT_MARGIN - w;
+      doc.addImage(logoImg.data, "PNG", x, 6, w, LOGO_HEIGHT);
+    };
 
     const title =
       exportRole === "all"
@@ -544,6 +566,7 @@ const Other = ({ mood, setAlert, data }) => {
       },
       columnStyles,
       margin,
+      didDrawPage: drawLogo,
     });
 
     const fileName =
@@ -1035,7 +1058,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "user" && (
               <>
-              <span>S.No</span>
+                <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1048,7 +1071,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "agent" && (
               <>
-              <span>S.No</span>
+                <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1066,7 +1089,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "staff" && (
               <>
-              <span>S.No</span>
+                <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>
@@ -1079,7 +1102,7 @@ const Other = ({ mood, setAlert, data }) => {
   ========================= */}
             {exportRole === "all" && (
               <>
-              <span>S.No</span>
+                <span>S.No</span>
                 <span>Name</span>
                 <span>Phone</span>
                 <span>User Type</span>

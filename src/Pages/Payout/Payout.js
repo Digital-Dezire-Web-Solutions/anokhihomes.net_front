@@ -19,6 +19,7 @@ import AddLocationModal from "../../components/Modals/AddLocationModal";
 import { uploadImage } from "../LandingSetting/LandingApi";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import Pagination from "../../components/Pagination/Pagination";
+import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
 const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
 const PAYABLE_STATUSES = ["hold", "released"];
@@ -165,7 +166,7 @@ const Payout = ({ mood, setAlert }) => {
       setDetailLoading(false);
     }
   };
-  
+
   const openView = async (item) => {
     setSelectedExpense(item);
     setViewOpen(true);
@@ -352,8 +353,25 @@ const Payout = ({ mood, setAlert }) => {
   /* =====================================================
      EXPORT PDF
   ===================================================== */
+  const loadLogo = (src) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve({
+          data: canvas.toDataURL("image/png"),
+          ratio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => resolve(null); // export still works without the logo
+      img.src = src;
+    });
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const rows = getExportRows();
 
     if (!rows.length) {
@@ -370,6 +388,17 @@ const Payout = ({ mood, setAlert }) => {
       unit: "mm",
       format: "a4",
     });
+
+    const logoImg = await loadLogo(logo);
+    const LOGO_HEIGHT = 14; // mm
+    const RIGHT_MARGIN = 5; // matches this table's right margin
+
+    const drawLogo = () => {
+      if (!logoImg) return;
+      const w = LOGO_HEIGHT * logoImg.ratio; // keeps the aspect ratio
+      const x = doc.internal.pageSize.getWidth() - RIGHT_MARGIN - w;
+      doc.addImage(logoImg.data, "PNG", x, 6, w, LOGO_HEIGHT);
+    };
 
     const cycleLabel = cycles.find((c) => c.value === exportCycle)?.label;
     const title = exportCycle ? `Payouts — ${cycleLabel}` : "All Payouts";
@@ -437,6 +466,7 @@ const Payout = ({ mood, setAlert }) => {
       bodyStyles: { valign: "middle" },
       columnStyles,
       margin,
+      didDrawPage: drawLogo,
     });
 
     const fileName = exportCycle

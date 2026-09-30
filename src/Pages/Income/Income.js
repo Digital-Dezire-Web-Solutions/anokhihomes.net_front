@@ -18,7 +18,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
-
+import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
 const EXPORT_COLUMNS = [
   "S.No",
@@ -30,6 +30,17 @@ const EXPORT_COLUMNS = [
   "Amount",
   "From",
   "From Phone",
+];
+const EXPORT_COLUMNS2 = [
+  "S.No",
+  "Date",
+  "Name",
+  "Phone",
+  "Referral ID",
+  "Income Type",
+  "Amount",
+  "Project",
+  "Company",
 ];
 
 const Income = ({ mood, setAlert }) => {
@@ -186,18 +197,75 @@ const Income = ({ mood, setAlert }) => {
 
   const fmt2 = (n) => (Number(n) || 0).toFixed(2);
   // console.log(paginated, "paginated")
+  // const getExportRows = (rows) => {
+  //   return (rows || []).map((item, index) => ({
+  //     "S.No": index + 1,
+  //     "Date": formatDate(item.createdAt) || "",
+  //     "Name": item?.user?.name || "-",
+  //     "Phone": item?.user?.phone || "",
+  //     "Referral ID": item?.user?.referralId || "-",
+  //     "Income Type": item.type || "",
+  //     "Amount": fmt2(item.amount) || "",
+  //     "From": item.fromUser ? item.fromUser.name : item?.payment?.customer?.name || "",
+  //     "From Phone": item.fromUser ? item.fromUser.phone : item?.payment?.customer?.phone || "",
+  //   }));
+  // };
+
+  const loadLogo = (src) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve({
+          data: canvas.toDataURL("image/png"),
+          ratio: img.naturalWidth / img.naturalHeight,
+        });
+      };
+      img.onerror = () => resolve(null); // export still works without the logo
+      img.src = src;
+    });
+
+  const PLOT_INCOME_TYPES = ["direct_income", "difference_income"];
+  const isOtherTab = tabActive === "other";
+  const exportColumns = isOtherTab ? EXPORT_COLUMNS2 : EXPORT_COLUMNS;
+
   const getExportRows = (rows) => {
-    return (rows || []).map((item, index) => ({
-      "S.No": index + 1,
-      "Date": formatDate(item.createdAt) || "",
-      "Name": item?.user?.name || "-",
-      "Phone": item?.user?.phone || "",
-      "Referral ID": item?.user?.referralId || "-",
-      "Income Type": item.type || "",
-      "Amount": fmt2(item.amount) || "",
-      "From": item.fromUser ? item.fromUser.name : item?.payment?.customer?.name || "",
-      "From Phone": item.fromUser ? item.fromUser.phone : item?.payment?.customer?.phone || "",
-    }));
+    const [col8, col9] = exportColumns.slice(-2);
+
+    return (rows || []).map((item, index) => {
+      const booking = item?.payment?.booking;
+      const hold = item?.payment?.hold;
+      const plot = booking?.plot || hold?.plot;
+      const colony = booking?.colony || hold?.colony;
+
+      const value8 = isOtherTab
+        ? [plot?.plotNumber, colony?.name].filter(Boolean).join(", ")
+        : item.fromUser
+          ? item.fromUser.name
+          : item?.payment?.customer?.name || "";
+
+      const value9 = isOtherTab
+        ? colony?.category || ""
+        : item.fromUser
+          ? item.fromUser.phone
+          : item?.payment?.customer?.phone || "";
+
+      return {
+        "S.No": index + 1,
+        "Date": formatDate(item.createdAt) || "",
+        "Name": item?.user?.name || "-",
+        "Phone": item?.user?.phone || "",
+        "Referral ID": item?.user?.referralId || "-",
+        "Income Type": item.type || "",
+        "Amount": fmt2(item.amount) || "",
+        [col8]: value8,
+        [col9]: value9,
+      };
+    });
   };
 
   const getExportSourceRecords = () => {
@@ -270,7 +338,7 @@ const Income = ({ mood, setAlert }) => {
   /* =====================================================
    EXPORT PDF
 ===================================================== */
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const sourceRecords = getExportSourceRecords();
     const rows = getExportRows(sourceRecords);
 
@@ -285,6 +353,17 @@ const Income = ({ mood, setAlert }) => {
       unit: "mm",
       format: "a4",
     });
+
+    const logoImg = await loadLogo(logo);
+    const LOGO_HEIGHT = 14; // mm
+    const RIGHT_MARGIN = 8; // same as the table margin
+
+    const drawLogo = () => {
+      if (!logoImg) return;
+      const w = LOGO_HEIGHT * logoImg.ratio; // keep the aspect ratio
+      const x = doc.internal.pageSize.getWidth() - RIGHT_MARGIN - w;
+      doc.addImage(logoImg.data, "PNG", x, 6, w, LOGO_HEIGHT);
+    };
 
     doc.setFontSize(18);
     doc.text(
@@ -368,6 +447,7 @@ const Income = ({ mood, setAlert }) => {
       bodyStyles: { valign: "middle" },
       columnStyles,
       margin,
+      didDrawPage: drawLogo,
     });
 
     doc.save(`${buildExportFileBaseName()}.pdf`);
@@ -464,7 +544,7 @@ const Income = ({ mood, setAlert }) => {
 
   const currentCycleLabel = formatCycleLabel(currentCycleStart, currentCycleEnd);
   const previousCycleLabel = formatCycleLabel(prevCycleStart, prevCycleEnd);
-
+  console.log(paginated, "paginated")
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -698,18 +778,30 @@ const Income = ({ mood, setAlert }) => {
                           .replace(/\b\w/g, (l) => l.toUpperCase())}
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
-                      <span>{!item?.fromUser ?
-                        `${item?.payment?.customer?.name ? item?.payment?.customer?.name : "Anokhi Homes"} (Payment)` || "-" :
-                        `${item?.fromUser?.name} (${item?.fromUser?.referralId})`} {""}{tabActive === "other" ? <span
+                      {tabActive === "other" ?
+                        <span>{item?.payment?.booking?.plot?.plotNumber},{item?.payment?.booking?.colony?.name} {""}{tabActive === "other" ? <span
                           className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
-                              ? "active"
-                              : "pending2"
+                            ? "active"
+                            : "pending2"
                             }`}
                         >
                           {item?.payment?.booking?.colony?.category === "Anokhi Homes"
                             ? "AH"
                             : "PP"}
-                        </span> : ""}</span>
+                        </span> : ""}</span> :
+                        <span>{!item?.fromUser ?
+                          `${item?.payment?.customer?.name ? item?.payment?.customer?.name : "Anokhi Homes"} (Payment)` || "-" :
+                          `${item?.fromUser?.name} (${item?.fromUser?.referralId})`} {""}{tabActive === "other" ? <span
+                            className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                              ? "active"
+                              : "pending2"
+                              }`}
+                          >
+                            {item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                              ? "AH"
+                              : "PP"}
+                          </span> : ""}</span>
+                      }
                       <span
                         className={`status ${item.status === "credited" ? "active" : "pending"
                           }`}
@@ -925,9 +1017,14 @@ const Income = ({ mood, setAlert }) => {
 
             <div className="export-fields">
               <p>Export includes:</p>
-              {EXPORT_COLUMNS.map((col) => (
-                <span key={col}>{col}</span>
-              ))}
+              {tabActive === "other" ?
+                EXPORT_COLUMNS2.map((col) => (
+                  <span key={col}>{col}</span>
+                )) : EXPORT_COLUMNS.map((col) => (
+                  <span key={col}>{col}</span>
+                ))
+              }
+              { }
             </div>
           </div>
 
