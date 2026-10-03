@@ -20,6 +20,8 @@ import { uploadImage } from "../LandingSetting/LandingApi";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import Pagination from "../../components/Pagination/Pagination";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import NiReceipt from "../../icons/ni-receipt";
+import { printPayoutStatement } from "../../components/Utils/printpayoutstatement";
 
 const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
 const PAYABLE_STATUSES = ["hold", "released"];
@@ -708,6 +710,19 @@ const Payout = ({ mood, setAlert }) => {
                               </button>
                             )}
                         </div>
+                      )}
+                      {item.status === "paid" && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          title="Print receipt"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            printPayoutStatement(item);
+                          }}
+                        >
+                          <NiReceipt />
+                        </span>
                       )}
                     </div>
                   </div>

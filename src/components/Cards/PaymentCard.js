@@ -17,8 +17,8 @@ import axios from "axios";
 import { getPayments } from "../../Redux/Slices/AppSlices";
 import { useDispatch } from "react-redux";
 import { formatCurrency } from "../Utils/FormatCurrency";
-import downloadReceipt from "../Utils/downloadReceipt";
 import NiReceipt from "../../icons/ni-receipt";
+import { printPaymentReceipt } from "../Utils/printPaymentReceipt";
 
 const PaymentCard = ({
   item,
@@ -100,7 +100,15 @@ const PaymentCard = ({
           </div>
         </div>
         <div className="dots">
-          <span onClick={() => downloadReceipt(item._id)}>
+          <span
+            role="button"
+            tabIndex={0}
+            title="Print receipt"
+            onClick={(e) => {
+              e.stopPropagation(); // card has its own onClick on the dashboard
+              printPaymentReceipt(item);
+            }}
+          >
             <NiReceipt />
           </span>
           <span
@@ -157,32 +165,30 @@ const PaymentCard = ({
                 {item?.booking?.plot?.plotNumber}, {item?.booking?.colony?.name}
                 , {item?.booking?.location?.name}{" "}
                 <span
-                className={`status ${
-                  item?.booking?.colony?.category === "Anokhi Homes"
-                    ? "active"
-                    : "pending2"
-                }`}
-              >
-                {item?.booking?.colony?.category === "Anokhi Homes"
+                  className={`status ${
+                    item?.booking?.colony?.category === "Anokhi Homes"
+                      ? "active"
+                      : "pending2"
+                  }`}
+                >
+                  {item?.booking?.colony?.category === "Anokhi Homes"
                     ? "AH"
                     : "PP"}
-              </span>
+                </span>
               </>
             ) : (
               <>
                 {item?.hold?.plot?.plotNumber}, {item?.hold?.colony?.name},{" "}
                 {item?.hold?.location?.name}{" "}
                 <span
-                className={`status ${
-                  item?.colony?.category === "Anokhi Homes"
-                    ? "active"
-                    : "pending2"
-                }`}
-              >
-                {item?.colony?.category === "Anokhi Homes"
-                    ? "AH"
-                    : "PP"}
-              </span>
+                  className={`status ${
+                    item?.colony?.category === "Anokhi Homes"
+                      ? "active"
+                      : "pending2"
+                  }`}
+                >
+                  {item?.colony?.category === "Anokhi Homes" ? "AH" : "PP"}
+                </span>
               </>
             )}
           </p>
