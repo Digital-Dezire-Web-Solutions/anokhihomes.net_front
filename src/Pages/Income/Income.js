@@ -544,7 +544,7 @@ const Income = ({ mood, setAlert }) => {
 
   const currentCycleLabel = formatCycleLabel(currentCycleStart, currentCycleEnd);
   const previousCycleLabel = formatCycleLabel(prevCycleStart, prevCycleEnd);
-  console.log(paginated, "paginated")
+  console.log(selectedIncome, "selectedIncome")
   return (
     <div className="plot-container">
       <div className="table-filters">
