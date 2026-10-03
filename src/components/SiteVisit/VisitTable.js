@@ -25,7 +25,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 15;
 
 const VisitTable = ({ data, mood, setAlert, landingPage }) => {
   const dispatch = useDispatch();

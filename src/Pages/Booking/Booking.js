@@ -30,7 +30,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../../components/DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 15;
 
 const Booking = ({ mood, setAlert, landingPage }) => {
   const dispatch = useDispatch();

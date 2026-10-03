@@ -885,11 +885,11 @@ const Income = ({ mood, setAlert }) => {
                       <p>
                         <strong>Amount:</strong> ₹{formatCurrency(selectedIncome?.payment?.amount || 0)}
                       </p>
-                      <p>
+                      <p style={{ textTransform: "capitalize" }}>
                         <strong>Payment Mode:</strong>{" "}
                         {selectedIncome?.payment?.paymentMode || "N/A"}
                       </p>
-                      <p>
+                      <p style={{ textTransform: "capitalize" }}>
                         <strong>Payment Type:</strong>{" "}
                         {selectedIncome?.payment?.paymentType || "N/A"}
                       </p>
@@ -922,10 +922,12 @@ const Income = ({ mood, setAlert }) => {
                       <p>
                         <strong>Income %:</strong> {selectedIncome?.percentage || 0}%
                       </p>
-
                       <p>
                         <strong>Income Earned:</strong> ₹{formatCurrency(selectedIncome?.amount || 0)}
                       </p>
+                      {selectedIncome?.remark ? (
+                        <p className="slab-note">{selectedIncome.remark}</p>
+                      ) : null}
                     </>
                   )}
 

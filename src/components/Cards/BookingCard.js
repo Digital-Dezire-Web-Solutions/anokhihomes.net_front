@@ -15,6 +15,8 @@ import { getBooking, getRating } from "../../Redux/Slices/AppSlices";
 import NiSitevisit from "../../icons/ni-sitevisit";
 import { formatCurrency } from "../Utils/FormatCurrency";
 import NiStar from "../../icons/ni-star";
+import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
+import PaymentAmountModal from "../Modals/Paymentamountmodal";
 
 const BookingCard = ({
   item,
@@ -41,6 +43,7 @@ const BookingCard = ({
   const [panelMode, setPanelMode] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [saving, setSaving] = useState();
+  const [payOpen, setPayOpen] = useState(false);
 
   useEffect(() => {
     if (!viewOpen) {
@@ -272,79 +275,123 @@ const BookingCard = ({
   };
 
   // Add Payment
-  const handleAddPayment = async () => {
+  // const handleAddPayment = async () => {
+  //   setSaving(true);
+  //   try {
+  //     const token = localStorage.getItem("token");
+
+  //     // 🔥 validations
+  //     if (!formData.paymentType) {
+  //       return;
+  //       setAlert({ message: "Select payment type", status: "Error" });
+  //       setTimeout(() => setAlert(null), 3000);
+  //     }
+
+  //     if (!formData.mode) {
+  //       return;
+  //       setAlert({ message: "Select payment mode", status: "Error" });
+  //       setTimeout(() => setAlert(null), 3000);
+  //     }
+
+  //     if (!formData.amount) {
+  //       return;
+  //       setAlert({ message: "Enter amount", status: "Error" });
+  //       setTimeout(() => setAlert(null), 3000);
+  //     }
+
+  //     if (
+  //       (formData.mode === "UPI" || formData.mode === "Bank Transfer") &&
+  //       !formData.transactionId
+  //     ) {
+  //       return setAlert({
+  //         message: "Transaction ID required",
+  //         status: "Error",
+  //       });
+  //       setTimeout(() => setAlert(null), 3000);
+  //     }
+
+  //     const payload = {
+  //       booking: item._id,
+  //       amount: Number(formData.amount),
+  //       paymentMode: formData.mode,
+  //       paymentType: formData.paymentType,
+  //       transactionId: formData.transactionId || "",
+  //     };
+
+  //     await axios.post(`${Host}/api/payment/add`, payload, {
+  //       headers: {
+  //         "auth-token": token,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     // console.log(payload, "payload")
+
+  //     setAlert({
+  //       message: "Payment submitted successfully",
+  //       status: "Success",
+  //     });
+
+  //     dispatch(getBooking());
+
+  //     setFormData({});
+  //     setPanelMode(null);
+  //     setViewOpen(false);
+
+  //     setTimeout(() => setAlert(null), 3000);
+  //     setSaving(false);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setAlert({
+  //       message: err.response?.data?.message || "Payment failed",
+  //       status: "Error",
+  //     });
+  //     setTimeout(() => setAlert(null), 3000);
+  //     setSaving(false);
+  //   }
+  // };
+  const handleAddPayment = async (data) => {
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
-      // 🔥 validations
-      if (!formData.paymentType) {
-        return;
-        setAlert({ message: "Select payment type", status: "Error" });
-        setTimeout(() => setAlert(null), 3000);
+      let attachment = "";
+      if (data.attachment) {
+        const upload = await uploadImage(data.attachment);
+        attachment = upload.url;
       }
 
-      if (!formData.mode) {
-        return;
-        setAlert({ message: "Select payment mode", status: "Error" });
-        setTimeout(() => setAlert(null), 3000);
-      }
-
-      if (!formData.amount) {
-        return;
-        setAlert({ message: "Enter amount", status: "Error" });
-        setTimeout(() => setAlert(null), 3000);
-      }
-
-      if (
-        (formData.mode === "UPI" || formData.mode === "Bank Transfer") &&
-        !formData.transactionId
-      ) {
-        return setAlert({
-          message: "Transaction ID required",
-          status: "Error",
-        });
-        setTimeout(() => setAlert(null), 3000);
-      }
-
-      const payload = {
-        booking: item._id,
-        amount: Number(formData.amount),
-        paymentMode: formData.mode,
-        paymentType: formData.paymentType,
-        transactionId: formData.transactionId || "",
-      };
-
-      await axios.post(`${Host}/api/payment/add`, payload, {
-        headers: {
-          "auth-token": token,
-          "Content-Type": "application/json",
+      await axios.post(
+        `${Host}/api/payment/add`,
+        {
+          booking: item._id,
+          amount: data.amount,
+          paymentMode: data.mode,
+          paymentType: data.paymentType,
+          transactionId: data.transactionId,
+          attachment,
         },
-      });
-
-      // console.log(payload, "payload")
+        {
+          headers: { "auth-token": token, "Content-Type": "application/json" },
+        },
+      );
 
       setAlert({
         message: "Payment submitted successfully",
         status: "Success",
       });
-
       dispatch(getBooking());
-
-      setFormData({});
-      setPanelMode(null);
+      setPayOpen(false);
       setViewOpen(false);
-
-      setTimeout(() => setAlert(null), 3000);
-      setSaving(false);
     } catch (err) {
       console.error(err);
       setAlert({
         message: err.response?.data?.message || "Payment failed",
         status: "Error",
       });
-      setTimeout(() => setAlert(null), 3000);
+    } finally {
       setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -515,9 +562,7 @@ const BookingCard = ({
                     : "pending2"
                 }`}
               >
-                {item?.colony?.category === "Anokhi Homes"
-                    ? "AH"
-                    : "PP"}
+                {item?.colony?.category === "Anokhi Homes" ? "AH" : "PP"}
               </span>
             </p>
             {mood !== "agent" && <p>{item?.agent?.name}</p>}
@@ -645,11 +690,12 @@ const BookingCard = ({
           <div class="modal-actions">
             <button
               className="view-report-btn"
-              onClick={() => {
-                setPanelMode("payment");
-                setShowReport(false);
-                setViewOpen(true);
-              }}
+              // onClick={() => {
+              //   setPanelMode("payment");
+              //   setShowReport(false);
+              //   setViewOpen(true);
+              // }}
+              onClick={() => setPayOpen(true)}
             >
               {paid === 0 ? "Book Now" : "Add Payment"}
             </button>
@@ -764,7 +810,7 @@ const BookingCard = ({
             <p>{formatDate(item?.createdAt)}</p>
             <p>
               {item?.plot?.plotNumber}, {item?.colony?.name},{" "}
-              {item?.location?.name}
+              {item?.location?.name} {""}
             </p>
             <p>₹{formatCurrency(item?.finalAmount)}</p>
             <p>₹{formatCurrency(paid)}</p>
@@ -824,10 +870,11 @@ const BookingCard = ({
             <div class="modal-actions">
               <button
                 className="view-report-btn"
-                onClick={() => {
-                  setPanelMode("payment");
-                  setShowReport(false);
-                }}
+                // onClick={() => {
+                //   setPanelMode("payment");
+                //   setShowReport(false);
+                // }}
+                onClick={() => setPayOpen(true)}
               >
                 {paid === 0 ? "Book Now" : "Add Payment"}
               </button>
@@ -964,7 +1011,10 @@ const BookingCard = ({
               )}
               <p>Notes : 35% cancellation charges</p>
               <div className="modal-actions">
-                <button disabled={saving} onClick={handleAddPayment}>
+                <button disabled={saving} 
+                // onClick={handleAddPayment}
+                onClick={() => setPayOpen(true)}
+                >
                   {saving ? "Adding..." : "Add Payment"}
                 </button>
               </div>
@@ -1197,6 +1247,22 @@ const BookingCard = ({
           )}
         </div>
       </ViewModal>
+      <PaymentAmountModal
+        open={payOpen}
+        onClose={() => setPayOpen(false)}
+        customerName={item?.customer?.name}
+        plotLabel={`${item?.plot?.plotNumber}, ${item?.colony?.name}`}
+        total={total}
+        remaining={remaining}
+        stage={currentStage}
+        schedule={{
+          booking: bookingAmount,
+          agreement: agreementAmount,
+          full: fullAmount,
+        }}
+        saving={saving}
+        onSubmit={handleAddPayment}
+      />
     </>
   );
 };

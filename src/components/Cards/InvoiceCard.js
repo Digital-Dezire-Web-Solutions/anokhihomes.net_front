@@ -14,12 +14,7 @@ import NiDownload from "../../icons/ni-download";
 import formatDate from "../DateFormate/DateFormate";
 import { formatCurrency } from "../Utils/FormatCurrency";
 
-const InvoiceCard = ({
-  item,
-  mood,
-  dashboard,
-  setAlert,
-}) => {
+const InvoiceCard = ({ item, mood, dashboard, setAlert }) => {
   const [activeRow, setActiveRow] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
@@ -119,7 +114,6 @@ const InvoiceCard = ({
         </div>
         <div className={`report-view-box-right active`}>
           <div className="payment-details">
-
             {item?.type !== "referal_income" && (
               <>
                 <h5>Payment Details</h5>
@@ -138,13 +132,14 @@ const InvoiceCard = ({
                   {item?.payment?.customer?.email || "-"}
                 </p>
                 <p>
-                  <strong>Amount:</strong> ₹{formatCurrency(item?.payment?.amount || 0)}
+                  <strong>Amount:</strong> ₹
+                  {formatCurrency(item?.payment?.amount || 0)}
                 </p>
-                <p>
+                <p style={{ textTransform: "capitalize" }}>
                   <strong>Payment Mode:</strong>{" "}
                   {item?.payment?.paymentMode || "N/A"}
                 </p>
-                <p>
+                <p style={{ textTransform: "capitalize" }}>
                   <strong>Payment Type:</strong>{" "}
                   {item?.payment?.paymentType || "N/A"}
                 </p>
@@ -171,7 +166,8 @@ const InvoiceCard = ({
                 <hr />
 
                 <p>
-                  <strong>Business Amount:</strong> ₹{formatCurrency(item?.businessAmount || 0)}
+                  <strong>Business Amount:</strong> ₹
+                  {formatCurrency(item?.businessAmount || 0)}
                 </p>
 
                 <p>
@@ -179,7 +175,8 @@ const InvoiceCard = ({
                 </p>
 
                 <p>
-                  <strong>Income Earned:</strong> ₹{formatCurrency(item?.amount || 0)}
+                  <strong>Income Earned:</strong> ₹
+                  {formatCurrency(item?.amount || 0)}
                 </p>
               </>
             )}

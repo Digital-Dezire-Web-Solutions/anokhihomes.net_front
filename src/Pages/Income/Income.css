@@ -30,3 +30,12 @@
   background-color: var(--mood-color);
   color: white;
 }
+
+.slab-note {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #9a6a00;
+  background: #fff3c4;
+  padding: 0.15rem 0.6rem !important;
+  border-radius: 999px;
+}

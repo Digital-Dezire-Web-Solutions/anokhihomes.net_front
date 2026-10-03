@@ -3,18 +3,24 @@ import "./PosterView.css";
 import { createPortal } from "react-dom";
 import emiposter from "../../Assets/offfer/emiposter.jpeg";
 import emiposter2 from "../../Assets/offfer/poster2.jpeg";
+import emiposter3 from "../../Assets/offfer/of3.jpeg";
 
 const STATIC_POSTER = [
   {
-  _id: "static-poster2",
-  poster: emiposter2,
-  title: "Featured2",
-},
+    _id: "static-poster3",
+    poster: emiposter3,
+    title: "Featured3",
+  },
   {
-  _id: "static-poster",
-  poster: emiposter,
-  title: "Featured",
-},
+    _id: "static-poster2",
+    poster: emiposter2,
+    title: "Featured2",
+  },
+  {
+    _id: "static-poster",
+    poster: emiposter,
+    title: "Featured",
+  },
 ];
 
 const PosterView = ({ offersData }) => {
@@ -23,7 +29,7 @@ const PosterView = ({ offersData }) => {
   // );
 
   // ----------new code for static poster added to the list of offers
-  
+
   const realOffers = offersData?.filter(
     (offer) => offer.poster && offer.poster.trim() !== "",
   );

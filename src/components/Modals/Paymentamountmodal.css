@@ -1,0 +1,150 @@
+.pay-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pay-hero {
+  text-align: center;
+}
+
+.pay-for {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.pay-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* ---------- big amount ---------- */
+.pay-amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.pay-amount:focus-within {
+  border-bottom-color: #e00;
+}
+
+.pay-rupee {
+  font-size: 2.4rem;
+  font-weight: 500;
+  color: #666;
+  line-height: 1;
+}
+
+.pay-amount input {
+  min-width: 1ch;
+  max-width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  text-align: left;
+  font-weight: 600;
+  line-height: 1.1;
+  padding: 0;
+  caret-color: #e00;
+  color: inherit;
+}
+
+.pay-amount input::placeholder {
+  color: #c8c4ba;
+}
+
+/* ---------- hints ---------- */
+.pay-hints {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.pay-pill {
+  border: 1px solid #e00;
+  background: #fff;
+  color: #e00;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pay-remaining {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* ---------- chips ---------- */
+.pay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pay-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pay-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pay-chips button {
+  border: 1px solid #b9b5ab;
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.pay-chips button.active {
+  background: #e00;
+  border-color: #e00;
+  color: #fff;
+}
+
+.pay-chips button:focus-visible,
+.pay-pill:focus-visible {
+  outline: 2px solid #06c;
+  outline-offset: 2px;
+}
+
+.pay-stage {
+  margin: 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+.pay-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #777;
+  text-align: center;
+}
+
+.pay-error {
+  margin: 0;
+  color: #c00;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .pay-rupee {
+    font-size: 1.9rem;
+  }
+}
