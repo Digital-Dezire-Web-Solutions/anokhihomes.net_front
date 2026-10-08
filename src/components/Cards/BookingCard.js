@@ -1084,8 +1084,8 @@ const BookingCard = ({
                 </div>
                 {paymentSummary?.payments?.map((i) => (
                   <div className="installment">
-                    <span>{i.paymentType}</span>
-                    <span>{i.paymentMode}</span>
+                    <span style={{textTransform:"capitalize"}}>{i.paymentType}</span>
+                    <span style={{textTransform:"uppercase"}}>{i.paymentMode}</span>
                     <span>₹{formatCurrency(i.amount)}</span>
                     <span>{formatDate(i.createdAt)}</span>
                   </div>
