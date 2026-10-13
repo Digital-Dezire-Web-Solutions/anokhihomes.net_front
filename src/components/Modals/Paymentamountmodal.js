@@ -74,7 +74,7 @@ const PaymentAmountModal = ({
   const suggest = (t) => {
     if (t === stage && schedule[t]) return round2(schedule[t]);
     if (t === "booking") return round2(total * 0.1);
-    if (t === "agreement") return round2(total * 0.25);
+    if (t === "agreement") return round2(total * 0.20);
     return round2(total);
   };
 

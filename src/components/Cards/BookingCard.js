@@ -945,7 +945,7 @@ const BookingCard = ({
                     let autoAmount = "";
 
                     if (type === "booking") autoAmount = total * 0.1;
-                    if (type === "agreement") autoAmount = total * 0.25;
+                    if (type === "agreement") autoAmount = total * 0.20;
                     if (type === "full") autoAmount = total;
 
                     setFormData({
@@ -1112,7 +1112,7 @@ const BookingCard = ({
                   <div
                     className={`installment ${agreementPaid ? "paid" : "pending"}`}
                   >
-                    <span>Agreement Amount (25%)</span>
+                    <span>Agreement Amount (20%)</span>
                     <span>
                       ₹{formatCurrency(agreementAmount)} (
                       {agreementPaid ? "paid" : "pending"})
