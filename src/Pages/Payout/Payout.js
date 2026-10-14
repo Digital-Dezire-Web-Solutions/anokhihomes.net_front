@@ -711,7 +711,7 @@ const Payout = ({ mood, setAlert }) => {
                             )}
                         </div>
                       )}
-                      {item.status === "paid" && (
+                      {/* {item.status === "paid" && ( */}
                         <span
                           role="button"
                           tabIndex={0}
@@ -723,7 +723,7 @@ const Payout = ({ mood, setAlert }) => {
                         >
                           <NiReceipt />
                         </span>
-                      )}
+                      {/* )} */}
                     </div>
                   </div>
                 ))
