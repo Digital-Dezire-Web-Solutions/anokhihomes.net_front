@@ -163,7 +163,7 @@ const buildStatementHtml = (p) => {
     </div>
     <div class="r">
       <div class="vl">Paid On</div>
-      <div class="vv">${esc(paidOn ? formatDate(paidOn) : "-")}</div>
+      <div class="vv">${esc(paidOn ? formatDate(paidOn) : "Unpaid")}</div>
     </div>
   </div>
 
