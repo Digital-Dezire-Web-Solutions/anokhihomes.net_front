@@ -178,6 +178,7 @@ const buildReceiptHtml = (item, { qr, barcode }) => {
   const plot = b.plot || {};
   const colony = b.colony || {};
   const customer = item.customer || {};
+  console.log(customer,"customer")
   const co = COMPANIES[colony.category] || COMPANIES["Anokhi Homes"];
 
   const receiptNo = getReceiptNo(item);
@@ -243,7 +244,7 @@ const buildReceiptHtml = (item, { qr, barcode }) => {
   <hr class="rule" />
 
   <div class="cust">
-    ${customerCode ? `<div class="big">CUSTOMER CODE : ${esc(customerCode)}</div>` : ""}
+    <div class="big">CUSTOMER CODE : ${esc(customer.referralId || "-")}</div>
     <div class="big">NAME : ${esc(customer.name || "-")}</div>
     <div class="sm">ADDRESS : ${esc(customer.address || "")}</div>
     <div class="sm">CONTACT.: ${esc(customer.phone || "")}</div>
