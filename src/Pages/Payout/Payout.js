@@ -193,6 +193,24 @@ const Payout = ({ mood, setAlert }) => {
     setDetailLoading(false);
   };
 
+  const openDirectPay = async (item) => {
+    setSelectedExpense(item);
+    setPayCategory(null); // let the admin choose in the modal
+    setFormData({});
+    setNoteImage(null);
+
+    const detail = await fetchPayoutDetail(item);
+
+    const firstPending = detail?.categoryBreakdown?.find(
+      (c) => c.status !== "paid" && c.grossAmount > 0,
+    );
+    if (firstPending) {
+      setPayCategory(firstPending.category);
+    }
+
+    setOpen(true);
+  };
+
   const handlePay = async () => {
     if (!payCategory) {
       setAlert({
@@ -509,6 +527,7 @@ const Payout = ({ mood, setAlert }) => {
     return payableTotalsByUser[myId] || 0;
   }, [payableTotalsByUser, userDetail]);
 
+  console.log(expenseDetail, "payCategory");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -695,34 +714,28 @@ const Payout = ({ mood, setAlert }) => {
                       </span>
                       {mood === "admin" && (
                         <div className="modal-actions">
-                          {PAYABLE_STATUSES.includes(item.status) &&
-                            (item.netAmount >= 1000 ||
-                              (payableTotalsByUser[item.user?._id] || 0) >
-                                1000) && (
-                              <button
-                                className="table-btn"
-                                onClick={() => {
-                                  setSelectedExpense(item);
-                                  setOpen(true);
-                                }}
-                              >
-                                Pay
-                              </button>
-                            )}
+                          {PAYABLE_STATUSES.includes(item.status) && (
+                            <button
+                              className="table-btn"
+                              onClick={() => openDirectPay(item)}
+                            >
+                              Pay
+                            </button>
+                          )}
                         </div>
                       )}
                       {/* {item.status === "paid" && ( */}
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          title="Print receipt"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            printPayoutStatement(item);
-                          }}
-                        >
-                          <NiReceipt />
-                        </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        title="Print receipt"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          printPayoutStatement(item);
+                        }}
+                      >
+                        <NiReceipt />
+                      </span>
                       {/* )} */}
                     </div>
                   </div>
@@ -1188,8 +1201,8 @@ const Payout = ({ mood, setAlert }) => {
 
             <div className="export-fields">
               <p>Export includes:</p>
-              <span>S.No</span>
               <span>Name</span>
+              <span>Phone</span>
               <span>Email</span>
               <span>UserID</span>
               <span>Cycle</span>
