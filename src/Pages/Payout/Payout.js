@@ -67,6 +67,7 @@ const Payout = ({ mood, setAlert }) => {
   });
   const [exportOpen, setExportOpen] = useState(false);
   const [exportCycle, setExportCycle] = useState("");
+  const [exportCategory, setExportCategory] = useState("");
 
   useEffect(() => {
     dispatch(getAccountDetails());
@@ -275,11 +276,19 @@ const Payout = ({ mood, setAlert }) => {
       return [];
     }
 
-    const base = exportCycle
+    let base = exportCycle
       ? payout.filter(
           (item) => `${item.cycleStart}_${item.cycleEnd}` === exportCycle,
         )
       : payout;
+
+    if (exportCategory) {
+      base = base.filter((item) =>
+        (item.categoryPayments || []).some(
+          (c) => c.category === exportCategory,
+        ),
+      );
+    }
 
     // match the table's own sort order (highest netAmount first)
     return [...base].sort((a, b) => (b.netAmount || 0) - (a.netAmount || 0));
@@ -289,6 +298,20 @@ const Payout = ({ mood, setAlert }) => {
      FORMAT USER DATA FOR EXPORT
   ===================================================== */
   const fmt2 = (n) => (Number(n) || 0).toFixed(2);
+  const getCategoryText = (item) => {
+    let entries = item?.categoryPayments || [];
+    if (exportCategory) {
+      entries = entries.filter((c) => c.category === exportCategory);
+    }
+    if (!entries.length) return "-";
+    return entries
+      .map((c) => {
+        const name = CATEGORY_DISPLAY_LABELS[c.category] || c.category;
+        return `${name} (${c.status === "paid" ? "Paid" : "Unpaid"})`;
+      })
+      .join(", ");
+  };
+
   const getExportRows = () => {
     const selectedUsers = getExportUsers();
 
@@ -299,6 +322,7 @@ const Payout = ({ mood, setAlert }) => {
         Email: item?.user?.email || "-",
         UserID: item?.user?.referralId || "-",
         Cycle: `${formatDate(item.cycleStart)} - ${formatDate(item.cycleEnd)}`,
+        Category: getCategoryText(item), // <-- new
         Gross: fmt2(item?.grossAmount),
         TDS: fmt2(item?.tdsAmount),
         AdminCharge: fmt2(item?.adminChargeAmount),
@@ -644,6 +668,7 @@ const Payout = ({ mood, setAlert }) => {
               className="add-button"
               onClick={() => {
                 setExportCycle("");
+                setExportCategory("");
                 setExportOpen(true);
               }}
             >
@@ -1195,6 +1220,17 @@ const Payout = ({ mood, setAlert }) => {
               {cycles.map((cycle) => (
                 <option key={cycle.value} value={cycle.value}>
                   {cycle.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={exportCategory}
+              onChange={(e) => setExportCategory(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {Object.entries(CATEGORY_DISPLAY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
             </select>

@@ -3,24 +3,68 @@ import { esc, amountInWordsIN, printHtml } from "./printdocument";
 // Left logo: Anokhi Homes (change the file name to yours)
 import logoLeft from "../../Assets/Logo/ah-logo.png";
 // Right logo: Patliputra Anokhi Homes
-import logoRight from "../../Assets/Logo/ah-logo.png";
+import logoRight from "../../Assets/Logo/pah-logo.png";
 
 // One row per income field on the Payout document. Only rows with an
 // amount > 0 are printed. The "rule" text is yours to reword.
 const INCOME_ROWS = [
-  { field: "directIncome", label: "Direct Income", rule: "Slab percentage on personal business" },
-  { field: "differenceIncome", label: "Difference Income", rule: "Hierarchy percentage differential" },
-  { field: "matchingIncome", label: "Matching Income", rule: "Team business matching (six-month cycle)" },
-  { field: "royaltyIncome", label: "Royalty Income", rule: "Rank-based royalty (six-month cycle)" },
-  { field: "cashbackIncome", label: "Cashback Income", rule: "Special payment clearance criteria" },
-  { field: "bestPerformanceIncome", label: "Performer Income", rule: "Best Performer Income" },
-  { field: "festivalBonusIncome", label: "Festival Bonus Income", rule: "Festival bonus scheme" },
-  { field: "referralIncome", label: "Referral Income", rule: "Referral earnings" },
-  { field: "rewardIncome", label: "Reward Income", rule: "Approved target reward schemes" },
+  {
+    field: "directIncome",
+    label: "Direct Income",
+    rule: "Slab percentage on personal business",
+  },
+  {
+    field: "differenceIncome",
+    label: "Difference Income",
+    rule: "Hierarchy percentage differential",
+  },
+  {
+    field: "matchingIncome",
+    label: "Matching Income",
+    rule: "Team business matching (six-month cycle)",
+  },
+  {
+    field: "royaltyIncome",
+    label: "Royalty Income",
+    rule: "Rank-based royalty (six-month cycle)",
+  },
+  {
+    field: "cashbackIncome",
+    label: "Cashback Income",
+    rule: "Special payment clearance criteria",
+  },
+  {
+    field: "bestPerformanceIncome",
+    label: "Performer Income",
+    rule: "Best Performer Income",
+  },
+  {
+    field: "festivalBonusIncome",
+    label: "Festival Bonus Income",
+    rule: "Festival bonus scheme",
+  },
+  {
+    field: "referralIncome",
+    label: "Referral Income",
+    rule: "Referral earnings",
+  },
+  {
+    field: "rewardIncome",
+    label: "Reward Income",
+    rule: "Approved target reward schemes",
+  },
 ];
 
-const CATEGORY_LABEL = { "Anokhi Homes": "Anokhi Homes + Other", Patliputra: "Patliputra" };
-const MODE_LABEL = { cash: "Cash", upi: "UPI", cheque: "Cheque", bank: "Bank Transfer" };
+const CATEGORY_LABEL = {
+  "Anokhi Homes": "Anokhi Homes + Other",
+  Patliputra: "Patliputra",
+};
+const MODE_LABEL = {
+  cash: "Cash",
+  upi: "UPI",
+  cheque: "Cheque",
+  bank: "Bank Transfer",
+};
 
 // ₹1,23,456.00 (always 2 decimals, Indian grouping)
 const money = (n) =>
@@ -35,8 +79,12 @@ const abs = (src) => new URL(src, window.location.href).href;
 // otherwise derives one: PAY20260930-A3F2 (cycle end date + last 4 of the id)
 const getInvoiceNo = (p) => {
   if (p.invoiceNo || p.voucherNo) return p.invoiceNo || p.voucherNo;
-  const d = String(p.cycleEnd || "").slice(0, 10).replace(/-/g, "");
-  return `PAY${d}-${String(p._id || "").slice(-4).toUpperCase()}`;
+  const d = String(p.cycleEnd || "")
+    .slice(0, 10)
+    .replace(/-/g, "");
+  return `PAY${d}-${String(p._id || "")
+    .slice(-4)
+    .toUpperCase()}`;
 };
 
 const CSS = `
@@ -50,7 +98,19 @@ const CSS = `
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .page { display: flex; flex-direction: column; width: 210mm; min-height: 296.5mm; padding: 9mm 10mm 12mm; }
+    .watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 130mm;
+    height: 130mm;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .page { position: relative; z-index: 1; display: flex; flex-direction: column; width: 210mm; min-height: 296.5mm; padding: 9mm 10mm 12mm; }
 
   .head { display: grid; grid-template-columns: 124px 1fr 124px; align-items: center; gap: 12px; margin: 0 -6mm 22px; }
   .logo { width: 124px; height: 124px; object-fit: contain; }
@@ -73,7 +133,7 @@ const CSS = `
   .r { text-align: right; }
   .strong td { font-weight: 800; text-transform: uppercase; }
   .neg { color: #b42318; }
-  .net td { padding: 14px 16px; font-size: 21px; font-weight: 800; text-transform: uppercase; color: #1d6b34; }
+  .net td { padding: 14px 8px; font-size: 21px; font-weight: 800; text-transform: uppercase; color: #1d6b34; }
 
   .words { display: flex; gap: 14px; align-items: flex-start; }
   .words .k { width: 206px; flex: none; font-size: 15px; color: #4b5563; padding-top: 3px; }
@@ -86,9 +146,16 @@ const CSS = `
 const buildStatementHtml = (p) => {
   const tdsPct = pct(p.tdsPercent);
   const adminPct = pct(p.adminChargePercent);
-  const paidEntries = (p.categoryPayments || []).filter((c) => c.status === "paid");
+  const paidEntries = (p.categoryPayments || []).filter(
+    (c) => c.status === "paid",
+  );
   const paidOn =
-    p.paidAt || paidEntries.map((c) => c.paidAt).filter(Boolean).sort().pop();
+    p.paidAt ||
+    paidEntries
+      .map((c) => c.paidAt)
+      .filter(Boolean)
+      .sort()
+      .pop();
 
   const incomeRows = INCOME_ROWS.filter((r) => Number(p[r.field]) > 0)
     .map(
@@ -102,7 +169,8 @@ const buildStatementHtml = (p) => {
   const modeText = (c) => {
     const mode = MODE_LABEL[c.paymentMode] || c.paymentMode || "-";
     if (!c.transactionId) return esc(mode);
-    const label = c.paymentMode === "upi" || c.paymentMode === "bank" ? "TRN" : "Ref";
+    const label =
+      c.paymentMode === "upi" || c.paymentMode === "bank" ? "TRN" : "Ref";
     return `${esc(mode)} (${label}:${esc(c.transactionId)})`;
   };
 
@@ -137,6 +205,7 @@ const buildStatementHtml = (p) => {
 <style>${CSS}</style>
 </head>
 <body>
+<img class="watermark" src="${esc(abs(logoLeft))}" alt="" onerror="this.style.display='none'" />
 <div class="page">
 
   <div class="head">
