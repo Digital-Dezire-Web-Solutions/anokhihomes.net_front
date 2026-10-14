@@ -100,7 +100,7 @@ const PaymentCard = ({
           </div>
         </div>
         <div className="dots">
-          {/* <span
+          <span
             role="button"
             tabIndex={0}
             title="Print receipt"
@@ -110,7 +110,7 @@ const PaymentCard = ({
             }}
           >
             <NiReceipt />
-          </span> */}
+          </span>
           <span
             onClick={(e) => {
               e.stopPropagation();

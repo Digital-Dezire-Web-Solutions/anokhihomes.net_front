@@ -1,6 +1,6 @@
 // Shared by printPaymentReceipt.js and printPayoutStatement.js
 // Point this at your logo file (the one shown in the top-left of your PDF)
-import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import logo from "../../Assets/Logo/ah-logo.png";
 
 export const COMPANY_NAME = "Anokhi Homes Pvt. Ltd.";
 
