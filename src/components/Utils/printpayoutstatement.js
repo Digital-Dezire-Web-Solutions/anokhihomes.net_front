@@ -130,10 +130,10 @@ const CSS = `
   td { padding: 12px 16px; border-bottom: 1px solid #c3c8d0; font-size: 14px; }
   tbody tr:last-child td { border-bottom: 0; }
   tr { break-inside: avoid; }
-  .r { text-align: right; }
+    .r { text-align: right; white-space: nowrap; }
   .strong td { font-weight: 800; text-transform: uppercase; }
   .neg { color: #b42318; }
-  .net td { padding: 14px 8px; font-size: 21px; font-weight: 800; text-transform: uppercase; color: #1d6b34; }
+    .net td { padding: 14px 16px; font-size: 19px; font-weight: 800; text-transform: uppercase; color: #1d6b34; white-space: nowrap; }
 
   .words { display: flex; gap: 14px; align-items: flex-start; }
   .words .k { width: 206px; flex: none; font-size: 15px; color: #4b5563; padding-top: 3px; }
@@ -147,6 +147,7 @@ const buildStatementHtml = (p) => {
   const tdsPct = pct(p.tdsPercent);
   const adminPct = pct(p.adminChargePercent);
   const categoryPayments = p.categoryPayments || [];
+  const categoryBreakdown = p.categoryBreakdown || [];
 
   // A category counts as paid only when it is marked paid AND has real payment details.
   // (Your screenshot's Patliputra row was "paid" with no mode/date, so it showed ₹0.00.)
@@ -187,12 +188,14 @@ const buildStatementHtml = (p) => {
           ${Object.keys(CATEGORY_LABEL)
             .map((cat) => {
               const c = categoryPayments.find((x) => x.category === cat);
+              const b = categoryBreakdown.find((x) => x.category === cat);
               const paid = isPaid(c);
+              const net = b?.netAmount ?? c?.netAmount ?? 0;
               return `<tr>
                 <td>${esc(CATEGORY_LABEL[cat])}</td>
                 <td>${paid ? modeText(c) : "-"}</td>
                 <td>${paid ? esc(c.paidAt ? formatDate(c.paidAt) : "-") : "Unpaid"}</td>
-               <td class="r">${money(c?.netAmount)}</td>
+                <td class="r">${money(net)}</td>
               </tr>`;
             })
             .join("")}
@@ -241,7 +244,7 @@ const buildStatementHtml = (p) => {
   </div>
 
   <table>
-    <colgroup><col style="width:31%"><col style="width:50%"><col style="width:19%"></colgroup>
+    <colgroup><col style="width:28%"><col style="width:46%"><col style="width:26%"></colgroup>
     <thead>
       <tr><th>Income component</th><th>Calculation rule</th><th class="r">Gross amount</th></tr>
     </thead>

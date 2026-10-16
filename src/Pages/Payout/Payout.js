@@ -760,9 +760,24 @@ const Payout = ({ mood, setAlert }) => {
                         role="button"
                         tabIndex={0}
                         title="Print receipt"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          printPayoutStatement(item);
+                          try {
+                            const token = localStorage.getItem("token");
+                            const res = await axios.get(
+                              `${Host}/api/payout/${item._id}`,
+                              {
+                                headers: { "auth-token": token },
+                              },
+                            );
+                            printPayoutStatement({
+                              ...item,
+                              categoryBreakdown: res.data.categoryBreakdown,
+                            });
+                          } catch (err) {
+                            console.log(err);
+                            printPayoutStatement(item); // still prints, just without category amounts
+                          }
                         }}
                       >
                         <NiReceipt />
