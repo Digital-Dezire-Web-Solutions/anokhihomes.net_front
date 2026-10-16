@@ -146,9 +146,13 @@ const CSS = `
 const buildStatementHtml = (p) => {
   const tdsPct = pct(p.tdsPercent);
   const adminPct = pct(p.adminChargePercent);
-  const paidEntries = (p.categoryPayments || []).filter(
-    (c) => c.status === "paid",
-  );
+  const categoryPayments = p.categoryPayments || [];
+
+  // A category counts as paid only when it is marked paid AND has real payment details.
+  // (Your screenshot's Patliputra row was "paid" with no mode/date, so it showed ₹0.00.)
+  const isPaid = (c) => c && c.status === "paid" && (c.paidAt || c.paymentMode);
+
+  const paidEntries = categoryPayments.filter(isPaid);
   const paidOn =
     p.paidAt ||
     paidEntries
@@ -174,26 +178,26 @@ const buildStatementHtml = (p) => {
     return `${esc(mode)} (${label}:${esc(c.transactionId)})`;
   };
 
-  const disbursement = paidEntries.length
-    ? `<table>
-        <colgroup><col style="width:32%"><col style="width:36%"><col style="width:17%"><col style="width:15%"></colgroup>
+  const disbursement = `<table>
+        <colgroup><col style="width:32%"><col style="width:36%"><col style="width:12%"><col style="width:20%"></colgroup>
         <thead>
-          <tr><th>Disbursed category</th><th>Mode / transaction ID</th><th>Paid on</th><th class="r">Net paid</th></tr>
+          <tr><th>Disbursed category</th><th>Mode / transaction ID</th><th>Paid on</th><th class="r">Net Amount</th></tr>
         </thead>
         <tbody>
-          ${paidEntries
-            .map(
-              (c) => `<tr>
-                <td>${esc(CATEGORY_LABEL[c.category] || c.category)}</td>
-                <td>${modeText(c)}</td>
-                <td>${esc(c.paidAt ? formatDate(c.paidAt) : "-")}</td>
-                <td class="r">${money(c.netAmount)}</td>
-              </tr>`,
-            )
+          ${Object.keys(CATEGORY_LABEL)
+            .map((cat) => {
+              const c = categoryPayments.find((x) => x.category === cat);
+              const paid = isPaid(c);
+              return `<tr>
+                <td>${esc(CATEGORY_LABEL[cat])}</td>
+                <td>${paid ? modeText(c) : "-"}</td>
+                <td>${paid ? esc(c.paidAt ? formatDate(c.paidAt) : "-") : "Unpaid"}</td>
+               <td class="r">${money(c?.netAmount)}</td>
+              </tr>`;
+            })
             .join("")}
         </tbody>
-      </table>`
-    : "";
+      </table>`;
 
   const words = amountInWordsIN(p.netAmount).replace(/ Only$/, "");
 
@@ -257,7 +261,7 @@ const buildStatementHtml = (p) => {
 
   <div class="sign">
     <div>Verified by Accounts Team</div>
-    <div>Director / Managing Authority</div>
+    <div>Director / Managing Authority (Anokhi Homes Pvt. Ltd.)</div>
   </div>
 
 </div>

@@ -41,6 +41,8 @@ const CATEGORY_DISPLAY_LABELS = {
   Patliputra: "Patliputra",
 };
 
+const MIN_PAYABLE = 1000;
+
 const Payout = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
   const { payout, userDetail } = useSelector((state) => state.app);
@@ -293,6 +295,10 @@ const Payout = ({ mood, setAlert }) => {
     // match the table's own sort order (highest netAmount first)
     return [...base].sort((a, b) => (b.netAmount || 0) - (a.netAmount || 0));
   };
+
+  const canPay = (item) =>
+    PAYABLE_STATUSES.includes(item.status) &&
+    (payableTotalsByUser[item.user?._id] || 0) >= MIN_PAYABLE;
 
   /* =====================================================
      FORMAT USER DATA FOR EXPORT
@@ -739,7 +745,7 @@ const Payout = ({ mood, setAlert }) => {
                       </span>
                       {mood === "admin" && (
                         <div className="modal-actions">
-                          {PAYABLE_STATUSES.includes(item.status) && (
+                          {canPay(item) && (
                             <button
                               className="table-btn"
                               onClick={() => openDirectPay(item)}
@@ -853,7 +859,8 @@ const Payout = ({ mood, setAlert }) => {
                     </>
                   ) : (
                     i.isPayable &&
-                    mood === "admin" && (
+                    mood === "admin" &&
+                    canPay(selectedExpense) && (
                       <div className="modal-actions">
                         <button
                           className="table-btn"
