@@ -22,9 +22,10 @@ import Pagination from "../../components/Pagination/Pagination";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import NiReceipt from "../../icons/ni-receipt";
 import { printPayoutStatement } from "../../components/Utils/printpayoutstatement";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 
-const STATUS_OPTIONS = ["hold", "released", "paid", "cancelled"];
-const PAYABLE_STATUSES = ["hold", "released"];
+const STATUS_OPTIONS = ["released", "paid", "cancelled"];
+const PAYABLE_STATUSES = ["released"];
 const INCOME_TYPE_LABELS = {
   direct_income: "Direct Income",
   difference_income: "Difference Income",
@@ -76,32 +77,59 @@ const Payout = ({ mood, setAlert }) => {
     dispatch(getPayout());
   }, []);
 
+  // Net amount already paid on a payout (counts paid categories, not just fully paid payouts)
+  const getPaidAmount = (i) => {
+    if (i.status === "paid") return i.netAmount || 0;
+    return (i.categoryPayments || [])
+      .filter((c) => c.status === "paid")
+      .reduce((s, c) => s + (c.netAmount || 0), 0);
+  };
+
+  // Net amount still to be paid on a payout
+  const getRemaining = (i) =>
+    PAYABLE_STATUSES.includes(i.status)
+      ? Math.max((i.netAmount || 0) - getPaidAmount(i), 0)
+      : 0;
+
   const summary = useMemo(() => {
     const data = payout || [];
-    const unpaidData = data.filter((i) => PAYABLE_STATUSES.includes(i.status));
-    const totalsByUser = {};
-    unpaidData.forEach((item) => {
+
+    const remainingByUser = {};
+    const paidByUser = {};
+    let paid = 0;
+    let unpaid = 0;
+    let released = 0;
+    let fullyPaid = 0;
+
+    data.forEach((item) => {
       const id = item.user?._id;
+      const paidAmt = getPaidAmount(item);
+      const remaining = getRemaining(item);
+
+      paid += paidAmt;
+      unpaid += remaining;
+      if (item.status === "released") released += remaining;
+      if (item.status === "paid") fullyPaid += 1;
       if (!id) return;
-      totalsByUser[id] = (totalsByUser[id] || 0) + (item.netAmount || 0);
+      if (paidAmt > 0) paidByUser[id] = (paidByUser[id] || 0) + paidAmt;
+      if (remaining > 0)
+        remainingByUser[id] = (remainingByUser[id] || 0) + remaining;
     });
-    const userTotals = Object.values(totalsByUser);
-    const payableCount = userTotals.filter((total) => total >= 1000).length;
-    const notPayableCount = userTotals.filter((total) => total < 1000).length;
+
+    const userTotals = Object.values(remainingByUser);
+
     return {
-      released: data
-        ?.filter((i) => i.status === "released")
-        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
-      paid: data
-        ?.filter((i) => i.status === "paid")
-        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
+      released,
+      paid,
+      unpaid,
+      fullyPaid,
       cancelled: data
-        ?.filter((i) => i.status === "cancelled")
-        ?.reduce((s, i) => s + (i.netAmount || 0), 0),
-      unpaid: unpaidData.reduce((s, i) => s + (i.netAmount || 0), 0),
+        .filter((i) => i.status === "cancelled")
+        .reduce((s, i) => s + (i.netAmount || 0), 0),
       payoutCount: data.length,
-      payableCount,
-      notPayableCount,
+      payableCount: userTotals.filter((t) => t >= MIN_PAYABLE).length,
+      notPayableCount: userTotals.filter((t) => t < MIN_PAYABLE).length,
+      paidCount: Object.keys(paidByUser).length,
     };
   }, [payout]);
 
@@ -133,7 +161,10 @@ const Payout = ({ mood, setAlert }) => {
       const matchFrom =
         !fromDate || new Date(item.cycleStart) >= new Date(fromDate);
       const matchTo = !toDate || new Date(item.cycleEnd) <= new Date(toDate);
-      const matchStatus = !statusFilter || item.status === statusFilter;
+      const matchStatus =
+        !statusFilter ||
+        item.status === statusFilter ||
+        (statusFilter === "paid" && getPaidAmount(item) > 0);
       const matchCycle =
         !cycleFilter || `${item.cycleStart}_${item.cycleEnd}` === cycleFilter;
       return matchSearch && matchFrom && matchTo && matchStatus && matchCycle;
@@ -583,7 +614,7 @@ const Payout = ({ mood, setAlert }) => {
 
             <DashboardCard
               title="Unpaid"
-              value={`₹${formatCurrency(summary.unpaid)}`}
+              value={`₹${formatCurrency(summary.released - summary.paid)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
@@ -592,13 +623,18 @@ const Payout = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="No. of Payable(Person)"
+              title="No. of Payable (Person)"
               value={summary.payableCount}
               icons={<NiPayments />}
             />
             <DashboardCard
-              title="No. of UnPayable(Person)"
+              title="No. of UnPayable (Person)"
               value={summary.notPayableCount}
+              icons={<NiPayments />}
+            />
+            <DashboardCard
+              title="No. of Paid (Person)"
+              value={summary.fullyPaid}
               icons={<NiPayments />}
             />
             <DashboardCard
@@ -638,7 +674,7 @@ const Payout = ({ mood, setAlert }) => {
                 onChange={(e) => setToDate(e.target.value)}
               />
             </div> */}
-            <div className="searchItem">
+            {/* <div className="searchItem">
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -669,7 +705,37 @@ const Payout = ({ mood, setAlert }) => {
                 ))}
                 <option value="">All Cycles</option>
               </select>
-            </div>
+            </div> */}
+            <CustomSelect
+              className="cs-filter"
+              value={statusFilter}
+              onChange={(v) => {
+                setStatusFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Status"
+              options={[
+                { value: "", label: "All Status" },
+                ...STATUS_OPTIONS.map((s) => ({
+                  value: s,
+                  label: s.charAt(0).toUpperCase() + s.slice(1),
+                })),
+              ]}
+            />
+
+            <CustomSelect
+              className="cs-filter"
+              value={cycleFilter}
+              onChange={(v) => {
+                setCycleFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Cycles"
+              options={[
+                { value: "", label: "All Cycles" },
+                ...cycles.map((c) => ({ value: c.value, label: c.label })),
+              ]}
+            />
             <button
               className="add-button"
               onClick={() => {
@@ -732,7 +798,9 @@ const Payout = ({ mood, setAlert }) => {
                               : "failed"
                         }`}
                       >
-                        {item.status}
+                        {item.status !== "paid" && getPaidAmount(item) > 0
+                          ? "Partially"
+                          : item.status}
                       </span>
                     </span>
 
@@ -1128,7 +1196,7 @@ const Payout = ({ mood, setAlert }) => {
 
               <h4>Payment</h4>
 
-              <div className="field">
+              {/* <div className="field">
                 <label>Category</label>
                 <select
                   value={payCategory || ""}
@@ -1148,9 +1216,27 @@ const Payout = ({ mood, setAlert }) => {
                       </option>
                     ))}
                 </select>
+              </div> */}
+              <div className="field">
+                <label>Category</label>
+                <CustomSelect
+                  value={payCategory || ""}
+                  onChange={setPayCategory}
+                  placeholder="Select Category"
+                  options={[
+                    { value: "", label: "Select Category" },
+                    ...(expenseDetail?.categoryBreakdown || [])
+                      .filter((c) => c.grossAmount > 0)
+                      .map((c) => ({
+                        value: c.category,
+                        label: `${CATEGORY_DISPLAY_LABELS[c.category] || c.category}${c.status === "paid" ? " (Paid)" : ""}`,
+                        disabled: c.status === "paid",
+                      })),
+                  ]}
+                />
               </div>
 
-              <div className="field">
+              {/* <div className="field">
                 <label>Payment Mode</label>
                 <select
                   value={formData.mode}
@@ -1164,6 +1250,21 @@ const Payout = ({ mood, setAlert }) => {
                   <option value="cheque">Cheque</option>
                   <option value="bank">Bank Transfer</option>
                 </select>
+              </div> */}
+              <div className="field">
+                <label>Payment Mode</label>
+                <CustomSelect
+                  value={formData.mode || ""}
+                  onChange={(v) => setFormData({ ...formData, mode: v })}
+                  placeholder="Select Mode"
+                  options={[
+                    { value: "", label: "Select Mode" },
+                    { value: "cash", label: "Cash" },
+                    { value: "upi", label: "UPI" },
+                    { value: "cheque", label: "Cheque" },
+                    { value: "bank", label: "Bank Transfer" },
+                  ]}
+                />
               </div>
 
               {(formData.mode === "upi" || formData.mode === "bank") && (
@@ -1234,7 +1335,7 @@ const Payout = ({ mood, setAlert }) => {
 
             <label>Payouts in selection: {getExportUsers().length}</label>
 
-            <select
+            {/* <select
               value={exportCycle}
               onChange={(e) => setExportCycle(e.target.value)}
             >
@@ -1255,7 +1356,31 @@ const Payout = ({ mood, setAlert }) => {
                   {label}
                 </option>
               ))}
-            </select>
+            </select> */}
+            <CustomSelect
+              value={exportCycle}
+              onChange={setExportCycle}
+              placeholder="All Cycles"
+              options={[
+                { value: "", label: "All Cycles" },
+                ...cycles.map((c) => ({ value: c.value, label: c.label })),
+              ]}
+            />
+
+            <CustomSelect
+              value={exportCategory}
+              onChange={setExportCategory}
+              placeholder="All Categories"
+              options={[
+                { value: "", label: "All Categories" },
+                ...Object.entries(CATEGORY_DISPLAY_LABELS).map(
+                  ([value, label]) => ({
+                    value,
+                    label,
+                  }),
+                ),
+              ]}
+            />
 
             <div className="export-fields">
               <p>Export includes:</p>

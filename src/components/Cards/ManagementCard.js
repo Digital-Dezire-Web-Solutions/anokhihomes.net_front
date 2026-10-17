@@ -679,10 +679,10 @@ const ManagementCard = ({
                         setFormData({ ...formData, name: selected.name });
                       }}
                       displayKey="name"
-                      searchKeys={["name", "phone"]}
+                      searchKeys={["name", "referralId"]}
                       renderOption={(c) => (
                         <div>
-                          <b>{c.name}</b> ({c.phone})
+                          <b>{c.name}</b> ({c.referralId})
                         </div>
                       )}
                     />
@@ -699,7 +699,7 @@ const ManagementCard = ({
                       <div>
                         <p>{selectedAgent.name}</p>
                         <p className="associate-location">
-                          {selectedAgent.phone}
+                          {selectedAgent.referralId}
                         </p>
                       </div>
                     </div>
@@ -750,10 +750,10 @@ const ManagementCard = ({
                         setFormData({ ...formData, name: selected.name });
                       }}
                       displayKey="name"
-                      searchKeys={["name", "phone"]}
+                      searchKeys={["name", "referralId"]}
                       renderOption={(c) => (
                         <div>
-                          <b>{c.name}</b> ({c.phone})
+                          <b>{c.name}</b> ({c.referralId})
                         </div>
                       )}
                     />
@@ -770,7 +770,7 @@ const ManagementCard = ({
                       <div>
                         <p>{selectedAgent.name}</p>
                         <p className="associate-location">
-                          {selectedAgent.phone}
+                          {selectedAgent.referralId}
                         </p>
                       </div>
                     </div>
