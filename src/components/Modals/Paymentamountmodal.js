@@ -238,7 +238,7 @@ const PaymentAmountModal = ({
         )}
         {(mode === "cash" || mode === "cheque") && (
           <div className="field">
-            <label htmlFor="pay-rem">Remark *</label>
+            <label htmlFor="pay-rem">Remark</label>
             <input
               id="pay-rem"
               placeholder="Enter Remark"

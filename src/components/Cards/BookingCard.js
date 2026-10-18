@@ -370,7 +370,7 @@ const BookingCard = ({
           paymentType: data.paymentType,
           transactionId: data.transactionId,
           attachment,
-          remark,
+          remark: data.remark,
         },
         {
           headers: { "auth-token": token, "Content-Type": "application/json" },
