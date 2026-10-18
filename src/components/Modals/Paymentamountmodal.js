@@ -64,6 +64,7 @@ const PaymentAmountModal = ({
   const [mode, setMode] = useState("");
   const [type, setType] = useState(stage);
   const [txn, setTxn] = useState("");
+  const [remark, setRemark] = useState("");
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const inputRef = useRef(null);
@@ -72,11 +73,25 @@ const PaymentAmountModal = ({
   // booking's schedule; other types (only selectable at booking stage) use
   // the same percentages as before.
   const suggest = (t) => {
-    if (t === stage && schedule[t]) return round2(schedule[t]);
-    if (t === "booking") return round2(total * 0.1);
-    if (t === "agreement") return round2(total * 0.20);
-    return round2(total);
-  };
+  const paid = round2(total - remaining);
+
+  const baseBooking = round2(schedule.booking ?? total * 0.1);
+  const baseAgreement = round2(schedule.agreement ?? total * 0.2);
+
+  if (t === "booking") return baseBooking;
+
+  if (t === "agreement") {
+    // booking not paid yet (user picked Agreement at booking stage): plain amount
+    if (stage === "booking") return baseAgreement;
+
+    const due = round2(baseBooking + baseAgreement - paid);
+    const capped = remaining > 0 ? Math.min(due, remaining) : due;
+    return Math.max(0, round2(capped));
+  }
+
+  // registry / full payment
+  return round2(remaining > 0 ? remaining : total);
+};
 
   useEffect(() => {
     if (!open) return;
@@ -84,6 +99,7 @@ const PaymentAmountModal = ({
     setAmount(String(suggest(stage) || ""));
     setMode("");
     setTxn("");
+    setRemark("");
     setFile(null);
     setError("");
     const t = setTimeout(() => inputRef.current?.focus(), 80);
@@ -112,6 +128,8 @@ const PaymentAmountModal = ({
     if (!mode) return setError("Select a payment mode");
     if ((mode === "upi" || mode === "bank") && !txn.trim())
       return setError("Transaction ID is required");
+    if ((mode === "cash" || mode === "cheque") && !remark.trim())
+      return setError("Remark is required");
 
     setError("");
     onSubmit({
@@ -120,6 +138,7 @@ const PaymentAmountModal = ({
       paymentType: type,
       transactionId: txn.trim(),
       attachment: file,
+      remark: remark.trim(),
     });
   };
 
@@ -214,6 +233,17 @@ const PaymentAmountModal = ({
               placeholder="Enter Transaction ID"
               value={txn}
               onChange={(e) => setTxn(e.target.value)}
+            />
+          </div>
+        )}
+        {(mode === "cash" || mode === "cheque") && (
+          <div className="field">
+            <label htmlFor="pay-rem">Remark *</label>
+            <input
+              id="pay-rem"
+              placeholder="Enter Remark"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
             />
           </div>
         )}

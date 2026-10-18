@@ -270,6 +270,7 @@ const Payout = ({ mood, setAlert }) => {
         paymentMode: formData.mode,
         transactionId: formData.transactionId || "",
         attachment: attachment || "",
+        remark: formData.remark || "",
       };
 
       await axios.put(
@@ -1277,6 +1278,21 @@ const Payout = ({ mood, setAlert }) => {
                       setFormData({
                         ...formData,
                         transactionId: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              )}
+              {(formData.mode === "cash" || formData.mode === "cheque") && (
+                <div className="field">
+                  <label>Remark *</label>
+                  <input
+                    placeholder="Enter Remark"
+                    value={formData.remark || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        remark: e.target.value,
                       })
                     }
                   />

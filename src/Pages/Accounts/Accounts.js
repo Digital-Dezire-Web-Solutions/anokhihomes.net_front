@@ -38,6 +38,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 
 const Accounts = ({ mood, setAlert }) => {
     const dispatch = useDispatch();
@@ -390,7 +391,7 @@ const Accounts = ({ mood, setAlert }) => {
                                 }}
                             />
                         </div>
-                        <div className="searchItem">
+                        {/* <div className="searchItem">
                             <select
                                 value={projectFilter}
                                 onChange={(e) => {
@@ -406,7 +407,23 @@ const Accounts = ({ mood, setAlert }) => {
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </div> */}
+                        <CustomSelect
+                            className="cs-filter"
+                            value={projectFilter}
+                            onChange={(v) => {
+                                setProjectFilter(v);
+                                setPage(1);
+                            }}
+                            placeholder="All Projects"
+                            options={[
+                                { value: "", label: "All Projects" },
+                                ...allColonies?.map((project) => ({
+                                    value: project._id,
+                                    label: project.name,
+                                })),
+                            ]}
+                        />
                         <div className="searchItem">
                             <label>From</label>
                             <input

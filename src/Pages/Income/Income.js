@@ -19,6 +19,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 
 const EXPORT_COLUMNS = [
   "S.No",
@@ -41,6 +42,26 @@ const EXPORT_COLUMNS2 = [
   "Amount",
   "Project",
   "Company",
+];
+
+const STATUS_OPTIONS = ["credited", "pending", "failed"];
+const DESIGNATION_OPTIONS = [
+  "Sales Executive",
+  "Senior Sales Executive",
+  "Team Leader",
+  "Senior Team Leader",
+  "Assistant Manager",
+  "Sales Manager",
+  "Senior Sales Manager",
+  "Assistant General Manager (AGM)",
+  "General Manager (GM)",
+  "Assistant Vice President (AVP)",
+  "Vice President (VP)",
+  "Senior Vice President (SVP)",
+  "Associate Director",
+  "Deputy Director",
+  "Director",
+  "Executive Director",
 ];
 
 const Income = ({ mood, setAlert }) => {
@@ -625,7 +646,39 @@ const Income = ({ mood, setAlert }) => {
             </div>
 
             {/* DESIGNATION FILTER */}
-            <div className="searchItem">
+            <CustomSelect
+              className="cs-filter"
+              value={statusFilter}
+              onChange={(v) => {
+                setStatusFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Status"
+              options={[
+                { value: "", label: "All Status" },
+                ...STATUS_OPTIONS.map((s) => ({
+                  value: s,
+                  label: s.charAt(0).toUpperCase() + s.slice(1),
+                })),
+              ]}
+            />
+            <CustomSelect
+              className="cs-filter"
+              value={designationFilter}
+              onChange={(v) => {
+                setDesignationFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Designations"
+              options={[
+                { value: "", label: "All Designations" },
+                ...DESIGNATION_OPTIONS.map((s) => ({
+                  value: s,
+                  label: s.charAt(0).toUpperCase() + s.slice(1),
+                })),
+              ]}
+            />
+            {/* <div className="searchItem">
               <select
                 value={designationFilter}
                 onChange={(e) => {
@@ -679,10 +732,10 @@ const Income = ({ mood, setAlert }) => {
 
                 <option value="Executive Director">Executive Director</option>
               </select>
-            </div>
+            </div> */}
 
             {/* STATUS FILTER */}
-            <div className="searchItem">
+            {/* <div className="searchItem">
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -698,7 +751,7 @@ const Income = ({ mood, setAlert }) => {
 
                 <option value="failed">Failed</option>
               </select>
-            </div>
+            </div> */}
             <div className="searchItem">
               <label>From</label>
               <input

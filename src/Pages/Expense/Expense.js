@@ -34,6 +34,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 
 const Expense = ({ mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -534,7 +535,7 @@ const Expense = ({ mood, setAlert }) => {
               />
             </div>
 
-            <div className="searchItem">
+            {/* <div className="searchItem">
               <select
                 value={typeFilter}
                 onChange={(e) => {
@@ -550,7 +551,23 @@ const Expense = ({ mood, setAlert }) => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
+             <CustomSelect
+              className="cs-filter"
+              value={typeFilter}
+              onChange={(v) => {
+                setTypeFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Types"
+              options={[
+                { value: "", label: "All Types" },
+                ...EXPENSE_TYPES.map((type) => ({
+                  value: type,
+                  label: type,
+                })),
+              ]}
+            />
             <div className="searchItem">
               <label>From</label>
               <input
@@ -585,6 +602,22 @@ const Expense = ({ mood, setAlert }) => {
                 ))}
               </select>
             </div>
+            <CustomSelect
+              className="cs-filter"
+              value={projectFilter}
+              onChange={(v) => {
+                setProjectFilter(v);
+                setPage(1);
+              }}
+              placeholder="All Projects"
+              options={[
+                { value: "", label: "All Projects" },
+                ...allColonies?.map((project) => ({
+                  value: project._id,
+                  label: project.name,
+                })),
+              ]}
+            />
             <button className="add-button" onClick={() => setExportOpen(true)}>
               <Download size={18} />
               Export

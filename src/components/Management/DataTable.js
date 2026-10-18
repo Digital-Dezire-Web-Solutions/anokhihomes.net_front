@@ -22,8 +22,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import CustomSelect from "../CustomSelect/CustomSelect";
 
 const ITEMS_PER_PAGE = 15;
+const STATUS_OPTIONS = ["new", "assigned", "unassigned", "converted", "lost"];
 
 const DataTable = ({ data, mood, setAlert }) => {
   const dispatch = useDispatch();
@@ -494,7 +496,7 @@ const DataTable = ({ data, mood, setAlert }) => {
             />
           </div>
         )}
-        <div className="searchItem">
+        {/* <div className="searchItem">
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -509,7 +511,23 @@ const DataTable = ({ data, mood, setAlert }) => {
             <option value="converted">Converted</option>
             <option value="lost">Lost</option>
           </select>
-        </div>
+        </div> */}
+        <CustomSelect
+          className="cs-filter"
+          value={statusFilter}
+          onChange={(v) => {
+            setStatusFilter(v);
+            setPage(1);
+          }}
+          placeholder="All Status"
+          options={[
+            { value: "", label: "All Status" },
+            ...STATUS_OPTIONS.map((s) => ({
+              value: s,
+              label: s.charAt(0).toUpperCase() + s.slice(1),
+            })),
+          ]}
+        />
 
         <div className="searchItem">
           <label>From</label>

@@ -29,8 +29,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import formatDate from "../../components/DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 
 const ITEMS_PER_PAGE = 15;
+const STATUS_OPTIONS = ["all", "confirmed", "pending", "approval", "rejected"];
 
 const Booking = ({ mood, setAlert, landingPage }) => {
   const dispatch = useDispatch();
@@ -467,7 +469,7 @@ const Booking = ({ mood, setAlert, landingPage }) => {
             />
           </div>
 
-          {["all", "confirmed", "pending", "approval", "rejected"].map((f) => (
+          {/* {["all", "confirmed", "pending", "approval", "rejected"].map((f) => (
             <button
               key={f}
               className={filter === f ? "active" : ""}
@@ -475,7 +477,23 @@ const Booking = ({ mood, setAlert, landingPage }) => {
             >
               {f.toUpperCase()}
             </button>
-          ))}
+          ))} */}
+          <CustomSelect
+            className="cs-filter"
+            value={filter}
+            onChange={(v) => {
+              setFilter(v);
+              setCurrentPage(1);
+            }}
+            placeholder="All Status"
+            options={[
+              { value: "", label: "All Status" },
+              ...STATUS_OPTIONS.map((s) => ({
+                value: s,
+                label: s.charAt(0).toUpperCase() + s.slice(1),
+              })),
+            ]}
+          />
           <button className="add-button" onClick={() => setExportOpen(true)}>
             <Download size={18} />
             Export
