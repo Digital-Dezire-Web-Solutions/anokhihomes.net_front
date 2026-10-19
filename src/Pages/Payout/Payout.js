@@ -96,9 +96,9 @@ const Payout = ({ mood, setAlert }) => {
 
     const remainingByUser = {};
     const paidByUser = {};
+    let released = 0; // everything released for payment (released + paid)
     let paid = 0;
     let unpaid = 0;
-    let released = 0;
     let fullyPaid = 0;
 
     data.forEach((item) => {
@@ -106,10 +106,11 @@ const Payout = ({ mood, setAlert }) => {
       const paidAmt = getPaidAmount(item);
       const remaining = getRemaining(item);
 
+      if (item.status !== "cancelled") released += item.netAmount || 0;
       paid += paidAmt;
       unpaid += remaining;
-      if (item.status === "released") released += remaining;
       if (item.status === "paid") fullyPaid += 1;
+
       if (!id) return;
       if (paidAmt > 0) paidByUser[id] = (paidByUser[id] || 0) + paidAmt;
       if (remaining > 0)
@@ -612,10 +613,9 @@ const Payout = ({ mood, setAlert }) => {
               value={`₹${formatCurrency(summary.paid)}`}
               icons={<NiPayments />}
             />
-
             <DashboardCard
               title="Unpaid"
-              value={`₹${formatCurrency(summary.released - summary.paid)}`}
+              value={`₹${formatCurrency(summary.unpaid)}`}
               icons={<NiPayments />}
             />
             <DashboardCard
