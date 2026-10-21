@@ -46,7 +46,7 @@ const SiteVisitCard = ({
     dispatch(getPaymentTerms());
     dispatch(getPlotsetting());
   }, []);
-
+  const PLC_OPTIONS = [5, 6, 7, 8, 9, 10];
   const [activeRow, setActiveRow] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
@@ -67,6 +67,8 @@ const SiteVisitCard = ({
   const [saving, setSaving] = useState(false);
   const [selectedColony, setSelectedColony] = useState(null);
   const [type, setType] = useState("FREE");
+  const isAdminOrStaff = mood !== "agent" && mood !== "user";
+  const showPlc = isAdminOrStaff && !!selectedPlot?.plc;
 
   useEffect(() => {
     if (selectedColony?._id) {
@@ -241,7 +243,6 @@ const SiteVisitCard = ({
   };
 
   const handleAddBooking = async () => {
-    setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -265,7 +266,16 @@ const SiteVisitCard = ({
         setTimeout(() => setAlert(null), 3000);
         return;
       }
+      if (showPlc && !formData.plcPercent) {
+        setAlert({
+          message: "Please select PLC percentage",
+          status: "Error",
+        });
+        setTimeout(() => setAlert(null), 3000);
+        return;
+      }
 
+      setSaving(true);
       console.log(formData, "formData");
       const res = await axios.post(
         `${Host}/api/booking/add`,
@@ -277,7 +287,7 @@ const SiteVisitCard = ({
           plot: selectedPlot._id, // 🔥 IMPORTANT
 
           requestAmount: formData.requestAmount,
-
+          plcPercent: showPlc ? Number(formData.plcPercent) : undefined,
           bookingDays: formData.bookingDays,
           agreementDays: formData.agreementDays,
           fullPaymentDays: formData.fullPaymentDays,
@@ -793,6 +803,7 @@ const SiteVisitCard = ({
                       ...prev,
                       colony: colony?._id || "",
                       plot: "",
+                      plcPercent: "",
                     }));
                   }}
                 >
@@ -808,7 +819,7 @@ const SiteVisitCard = ({
 
               <div className="field">
                 <SearchSelect
-                  label="Plots"
+                  label={`Plots ${selectedPlot?.plc ? `(PLC will be applied after approval)` : ""}`}
                   placeholder={
                     selectedColony ? "Search Plot..." : "Select Colony First"
                   }
@@ -825,6 +836,7 @@ const SiteVisitCard = ({
                       pricePerSqft: selected.price,
                       plotArea: selected.area,
                       priceRange: selected.priceRange,
+                      plcPercent: "",
                     });
                   }}
                   displayKey="plotNumber"
@@ -898,7 +910,41 @@ const SiteVisitCard = ({
                     />
                   </div>
                 )}
+              {showPlc && (
+                <div className="field">
+                  <label>
+                    PLC %{" "}
+                    <small style={{ fontSize: "12px", color: "green" }}>
+                      {formData.plcPercent && formData.requestAmount
+                        ? `+₹${formatCurrency(
+                            (Number(formData.requestAmount) *
+                              Number(formData.plotArea) *
+                              Number(formData.plcPercent)) /
+                              100,
+                          )}`
+                        : ""}
+                    </small>
+                    <span style={{ color: "red" }}>*</span>
+                  </label>
 
+                  <select
+                    value={formData.plcPercent || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        plcPercent: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value="">Select PLC %</option>
+                    {PLC_OPTIONS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}%
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="field">
                 <label>Booking Payment Days</label>
 

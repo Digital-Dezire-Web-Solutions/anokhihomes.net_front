@@ -24,7 +24,7 @@
 }
 
 .cs-trigger.add-button {
-justify-content: space-between !important;
+  justify-content: space-between !important;
 }
 .cs-trigger {
   width: 100%;
@@ -78,4 +78,10 @@ justify-content: space-between !important;
   background: color-mix(in oklab, var(--mood-color) 10%, transparent);
   color: var(--mood-color);
   font-weight: 600;
+}
+
+button:disabled {
+  background: #f1f3f6;
+  color: #9aa1ad;
+  border: 1px solid #d5d9e0;
 }

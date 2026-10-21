@@ -104,7 +104,13 @@ const Booking = ({ mood, setAlert, landingPage }) => {
   const [currentPage, setCurrentPage] = useState(1);
   // console.log(filter, "filter");
 
-  const PRIORITY_STATUS = "pending"; // status that pins to the top
+  // Lower number = shown earlier. Anything not listed (rejected, etc.) goes last.
+  const STATUS_ORDER = {
+    approval: 0,
+    pending: 1,
+    confirmed: 2,
+    completed: 2,
+  };
 
   const filteredData = useMemo(() => {
     const base = (booking || []).filter((d) => {
@@ -117,9 +123,11 @@ const Booking = ({ mood, setAlert, landingPage }) => {
     });
 
     return base.sort((a, b) => {
-      const aTop = a?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
-      const bTop = b?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
-      if (aTop !== bTop) return aTop - bTop;
+      const aRank = STATUS_ORDER[a?.status?.toLowerCase()] ?? 99;
+      const bRank = STATUS_ORDER[b?.status?.toLowerCase()] ?? 99;
+      if (aRank !== bRank) return aRank - bRank;
+
+      // same status: newest created date first
       return new Date(b?.createdAt) - new Date(a?.createdAt);
     });
   }, [booking, filter, search]);

@@ -17,6 +17,8 @@ import { formatCurrency } from "../Utils/FormatCurrency";
 import NiStar from "../../icons/ni-star";
 import { uploadImage } from "../../Pages/LandingSetting/LandingApi";
 import PaymentAmountModal from "../Modals/Paymentamountmodal";
+import CustomSelect from "../CustomSelect/CustomSelect";
+const PLC_OPTIONS = [5, 6, 7, 8, 9, 10];
 
 const BookingCard = ({
   item,
@@ -44,6 +46,8 @@ const BookingCard = ({
   const [timeline, setTimeline] = useState([]);
   const [saving, setSaving] = useState();
   const [payOpen, setPayOpen] = useState(false);
+  const [plcOpen, setPlcOpen] = useState(false);
+  const [plcPercent, setPlcPercent] = useState("");
 
   useEffect(() => {
     if (!viewOpen) {
@@ -52,10 +56,21 @@ const BookingCard = ({
     }
   }, [viewOpen]);
 
-  const ratingdone = ratingData.find((i) => i.booking._id === item._id);
   const total = Number(item.finalAmount || 0);
   const paid = Number(item.amountPaid || 0);
   const remaining = total - paid;
+
+  // PLC preview (base = amount before any PLC already applied)
+  const plcBase = total - Number(item.plcAmount || 0);
+  const plcPreviewAmount = plcPercent
+    ? Math.round(((plcBase * Number(plcPercent)) / 100) * 100) / 100
+    : 0;
+  const plcPreviewTotal = Math.round((plcBase + plcPreviewAmount) * 100) / 100;
+  const isPlcPlot = !!item?.plot?.plc;
+  const ratingdone = ratingData.find((i) => i.booking._id === item._id);
+  // const total = Number(item.finalAmount || 0);
+  // const paid = Number(item.amountPaid || 0);
+  // const remaining = total - paid;
 
   const bookingAmount = item?.paymentSchedule?.booking?.amount;
   const agreementAmount = item?.paymentSchedule?.agreement?.amount;
@@ -201,44 +216,88 @@ const BookingCard = ({
         : 0;
 
   // console.log(bookingProgress, "bookingProgress")
-  const handleBookingAction = async (bookingId, action, note = "") => {
-    // console.log("wroking")
+  // const handleBookingAction = async (bookingId, action, note = "") => {
+  //   // console.log("wroking")
+  //   setSaving(true);
+  //   try {
+  //     const token = localStorage.getItem("token");
+
+  //     const res = await axios.put(
+  //       `${Host}/api/booking/action/${bookingId}`,
+  //       { action, note },
+  //       {
+  //         headers: {
+  //           "auth-token": token,
+  //           "Content-Type": "application/json",
+  //         },
+  //       },
+  //     );
+
+  //     setAlert({
+  //       message: action === "approve" ? "Booking approved" : "Booking rejected",
+  //       status: "Success",
+  //     });
+
+  //     // 🔥 refresh list (IMPORTANT)
+  //     dispatch(getBooking());
+
+  //     setDisapproveOpen(false);
+  //     setFormData({});
+
+  //     setTimeout(() => setAlert(null), 3000);
+  //     setSaving(false);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setAlert({
+  //       message: err.response?.data?.message || "Action failed",
+  //       status: "Error",
+  //     });
+  //     setTimeout(() => setAlert(null), 3000);
+  //     setSaving(false);
+  //   }
+  // };
+  const handleBookingAction = async (
+    bookingId,
+    action,
+    note = "",
+    plcPercentValue = null,
+  ) => {
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.put(
-        `${Host}/api/booking/action/${bookingId}`,
-        { action, note },
-        {
-          headers: {
-            "auth-token": token,
-            "Content-Type": "application/json",
-          },
+      const payload = { action, note };
+      if (action === "approve" && plcPercentValue) {
+        payload.plcPercent = Number(plcPercentValue);
+      }
+
+      await axios.put(`${Host}/api/booking/action/${bookingId}`, payload, {
+        headers: {
+          "auth-token": token,
+          "Content-Type": "application/json",
         },
-      );
+      });
 
       setAlert({
         message: action === "approve" ? "Booking approved" : "Booking rejected",
         status: "Success",
       });
 
-      // 🔥 refresh list (IMPORTANT)
       dispatch(getBooking());
 
       setDisapproveOpen(false);
+      setPlcOpen(false);
+      setPlcPercent("");
       setFormData({});
-
-      setTimeout(() => setAlert(null), 3000);
-      setSaving(false);
     } catch (err) {
       console.error(err);
       setAlert({
         message: err.response?.data?.message || "Action failed",
         status: "Error",
       });
-      setTimeout(() => setAlert(null), 3000);
+    } finally {
       setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -535,6 +594,7 @@ const BookingCard = ({
             <p>Plot</p>
             {mood !== "agent" && <p>Associate</p>}
             <p>Plot Area</p>
+            {item.plcPercent && <p>PLC</p>}
             {!isApproval ? (
               <>
                 <p> Final Rate</p>
@@ -569,6 +629,7 @@ const BookingCard = ({
             {mood !== "agent" && <p>{item?.agent?.name}</p>}
             {/* <p>{item?.colony?.category}</p> */}
             <p>{formatCurrency(item?.plotArea)} sqft</p>
+            {item.plcPercent && <p>{item?.plcPercent}%</p>}
             {!isApproval ? (
               <>
                 <p>₹{formatCurrency(item?.requestAmount)}/sqft</p>
@@ -655,8 +716,21 @@ const BookingCard = ({
               <button
                 // disabled={saving}
                 className="site-visit-approval status active"
+                // onClick={() => {
+                //   handleBookingAction(item._id, "approve");
+                // }}
                 onClick={() => {
-                  handleBookingAction(item._id, "approve");
+                  if (isPlcPlot) {
+                    // prefill if PLC was already set at booking time
+                    setPlcPercent(
+                      Number(item.plcPercent) > 0
+                        ? String(item.plcPercent)
+                        : "",
+                    );
+                    setPlcOpen(true);
+                  } else {
+                    handleBookingAction(item._id, "approve");
+                  }
                 }}
               >
                 <NiTick /> Approve
@@ -783,6 +857,8 @@ const BookingCard = ({
           <div className="user-card-bottom-left">
             <p>Date</p>
             <p>Plot</p>
+            {item.plcPercent && <p>PLC Percent</p>}
+            {item.plcAmount && <p>PLC Amount</p>}
             <p>Total</p>
             <p>Paid</p>
             <p>Remaining</p>
@@ -813,6 +889,8 @@ const BookingCard = ({
               {item?.plot?.plotNumber}, {item?.colony?.name},{" "}
               {item?.location?.name} {""}
             </p>
+            {item.plcPercent && <p>{item.plcPercent}%</p>}
+            {item.plcAmount && <p>₹{formatCurrency(item?.plcAmount)}</p>}
             <p>₹{formatCurrency(item?.finalAmount)}</p>
             <p>₹{formatCurrency(paid)}</p>
             <p>₹{formatCurrency(remaining)}</p>
@@ -946,7 +1024,7 @@ const BookingCard = ({
                     let autoAmount = "";
 
                     if (type === "booking") autoAmount = total * 0.1;
-                    if (type === "agreement") autoAmount = total * 0.20;
+                    if (type === "agreement") autoAmount = total * 0.2;
                     if (type === "full") autoAmount = total;
 
                     setFormData({
@@ -1012,9 +1090,10 @@ const BookingCard = ({
               )}
               <p>Notes : 35% cancellation charges</p>
               <div className="modal-actions">
-                <button disabled={saving} 
-                // onClick={handleAddPayment}
-                onClick={() => setPayOpen(true)}
+                <button
+                  disabled={saving}
+                  // onClick={handleAddPayment}
+                  onClick={() => setPayOpen(true)}
                 >
                   {saving ? "Adding..." : "Add Payment"}
                 </button>
@@ -1085,8 +1164,12 @@ const BookingCard = ({
                 </div>
                 {paymentSummary?.payments?.map((i) => (
                   <div className="installment">
-                    <span style={{textTransform:"capitalize"}}>{i.paymentType}</span>
-                    <span style={{textTransform:"uppercase"}}>{i.paymentMode}</span>
+                    <span style={{ textTransform: "capitalize" }}>
+                      {i.paymentType}
+                    </span>
+                    <span style={{ textTransform: "uppercase" }}>
+                      {i.paymentMode}
+                    </span>
                     <span>₹{formatCurrency(i.amount)}</span>
                     <span>{formatDate(i.createdAt)}</span>
                   </div>
@@ -1109,62 +1192,58 @@ const BookingCard = ({
 
                 {/* AGREEMENT */}
 
-                {bookingPaid && (
-                  <div
-                    className={`installment ${agreementPaid ? "paid" : "pending"}`}
-                  >
-                    <span>Agreement Amount (20%)</span>
-                    <span>
-                      ₹{formatCurrency(agreementAmount)} (
-                      {agreementPaid ? "paid" : "pending"})
-                    </span>
-                  </div>
-                )}
-                {bookingPaid && (
-                  <div
-                    className={`installment ${agreementPaid ? "paid" : "pending"}`}
-                  >
-                    <span></span>
-                    <span>
-                      {agreementPaid
-                        ? ""
-                        : `${getRemainingDays(
-                            item.paymentSchedule?.booking?.date,
-                            item.paymentSchedule?.agreement?.dueDays || 30,
-                          )} days remaining`}
-                    </span>
-                  </div>
-                )}
+                {/* {bookingPaid && ( */}
+                <div
+                  className={`installment ${agreementPaid ? "paid" : "pending"}`}
+                >
+                  <span>Agreement Amount (20%)</span>
+                  <span>
+                    ₹{formatCurrency(agreementAmount)} (
+                    {agreementPaid ? "paid" : "pending"})
+                  </span>
+                </div>
+                {/* )}
+                {bookingPaid && ( */}
+                <div
+                  className={`installment ${agreementPaid ? "paid" : "pending"}`}
+                >
+                  <span></span>
+                  <span>
+                    {agreementPaid
+                      ? ""
+                      : `${getRemainingDays(
+                          item.paymentSchedule?.booking?.date,
+                          item.paymentSchedule?.agreement?.dueDays || 30,
+                        )} days remaining`}
+                  </span>
+                </div>
+                {/* )} */}
 
                 {/* FULL */}
 
-                {bookingPaid && (
-                  <div
-                    className={`installment ${fullPaid ? "paid" : "pending"}`}
-                  >
-                    <span>Full Payment</span>
-                    <span>
-                      ₹{fullAmount.toLocaleString()}(
-                      {fullPaid ? "paid" : "pending"})
-                    </span>
-                  </div>
-                )}
-                {bookingPaid && (
-                  <div
-                    className={`installment ${fullPaid ? "paid" : "pending"}`}
-                  >
-                    <span></span>
-                    <span>
-                      {fullPaid
-                        ? ""
-                        : `${getRemainingDays(
-                            item.paymentSchedule?.agreement?.date ||
-                              item.paymentSchedule?.booking?.date,
-                            item.paymentSchedule?.full?.dueDays || 90,
-                          )} days remaining`}
-                    </span>
-                  </div>
-                )}
+                {/* {bookingPaid && ( */}
+                <div className={`installment ${fullPaid ? "paid" : "pending"}`}>
+                  <span>Full Payment</span>
+                  <span>
+                    ₹{fullAmount.toLocaleString()}(
+                    {fullPaid ? "paid" : "pending"})
+                  </span>
+                </div>
+                {/* )}
+                {bookingPaid && ( */}
+                <div className={`installment ${fullPaid ? "paid" : "pending"}`}>
+                  <span></span>
+                  <span>
+                    {fullPaid
+                      ? ""
+                      : `${getRemainingDays(
+                          item.paymentSchedule?.agreement?.date ||
+                            item.paymentSchedule?.booking?.date,
+                          item.paymentSchedule?.full?.dueDays || 90,
+                        )} days remaining`}
+                  </span>
+                </div>
+                {/* )} */}
               </div>
 
               {/* NOTE */}
@@ -1248,6 +1327,72 @@ const BookingCard = ({
           )}
         </div>
       </ViewModal>
+      <DeleteModal open={plcOpen} onClose={() => setPlcOpen(false)}>
+        <h4>Approve Booking - PLC</h4>
+
+        <div className="field">
+          <label>PLC Percentage *</label>
+          {/* <select
+            value={plcPercent}
+            onChange={(e) => setPlcPercent(e.target.value)}
+          >
+            <option value="">Select PLC %</option>
+            {PLC_OPTIONS.map((p) => (
+              <option key={p} value={p}>
+                {p}%
+              </option>
+            ))}
+          </select> */}
+          <CustomSelect
+            className="cs-filter"
+            value={plcPercent}
+            onChange={(v) => {
+              setPlcPercent(v);
+            }}
+            placeholder="All Status"
+            options={[
+              { value: "", label: "Select PLC %" },
+              ...PLC_OPTIONS.map((s) => ({
+                value: s,
+                label: s,
+              })),
+            ]}
+          />
+        </div>
+
+        <div className="installment-box">
+          <div className="installment">
+            <span>Base Amount</span>
+            <span>₹{formatCurrency(plcBase)}</span>
+          </div>
+          <div className="installment">
+            <span>PLC {plcPercent ? `(${plcPercent}%)` : ""}</span>
+            <span>₹{formatCurrency(plcPreviewAmount)}</span>
+          </div>
+          <div className="installment">
+            <span>
+              <strong>New Total</strong>
+            </span>
+            <span>
+              <strong>₹{formatCurrency(plcPreviewTotal)}</strong>
+            </span>
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            disabled={saving || !plcPercent}
+            onClick={() =>
+              handleBookingAction(item._id, "approve", "", plcPercent)
+            }
+          >
+            {saving ? "Saving..." : "Approve & Save"}
+          </button>
+          <button className="btn-outline" onClick={() => setPlcOpen(false)}>
+            Cancel
+          </button>
+        </div>
+      </DeleteModal>
       <PaymentAmountModal
         open={payOpen}
         onClose={() => setPayOpen(false)}

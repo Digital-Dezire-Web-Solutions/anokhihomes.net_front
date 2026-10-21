@@ -1,12 +1,12 @@
 import formatDate from "../DateFormate/DateFormate";
 import { esc, amountInWordsIN, printHtml } from "./printdocument";
-// Left logo: Anokhi Homes (change the file name to yours)
+// Left logo: Anokhi Homes
 import logoLeft from "../../Assets/Logo/ah-logo.png";
 // Right logo: Patliputra Anokhi Homes
 import logoRight from "../../Assets/Logo/pah-logo.png";
+import receptFooter from "../../Assets/Logo/Payout-reciept-footer.jpg";
+import receptCorner from "../../Assets/Logo/Payout-reciept-head-LeftandRight.png";
 
-// One row per income field on the Payout document. Only rows with an
-// amount > 0 are printed. The "rule" text is yours to reword.
 const INCOME_ROWS = [
   {
     field: "directIncome",
@@ -66,7 +66,6 @@ const MODE_LABEL = {
   bank: "Bank Transfer",
 };
 
-// ₹1,23,456.00 (always 2 decimals, Indian grouping)
 const money = (n) =>
   `₹${Number(n || 0).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
@@ -75,8 +74,6 @@ const money = (n) =>
 const pct = (n) => Number(Number(n || 0).toFixed(2));
 const abs = (src) => new URL(src, window.location.href).href;
 
-// Uses a stored number if the payout has one (p.invoiceNo / p.voucherNo),
-// otherwise derives one: PAY20260930-A3F2 (cycle end date + last 4 of the id)
 const getInvoiceNo = (p) => {
   if (p.invoiceNo || p.voucherNo) return p.invoiceNo || p.voucherNo;
   const d = String(p.cycleEnd || "")
@@ -87,6 +84,72 @@ const getInvoiceNo = (p) => {
     .toUpperCase()}`;
 };
 
+/* ---------- decorative SVG pieces ---------- */
+
+const GREEN = "#0f4d2a";
+const GOLD = "#c9a227";
+
+// row of building silhouettes
+const skyline = (heights, color, opacity, vbW, vbH) => {
+  const step = vbW / heights.length;
+  const rects = heights
+    .map((h, i) => {
+      const bh = h * vbH;
+      return `<rect x="${(i * step + step * 0.12).toFixed(2)}" y="${(vbH - bh).toFixed(2)}" width="${(step * 0.7).toFixed(2)}" height="${bh.toFixed(2)}" />`;
+    })
+    .join("");
+  return `<g fill="${color}" opacity="${opacity}">${rects}</g>`;
+};
+
+const H_HEAD = [
+  0.3, 0.5, 0.35, 0.65, 0.45, 0.8, 0.4, 0.55, 0.9, 0.5, 0.7, 0.4, 0.6, 0.85,
+  0.45, 0.6, 0.35, 0.7, 0.5, 0.4, 0.6, 0.3,
+];
+const H_FOOT = [
+  0.35, 0.55, 0.4, 0.7, 0.5, 0.85, 0.45, 0.6, 0.9, 0.5, 0.65, 0.4, 0, 0, 0, 0.4,
+  0.65, 0.5, 0.9, 0.6, 0.45, 0.85, 0.5, 0.7, 0.4, 0.55, 0.35,
+];
+
+const cornersSvg = `
+<svg class="corners" viewBox="0 0 210 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="0,0 24,0 0,24" fill="${GREEN}"/>
+  <polygon points="27,0 31,0 0,31 0,27" fill="${GOLD}"/>
+  <polygon points="210,0 186,0 210,24" fill="${GREEN}"/>
+  <polygon points="183,0 179,0 210,31 210,27" fill="${GOLD}"/>
+</svg>`;
+
+const headerSkyline = `
+<svg class="sky" viewBox="0 0 230 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  ${skyline(H_HEAD, GOLD, 0.35, 230, 36)}
+  <polyline points="85,36 115,10 145,36" fill="none" stroke="${GOLD}" stroke-width="1.6"/>
+  <rect x="111" y="22" width="8" height="8" fill="${GREEN}"/>
+</svg>`;
+
+const footerSvg = `
+<svg class="foot" viewBox="0 0 210 40" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0,2)">${skyline(H_FOOT, GOLD, 0.35, 210, 22)}</g>
+  <polygon points="0,18 40,30 80,30 105,16 130,30 170,30 210,18 210,40 0,40" fill="${GREEN}"/>
+  <polyline points="0,18 40,30 80,30 105,16 130,30 170,30 210,18" fill="none" stroke="${GOLD}" stroke-width="0.8"/>
+  <rect x="101" y="24" width="8" height="8" fill="none" stroke="${GOLD}" stroke-width="0.6"/>
+  <path d="M105 24v8M101 28h8" stroke="${GOLD}" stroke-width="0.5"/>
+  <text x="105" y="37.6" text-anchor="middle" fill="#fff" font-size="3" letter-spacing=".6" font-family="Inter, Arial, sans-serif" font-weight="600">TOGETHER WE GROW, TOGETHER WE SUCCEED.</text>
+  <rect x="0" y="39.3" width="210" height="0.7" fill="${GOLD}"/>
+</svg>`;
+
+const ICON = (inner) =>
+  `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const ICONS = {
+  calendar: ICON(
+    `<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`,
+  ),
+  doc: ICON(
+    `<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h5M9.5 16h5"/>`,
+  ),
+  user: ICON(
+    `<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/>`,
+  ),
+};
+
 const CSS = `
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
@@ -94,53 +157,54 @@ const CSS = `
   body {
     font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #1b2233;
-    font-size: 14px;
+    font-size: 13px;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-    .watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 130mm;
-    height: 130mm;
-    transform: translate(-50%, -50%);
-    object-fit: contain;
-    opacity: 0.07;
-    z-index: 0;
-    pointer-events: none;
-  }
-  .page { position: relative; z-index: 1; display: flex; flex-direction: column; width: 210mm; min-height: 296.5mm; padding: 9mm 10mm 12mm; }
+  .page { position: relative; width: 210mm; height: 296mm; overflow: hidden; display: flex; flex-direction: column; padding: 10mm 12mm 44mm; }
+    .corner { position: absolute; top: 0; width: 24mm; height: auto; display: block; }
+  .corner.l { left: 0; }
+  .corner.r { right: 0; transform: scaleX(-1); } /* mirrored copy of the left corner */
+  .foot { position: absolute; left: 0; bottom: 0; width: 210mm; height: auto; display: block; }
 
-  .head { display: grid; grid-template-columns: 124px 1fr 124px; align-items: center; gap: 12px; margin: 0 -6mm 22px; }
-  .logo { width: 124px; height: 124px; object-fit: contain; }
-  .mid { text-align: center; }
-  h1 { margin: 0 0 18px; font-size: 17.5px; line-height: 1.3; font-weight: 800; letter-spacing: .2px; text-transform: uppercase; color: #111827; }
-  .badge { display: inline-block; padding: 5px 18px; border: 1px solid #bfc4cc; border-radius: 6px; background: #f4f5f7; font-size: 11.5px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+    .head { position: relative; display: grid; grid-template-columns: 30mm 1fr 30mm; align-items: center; gap: 8px; margin: 0 6mm 8mm; }
+  .logo { width: 30mm; height: 30mm; object-fit: contain; }
+  .mid { position: relative; text-align: center; }
+  .sky { position: absolute; left: 50%; bottom: 8mm; transform: translateX(-50%); width: 100%; height: 12mm; z-index: 0; }
+  h1 { position: relative; z-index: 1; margin: 0 0 16px; font-size: 16.5px; line-height: 1.3; font-weight: 800; text-transform: uppercase; color: #12301d; }
+  .badge { position: relative; z-index: 1; display: inline-block; padding: 7px 26px; border: 2px solid ${GOLD}; border-radius: 9px; background: ${GREEN}; color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; }
 
-  .box { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 20px; padding: 18px 22px; margin-bottom: 20px; border: 1.5px dashed #b8bcc4; border-radius: 16px; }
-  .box .r { text-align: right; }
-  .vl { font-size: 15px; font-weight: 500; color: #1f2937; }
+  .box { position: relative; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e3d6a4; border-radius: 12px; margin-bottom: 7mm; }
+  .box::before { content: ""; position: absolute; left: 50%; top: 14px; bottom: 14px; width: 1px; background: #e3d6a4; }
+  .cell { display: flex; align-items: center; gap: 14px; padding: 14px 18px; }
+  .cell:nth-child(-n+2) { border-bottom: 1px solid #efe6c3; }
+  .ic { flex: none; width: 44px; height: 44px; border-radius: 50%; background: ${GREEN}; display: flex; align-items: center; justify-content: center; }
+  .vl { font-size: 12.5px; color: #4b5563; }
   .vl.up { text-transform: uppercase; }
-  .vv { margin-top: 3px; font-size: 20px; font-weight: 700; color: #111827; }
+  .vv { margin-top: 2px; font-size: 17px; font-weight: 800; color: #111827; }
   .vv.up { text-transform: uppercase; }
 
-  table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid #b9bec7; border-radius: 14px; overflow: hidden; margin-bottom: 22px; }
-  th { padding: 15px 16px; border-bottom: 1px solid #c3c8d0; text-align: left; font-size: 11.5px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
-  td { padding: 12px 16px; border-bottom: 1px solid #c3c8d0; font-size: 14px; }
+  table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid #cfd5cf; border-radius: 10px; overflow: hidden; margin-bottom: 6mm; }
+  th { padding: 12px 16px; background: ${GREEN}; color: #fff; text-align: left; font-size: 11.5px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+  th + th { border-left: 1px solid rgba(255,255,255,.25); }
+  td { padding: 8px 16px; border-bottom: 1px solid #e3e7e3; font-size: 13px; }
   tbody tr:last-child td { border-bottom: 0; }
   tr { break-inside: avoid; }
-    .r { text-align: right; white-space: nowrap; }
-  .strong td { font-weight: 800; text-transform: uppercase; }
-  .neg { color: #b42318; }
-    .net td { padding: 14px 16px; font-size: 19px; font-weight: 800; text-transform: uppercase; color: #1d6b34; white-space: nowrap; }
+  .r { text-align: right; white-space: nowrap; }
+  .c { text-align: center; }
+  tr.inc td:not(:last-child) { border-right: 1px solid #e3e7e3; }
+  tr.gross td { background: #e4f1e7; color: #14532d; font-weight: 800; text-transform: uppercase; }
+  .neg { color: #c62828; }
+  tr.ded td { background: #fdeaea; color: #c62828; font-weight: 800; text-transform: uppercase; }
+  tr.net td { padding: 12px 16px; font-size: 20px; font-weight: 800; text-transform: uppercase; color: #14532d; white-space: nowrap; }
 
-  .words { display: flex; gap: 14px; align-items: flex-start; }
-  .words .k { width: 206px; flex: none; font-size: 15px; color: #4b5563; padding-top: 3px; }
-  .words .v { flex: 1; font-size: 20px; line-height: 1.25; font-weight: 700; font-style: italic; color: #1d6b34; }
+  .words { display: flex; gap: 14px; align-items: baseline; padding: 0 2mm; }
+  .words .k { width: 190px; flex: none; font-size: 14px; color: #4b5563; }
+  .words .v { flex: 1; font-size: 14px; line-height: 1.3; font-weight: 600; color: #1d6b34; }
 
-  .sign { display: flex; justify-content: space-between; margin: auto -3mm 0; padding-top: 70px; font-size: 13px; color: #666d7a; }
-  .sign div { min-width: 182px; padding-top: 8px; border-top: 1.2px solid #c8ccd4; text-align: center; }
+  /* 1. force a minimum gap above the signatures */
+.sign { display: flex; justify-content: space-between; margin-top: auto; padding: 14mm 2mm 0; font-size: 12.5px; color: #4b5563; }
+.sign div { min-width: 62mm; padding-top: 8px; border-top: 2px solid ${GOLD}; text-align: center; }
 `;
 
 const buildStatementHtml = (p) => {
@@ -149,8 +213,6 @@ const buildStatementHtml = (p) => {
   const categoryPayments = p.categoryPayments || [];
   const categoryBreakdown = p.categoryBreakdown || [];
 
-  // A category counts as paid only when it is marked paid AND has real payment details.
-  // (Your screenshot's Patliputra row was "paid" with no mode/date, so it showed ₹0.00.)
   const isPaid = (c) => c && c.status === "paid" && (c.paidAt || c.paymentMode);
 
   const paidEntries = categoryPayments.filter(isPaid);
@@ -165,7 +227,7 @@ const buildStatementHtml = (p) => {
   const incomeRows = INCOME_ROWS.filter((r) => Number(p[r.field]) > 0)
     .map(
       (r) =>
-        `<tr><td>${esc(r.label)}</td><td>${esc(r.rule)}</td><td class="r">${money(p[r.field])}</td></tr>`,
+        `<tr class="inc"><td>${esc(r.label)}</td><td>${esc(r.rule)}</td><td class="r">${money(p[r.field])}</td></tr>`,
     )
     .join("");
 
@@ -176,31 +238,31 @@ const buildStatementHtml = (p) => {
     if (!c.transactionId) return esc(mode);
     const label =
       c.paymentMode === "upi" || c.paymentMode === "bank" ? "TRN" : "Ref";
-    return `${esc(mode)} (${label}:${esc(c.transactionId)})`;
+    return `${esc(mode)}<br/>(${label}:${esc(c.transactionId)})`;
   };
 
   const disbursement = `<table>
-        <colgroup><col style="width:32%"><col style="width:36%"><col style="width:12%"><col style="width:20%"></colgroup>
-        <thead>
-          <tr><th>Disbursed category</th><th>Mode / transaction ID</th><th>Paid on</th><th class="r">Net Amount</th></tr>
-        </thead>
-        <tbody>
-          ${Object.keys(CATEGORY_LABEL)
-            .map((cat) => {
-              const c = categoryPayments.find((x) => x.category === cat);
-              const b = categoryBreakdown.find((x) => x.category === cat);
-              const paid = isPaid(c);
-              const net = b?.netAmount ?? c?.netAmount ?? 0;
-              return `<tr>
-                <td>${esc(CATEGORY_LABEL[cat])}</td>
-                <td>${paid ? modeText(c) : "-"}</td>
-                <td>${paid ? esc(c.paidAt ? formatDate(c.paidAt) : "-") : "Unpaid"}</td>
-                <td class="r">${money(net)}</td>
-              </tr>`;
-            })
-            .join("")}
-        </tbody>
-      </table>`;
+    <colgroup><col style="width:30%"><col style="width:34%"><col style="width:16%"><col style="width:20%"></colgroup>
+    <thead>
+      <tr><th>Disbursed category</th><th>Mode / transaction ID</th><th class="c">Paid on</th><th class="r">Net amount (₹)</th></tr>
+    </thead>
+    <tbody>
+      ${Object.keys(CATEGORY_LABEL)
+        .map((cat) => {
+          const c = categoryPayments.find((x) => x.category === cat);
+          const b = categoryBreakdown.find((x) => x.category === cat);
+          const paid = isPaid(c);
+          const net = b?.netAmount ?? c?.netAmount ?? 0;
+          return `<tr class="inc">
+            <td>${esc(CATEGORY_LABEL[cat])}</td>
+            <td>${paid ? modeText(c) : "-"}</td>
+            <td class="c">${paid ? esc(c.paidAt ? formatDate(c.paidAt) : "-") : "Unpaid"}</td>
+            <td class="r">${money(net)}</td>
+          </tr>`;
+        })
+        .join("")}
+    </tbody>
+  </table>`;
 
   const words = amountInWordsIN(p.netAmount).replace(/ Only$/, "");
 
@@ -212,8 +274,9 @@ const buildStatementHtml = (p) => {
 <style>${CSS}</style>
 </head>
 <body>
-<img class="watermark" src="${esc(abs(logoLeft))}" alt="" onerror="this.style.display='none'" />
 <div class="page">
+  <img class="corner l" src="${esc(abs(receptCorner))}" alt="" />
+  <img class="corner r" src="${esc(abs(receptCorner))}" alt="" />
 
   <div class="head">
     <img class="logo" src="${esc(abs(logoLeft))}" alt="" onerror="this.style.visibility='hidden'" />
@@ -225,35 +288,47 @@ const buildStatementHtml = (p) => {
   </div>
 
   <div class="box">
-    <div>
-      <div class="vl up">Payout cycle</div>
-      <div class="vv">${esc(formatDate(p.cycleStart))} to ${esc(formatDate(p.cycleEnd))}</div>
+    <div class="cell">
+      <div class="ic">${ICONS.calendar}</div>
+      <div>
+        <div class="vl">Payout cycle</div>
+        <div class="vv">${esc(formatDate(p.cycleStart))} to ${esc(formatDate(p.cycleEnd))}</div>
+      </div>
     </div>
-    <div class="r">
-      <div class="vl">Receipt/Invoice No:</div>
-      <div class="vv">${esc(getInvoiceNo(p))}</div>
+    <div class="cell">
+      <div class="ic">${ICONS.doc}</div>
+      <div>
+        <div class="vl">Receipt/Invoice No.</div>
+        <div class="vv">${esc(getInvoiceNo(p))}</div>
+      </div>
     </div>
-    <div>
-      <div class="vl up">Associate name/ID</div>
-      <div class="vv up">${esc(p.user?.name || "-")} / ${esc(p.user?.referralId || "-")}</div>
+    <div class="cell">
+      <div class="ic">${ICONS.user}</div>
+      <div>
+        <div class="vl up">Associate name/ID</div>
+        <div class="vv up">${esc(p.user?.name || "-")} / ${esc(p.user?.referralId || "-")}</div>
+      </div>
     </div>
-    <div class="r">
-      <div class="vl">Paid On</div>
-      <div class="vv">${esc(paidOn ? formatDate(paidOn) : "Unpaid")}</div>
+    <div class="cell">
+      <div class="ic">${ICONS.calendar}</div>
+      <div>
+        <div class="vl">Paid On</div>
+        <div class="vv">${esc(paidOn ? formatDate(paidOn) : "Unpaid")}</div>
+      </div>
     </div>
   </div>
 
   <table>
-    <colgroup><col style="width:28%"><col style="width:46%"><col style="width:26%"></colgroup>
+    <colgroup><col style="width:30%"><col style="width:42%"><col style="width:28%"></colgroup>
     <thead>
-      <tr><th>Income component</th><th>Calculation rule</th><th class="r">Gross amount</th></tr>
+      <tr><th>Income component</th><th>Calculation rule</th><th class="r">Gross amount (₹)</th></tr>
     </thead>
     <tbody>
       ${incomeRows}
-      <tr class="strong"><td colspan="2">Gross earnings for the cycle</td><td class="r">${money(p.grossAmount)}</td></tr>
+      <tr class="gross"><td colspan="2">Gross earnings for the cycle</td><td class="r">${money(p.grossAmount)}</td></tr>
       <tr><td colspan="2">Less: Statutory TDS deduction (Sec 194H @ ${tdsPct}%)</td><td class="r neg">- ${money(p.tdsAmount)}</td></tr>
       <tr><td colspan="2">Less: Admin &amp; processing platform charges (${adminPct}%)</td><td class="r neg">- ${money(p.adminChargeAmount)}</td></tr>
-      <tr class="strong neg"><td colspan="2">Total statutory deductions (${pct(tdsPct + adminPct)}%)</td><td class="r">- ${money(totalDeductions)}</td></tr>
+      <tr class="ded"><td colspan="2">Total statutory deductions (${pct(tdsPct + adminPct)}%)</td><td class="r">- ${money(totalDeductions)}</td></tr>
       <tr class="net"><td colspan="2">Net remittance</td><td class="r">${money(p.netAmount)}</td></tr>
     </tbody>
   </table>
@@ -264,16 +339,15 @@ const buildStatementHtml = (p) => {
 
   <div class="sign">
     <div>Verified by Accounts Team</div>
-    <div>Director / Managing Authority (Anokhi Homes Pvt. Ltd.)</div>
+    <div>Director / Managing Authority<br/>(Anokhi Homes Pvt. Ltd.)</div>
   </div>
 
+    <img class="foot" src="${esc(abs(receptFooter))}" alt="" />
 </div>
 </body>
 </html>`;
 };
 
-// Opens the browser's print dialog for this payout's statement.
-// The person picks "Save as PDF" as the destination to download it.
 export const printPayoutStatement = (payout) => {
   if (!payout) return;
   const cycleEnd = String(payout.cycleEnd || "").slice(0, 10);

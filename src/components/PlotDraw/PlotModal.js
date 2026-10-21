@@ -95,8 +95,8 @@ const PlotModal = ({
     onClose();
   };
 
-  console.log(plot.plotType,"plot.plotType")
-console.log(mood,"mood")
+  console.log(plot.plotType, "plot.plotType");
+  console.log(mood, "mood");
   return (
     <div className="modal-bg plot-modal" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -223,6 +223,27 @@ console.log(mood,"mood")
                     />
                   </div>
                 </div>
+                <div className="field">
+                  <label>PLC (Preferred Location Charge)</label>
+
+                  <select
+                    value={plot.plc ? "true" : "false"}
+                    onChange={(e) =>
+                      updatePlot(plot._id, {
+                        plc: e.target.value === "true",
+                      })
+                    }
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+
+                  {plot.plc && (
+                    <p className="hint">
+                      PLC % (5–10%) is chosen by admin when approving a booking.
+                    </p>
+                  )}
+                </div>
               </>
             )}
 
@@ -277,6 +298,14 @@ console.log(mood,"mood")
                       </div>
                     </>
                   )}
+                {plot.plc && (
+                  <div className="user-field">
+                    <label>PLC</label>
+                    <div className="value">
+                      Applicable (5–10% on total price)
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </>

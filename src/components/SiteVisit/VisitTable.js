@@ -106,15 +106,21 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
   }, [data, search, statusFilter, fromDate, toDate]);
   const PRIORITY_STATUS = "approval"; // change to whichever status should pin to the top
 
+  // Lower number = shown earlier. Anything not listed (cancelled, rejected, etc.) goes last.
+  const STATUS_ORDER = {
+    approval: 0,
+    scheduled: 1,
+    completed: 2,
+  };
+
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      const aTop = a?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
-      const bTop = b?.status?.toLowerCase() === PRIORITY_STATUS ? 0 : 1;
-      if (aTop !== bTop) return aTop - bTop;
+      const aRank = STATUS_ORDER[a?.status?.toLowerCase()] ?? 99;
+      const bRank = STATUS_ORDER[b?.status?.toLowerCase()] ?? 99;
+      if (aRank !== bRank) return aRank - bRank;
 
-      const aDate = new Date(a?.visitDate || a?.createdAt);
-      const bDate = new Date(b?.visitDate || b?.createdAt);
-      return bDate - aDate;
+      // same status: newest created date first
+      return new Date(b?.createdAt) - new Date(a?.createdAt);
     });
   }, [filtered]);
 
