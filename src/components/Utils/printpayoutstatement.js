@@ -161,6 +161,18 @@ const CSS = `
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+     .watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 130mm;
+    height: 130mm;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+  }
   .page { position: relative; width: 210mm; height: 296mm; overflow: hidden; display: flex; flex-direction: column; padding: 10mm 12mm 44mm; }
     .corner { position: absolute; top: 0; width: 24mm; height: auto; display: block; }
   .corner.l { left: 0; }
@@ -178,10 +190,10 @@ const CSS = `
   .box::before { content: ""; position: absolute; left: 50%; top: 14px; bottom: 14px; width: 1px; background: #e3d6a4; }
   .cell { display: flex; align-items: center; gap: 14px; padding: 14px 18px; }
   .cell:nth-child(-n+2) { border-bottom: 1px solid #efe6c3; }
-  .ic { flex: none; width: 44px; height: 44px; border-radius: 50%; background: ${GREEN}; display: flex; align-items: center; justify-content: center; }
+  .ic { flex: none; width: 40px; height: 40px; border-radius: 50%; background: ${GREEN}; display: flex; align-items: center; justify-content: center; }
   .vl { font-size: 12.5px; color: #4b5563; }
   .vl.up { text-transform: uppercase; }
-  .vv { margin-top: 2px; font-size: 17px; font-weight: 800; color: #111827; }
+  .vv { margin-top: 2px; font-size: 15px; font-weight: 600; color: #111827; }
   .vv.up { text-transform: uppercase; }
 
   table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; border: 1px solid #cfd5cf; border-radius: 10px; overflow: hidden; margin-bottom: 6mm; }
@@ -274,6 +286,7 @@ const buildStatementHtml = (p) => {
 <style>${CSS}</style>
 </head>
 <body>
+<img class="watermark" src="${esc(logoLeft)}" alt="" onerror="this.style.display='none'" />
 <div class="page">
   <img class="corner l" src="${esc(abs(receptCorner))}" alt="" />
   <img class="corner r" src="${esc(abs(receptCorner))}" alt="" />
