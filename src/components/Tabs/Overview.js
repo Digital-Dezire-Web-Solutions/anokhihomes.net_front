@@ -11,6 +11,7 @@ import {
   updateUser,
   getRank,
   getStaffRoles,
+  getAccountDetails,
 } from "../../Redux/Slices/AppSlices";
 import NiEdit from "../../icons/ni-edit";
 import { X } from "lucide-react";
@@ -19,11 +20,16 @@ import axios from "axios";
 import Host from "../../Host/Host";
 import { formatCurrency } from "../Utils/FormatCurrency";
 import Stars from "../Utils/Stars";
+import NiClosseye from "../../icons/ni-closseye";
+import NiOpenEye from "../../icons/ni-openEye";
 
 const Overview = ({ userData, mood, setAlert }) => {
   const dispatch = useDispatch();
-  const { rankData, staffRoles } = useSelector((state) => state.app);
+  const { rankData, staffRoles, userDetail } = useSelector(
+    (state) => state.app,
+  );
   useEffect(() => {
+    dispatch(getAccountDetails());
     dispatch(getRank());
     dispatch(getStaffRoles());
   }, []);
@@ -50,6 +56,14 @@ const Overview = ({ userData, mood, setAlert }) => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  const [adminPwOpen, setAdminPwOpen] = useState(false);
+  const [adminPw, setAdminPw] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showAdminPw, setShowAdminPw] = useState(false);
+  const [showAdminPwc, setShowAdminPwc] = useState(false);
 
   const ALL_PERMISSIONS = [
     // Lead
@@ -538,9 +552,9 @@ const Overview = ({ userData, mood, setAlert }) => {
 
       // Refresh users/tree
       setLocalUser((prev) => ({
-      ...prev,
-      position: position,
-    }));
+        ...prev,
+        position: position,
+      }));
 
       setTimeout(() => {
         setAlert(null);
@@ -556,6 +570,45 @@ const Overview = ({ userData, mood, setAlert }) => {
       }, 3000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const isOwnProfile = userDetail?._id === localUser._id;
+
+  const isAdminPwValid =
+    adminPw.newPassword.length >= 6 &&
+    adminPw.newPassword === adminPw.confirmPassword;
+
+  const closeAdminPw = () => {
+    setAdminPwOpen(false);
+    setAdminPw({ newPassword: "", confirmPassword: "" });
+    setShowAdminPw(false);
+  };
+
+  const handleAdminChangePassword = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.put(
+        `${Host}/api/auth/admin-change-password/${localUser._id}`,
+        { newPassword: adminPw.newPassword },
+        { headers: { "auth-token": token } },
+      );
+
+      setAlert({
+        message: `Password changed for ${localUser.name}`,
+        status: "Success",
+      });
+      closeAdminPw();
+    } catch (err) {
+      setAlert({
+        message: err.response?.data?.message || "Failed to change password",
+        status: "Error",
+      });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -653,8 +706,6 @@ const Overview = ({ userData, mood, setAlert }) => {
               <label>Designation Percent</label>
               <p>{localUser.directIncomePercent || 0}%</p>
             </div>
-
-            
 
             <div>
               <label>Total Team</label>
@@ -1251,6 +1302,13 @@ const Overview = ({ userData, mood, setAlert }) => {
               </button>
             </div>
           )}
+          {mood === "admin" && !isOwnProfile && (
+            <div className="modal-actions">
+              <button disabled={saving} onClick={() => setAdminPwOpen(true)}>
+                Change Password
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1483,6 +1541,64 @@ const Overview = ({ userData, mood, setAlert }) => {
           </button>
         </div>
       </AddLocationModal>
+
+      <AddLocationModal
+        open={adminPwOpen}
+        onClose={closeAdminPw}
+        title={`Change Password - ${localUser.name}`}
+      >
+        <label>New Password</label>
+        <div className="password-field">
+          <input
+            type={showAdminPw ? "text" : "password"}
+            value={adminPw.newPassword}
+            className="form-input"
+            onChange={(e) =>
+              setAdminPw({ ...adminPw, newPassword: e.target.value })
+            }
+          />
+
+          <span
+            className="password-eye"
+            onClick={() => setShowAdminPw(!showAdminPw)}
+          >
+            {showAdminPw ? <NiClosseye /> : <NiOpenEye />}
+          </span>
+        </div>
+        <label>Confirm Password</label>
+        <div className="password-field">
+          <input
+            type={showAdminPwc ? "text" : "password"}
+            value={adminPw.confirmPassword}
+            className="form-input"
+            onChange={(e) =>
+              setAdminPw({ ...adminPw, confirmPassword: e.target.value })
+            }
+          />
+
+          <span
+            className="password-eye"
+            onClick={() => setShowAdminPwc(!showAdminPwc)}
+          >
+            {showAdminPwc ? <NiClosseye /> : <NiOpenEye />}
+          </span>
+        </div>
+        {adminPw.confirmPassword &&
+          adminPw.newPassword !== adminPw.confirmPassword && (
+            <p style={{ color: "#ef4444", fontSize: "0.85rem" }}>
+              Passwords do not match
+            </p>
+          )}
+        <div className="modal-actions">
+          <button
+            disabled={saving || !isAdminPwValid}
+            onClick={handleAdminChangePassword}
+          >
+            {saving ? "Saving..." : "Change Password"}
+          </button>
+        </div>
+      </AddLocationModal>
+
       <AddLocationModal
         open={staffRoleOpen}
         onClose={() => setStaffRoleOpen(false)}

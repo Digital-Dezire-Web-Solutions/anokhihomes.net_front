@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAccountDetails, getOffers } from "../../Redux/Slices/AppSlices";
 import formatDate from "../../components/DateFormate/DateFormate";
 import { formatCurrency } from "../../components/Utils/FormatCurrency";
+import TodayEventModal from "./Todayeventmodal";
 
 const Dashboard = ({ setAlert, mood, data }) => {
   const dispatch = useDispatch();
@@ -213,6 +214,7 @@ const Dashboard = ({ setAlert, mood, data }) => {
           </div>
         </div>
         {renderDashboard()}
+        <TodayEventModal userId={userDetail?._id} />
       </div>
       <AddLocationModal
         open={open}

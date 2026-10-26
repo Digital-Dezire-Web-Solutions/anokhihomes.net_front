@@ -1,0 +1,76 @@
+.events-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 0;
+}
+
+.events-toolbar input[type="number"] {
+  width: 90px;
+}
+
+.events-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* 4 columns: name | date | show | action */
+.events-table .table-head,
+.events-table .table-row {
+  display: grid;
+  grid-template-columns: .5fr 150px .5fr 50px 150px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* events list: title | date | visible to | actions */
+.events-table-wide .table-head,
+.events-table-wide .table-row {
+  grid-template-columns: 2fr 1.6fr 1.2fr 1.4fr;
+}
+
+.events-flag {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  color: #9a6a00;
+  background: #fff3c4;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.events-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.events-agent-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.events-agent-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .events-table .table-head {
+    display: none;
+  }
+
+  .events-table .table-row,
+  .events-table-wide .table-row {
+    grid-template-columns: 1fr;
+  }
+}

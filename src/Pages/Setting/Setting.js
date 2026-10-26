@@ -11,6 +11,7 @@ import { getAccountDetails } from "../../Redux/Slices/AppSlices";
 import { useDispatch, useSelector } from "react-redux";
 import PaymentTerms from "../../components/Permissions/PaymentTerms";
 import PlotHoldSetting from "../../components/Permissions/PlotHoldSetting";
+import EventsAdmin from "../../components/Event/EventAdmin/Eventsadmin";
 
 /* Dummy Components */
 const ProfileSettings = ({ setAlert, userDetail, navigate }) => (
@@ -51,7 +52,7 @@ const Setting = ({ mood, setAlert }) => {
   const TABS = useMemo(() => {
     switch (mood) {
       case "admin":
-        return ["Profile", "Staff Permissions", "Logs", "Commission Settings", "Payment Terms","Plot Hold"];
+        return ["Profile", "Staff Permissions", "Logs", "Commission Settings", "Payment Terms","Plot Hold", "Events"];
 
       case "staff":
         return ["Profile"];
@@ -102,6 +103,12 @@ const Setting = ({ mood, setAlert }) => {
       case "Plot Hold":
         return mood === "admin" ? (
           <PlotHoldSetting
+            setAlert={setAlert}
+          />
+        ) : null;
+        case "Events":
+        return mood === "admin" ? (
+          <EventsAdmin
             setAlert={setAlert}
           />
         ) : null;

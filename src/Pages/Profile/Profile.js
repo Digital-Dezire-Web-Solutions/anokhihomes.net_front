@@ -285,7 +285,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
                 </label>
               )}
             </div>
-            <Overview userData={userData} mood={mood} setAlert={setAlert} />
+            <Overview userData={userData} mood={mood} setAlert={setAlert}/>
           </>
         );
     }

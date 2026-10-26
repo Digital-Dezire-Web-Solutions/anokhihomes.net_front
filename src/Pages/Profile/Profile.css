@@ -59,15 +59,15 @@
 .profile-main {
   width: 75%;
 }
-.profilename-btn{
+.profilename-btn {
   display: flex;
   align-items: center;
   gap: 5px;
   justify-content: center;
 }
-.profilename-btn svg{
- width: 25px;
- height: 25px;
+.profilename-btn svg {
+  width: 25px;
+  height: 25px;
 }
 .stats-grid {
   display: grid;
@@ -135,6 +135,14 @@
   margin-bottom: 10px;
   background-color: #b5b5b51e;
   padding: 20px;
+}
+
+.password-field input {
+  background-color: initial;
+  border: 1px solid #bcbcbc2e;
+  border-radius: 1.125rem;
+  margin: 8px 0;
+  padding: 10px;
 }
 
 @media (max-width: 768px) {

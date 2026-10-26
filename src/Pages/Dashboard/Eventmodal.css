@@ -1,0 +1,111 @@
+.event-modal {
+  text-align: center;
+  padding: 0.5rem 0.25rem 0;
+}
+
+.event-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.event-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.event-message {
+  margin: 0 auto;
+  max-width: 34ch;
+  line-height: 1.6;
+  color: #444;
+}
+
+.event-dates {
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.event-image {
+  max-width: 100%;
+  max-height: 450px;
+  border-radius: 12px;
+  margin: 0 auto 0.75rem;
+  display: block;
+  object-fit: cover;
+  /* border-radius: 50%; */
+}
+.birthday-image {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 12px;
+  margin: 0 auto 0.75rem;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.event-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+}
+
+.event-dots button {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #cfcac0;
+  cursor: pointer;
+}
+
+.event-dots button.active {
+  background: #e00;
+}
+
+.event-dots button:focus-visible {
+  outline: 2px solid #06c;
+  outline-offset: 2px;
+}
+
+.event-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+.event-actions button {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .event-modal .event-emoji {
+    animation: event-pop 0.45s ease-out;
+  }
+}
+
+@keyframes event-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .event-title {
+  margin: 0 0 0.75rem;
+  font-size: 18px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+}
