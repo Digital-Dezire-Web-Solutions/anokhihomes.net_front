@@ -19,9 +19,9 @@ const ProjectDetail = ({ mood, setAlert }) => {
   const projectData = location;
   const projectName = projectData?.state?.project?.name;
   const navigate = useNavigate();
-  const  projectId  = projectData?.state?.project?._id;
-// console.log(projectData,"projectData")
-console.log(projectId,"projectId")
+  const projectId = projectData?.state?.project?._id;
+  // console.log(projectData,"projectData")
+  console.log(projectId, "projectId");
   const dispatch = useDispatch();
   const { plots } = useSelector((state) => state.app);
 
@@ -33,7 +33,7 @@ console.log(projectId,"projectId")
   // console.log(plots,"plots")
 
   if (!plots) return <p>Project not found</p>;
-console.log(mood,"mood")
+  console.log(mood, "mood");
   return (
     <div className="plot-container product-detail">
       <div className="table-filters">
@@ -46,7 +46,12 @@ console.log(mood,"mood")
         </div>
       </div>
       {/* <PlotDrawCard data={plots} mood={mood} setAlert={setAlert} projectId={projectId}/> */}
-      <PlotDrawCard data={plots} mood={mood} setAlert={setAlert} projectId={projectId}/>
+      <PlotDrawCard
+        data={plots}
+        mood={mood}
+        setAlert={setAlert}
+        projectId={projectId}
+      />
     </div>
   );
 };

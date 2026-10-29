@@ -66,6 +66,9 @@ const Booking = ({ mood, setAlert, landingPage }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [search, setSearch] = useState();
   const [policyOpen, setPolicyOpen] = useState(false);
+  const [colonyFilter, setColonyFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const [formData, setFormData] = useState({
     id: "",
@@ -119,23 +122,28 @@ const Booking = ({ mood, setAlert, landingPage }) => {
         !search ||
         d?.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
         d?.customer?.phone?.includes(search);
-      return matchStatus && matchSearch;
+      const matchColony = !colonyFilter || d?.colony?._id === colonyFilter;
+
+      const created = new Date(d?.createdAt);
+      const matchFrom =
+        !fromDate || created >= new Date(`${fromDate}T00:00:00`);
+      const matchTo = !toDate || created <= new Date(`${toDate}T23:59:59.999`);
+
+      return matchStatus && matchSearch && matchColony && matchFrom && matchTo;
     });
 
     return base.sort((a, b) => {
       const aRank = STATUS_ORDER[a?.status?.toLowerCase()] ?? 99;
       const bRank = STATUS_ORDER[b?.status?.toLowerCase()] ?? 99;
       if (aRank !== bRank) return aRank - bRank;
-
-      // same status: newest created date first
       return new Date(b?.createdAt) - new Date(a?.createdAt);
     });
-  }, [booking, filter, search]);
+  }, [booking, filter, search, colonyFilter, fromDate, toDate]);
 
   // reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, search]);
+  }, [filter, search, colonyFilter, fromDate, toDate]);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
 
@@ -145,6 +153,18 @@ const Booking = ({ mood, setAlert, landingPage }) => {
     startIndex + ITEMS_PER_PAGE,
   );
 
+  // unique projects (colonies) found in the loaded bookings
+  const colonyOptions = useMemo(() => {
+    const map = new Map();
+    (booking || []).forEach((b) => {
+      if (b?.colony?._id && !map.has(b.colony._id)) {
+        map.set(b.colony._id, b.colony.name);
+      }
+    });
+    return [...map]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [booking]);
   // const handleAddBooking = () => {
   //   const newBooking = {
   //     ...formData,
@@ -476,36 +496,53 @@ const Booking = ({ mood, setAlert, landingPage }) => {
               }}
             />
           </div>
-
-          {/* {["all", "confirmed", "pending", "approval", "rejected"].map((f) => (
-            <button
-              key={f}
-              className={filter === f ? "active" : ""}
-              onClick={() => setFilter(f)}
-            >
-              {f.toUpperCase()}
-            </button>
-          ))} */}
-          <CustomSelect
-            className="cs-filter"
-            value={filter}
-            onChange={(v) => {
-              setFilter(v);
-              setCurrentPage(1);
-            }}
-            placeholder="All Status"
-            options={[
-              { value: "", label: "All Status" },
-              ...STATUS_OPTIONS.map((s) => ({
-                value: s,
-                label: s.charAt(0).toUpperCase() + s.slice(1),
-              })),
-            ]}
-          />
           <button className="add-button" onClick={() => setExportOpen(true)}>
             <Download size={18} />
             Export
           </button>
+        </div>
+      </div>
+      <div className="page-tools" style={{ marginBottom: "0.5rem" }}>
+        <CustomSelect
+          className="cs-filter"
+          value={filter}
+          onChange={(v) => setFilter(v)}
+          placeholder="All Status"
+          options={STATUS_OPTIONS.map((s) => ({
+            value: s,
+            label:
+              s === "all"
+                ? "All Status"
+                : s.charAt(0).toUpperCase() + s.slice(1),
+          }))}
+        />
+
+        <CustomSelect
+          className="cs-filter"
+          value={colonyFilter}
+          onChange={(v) => setColonyFilter(v)}
+          placeholder="All Projects"
+          options={[{ value: "", label: "All Projects" }, ...colonyOptions]}
+        />
+
+        <div className="searchItem">
+          <label>From</label>
+          <input
+            type="date"
+            value={fromDate}
+            max={toDate || undefined}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </div>
+
+        <div className="searchItem">
+          <label>To</label>
+          <input
+            type="date"
+            value={toDate}
+            min={fromDate || undefined}
+            onChange={(e) => setToDate(e.target.value)}
+          />
         </div>
       </div>
 

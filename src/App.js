@@ -52,6 +52,10 @@ import Expense from "./Pages/Expense/Expense";
 import Accounts from "./Pages/Accounts/Accounts";
 import Payout from "./Pages/Payout/Payout";
 import MyCustomers from "./Pages/Other/MyCustomers";
+import ColonyPlots from "./Pages/ColonyPlots/ColonyPlots";
+import AgentTransfer from "./Pages/Transfer/AgentTransfer";
+import PaymentTransfer from "./Pages/Transfer/PaymentTransfer";
+import PlotTransfer from "./Pages/Transfer/PlotTransfer";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -283,6 +287,10 @@ function App() {
                         element={<Plot mood={mood} setAlert={setAlert} />}
                       />
                       <Route
+                        path="/colony-plots"
+                        element={<ColonyPlots mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
                         path="/plot/:plotId"
                         element={<Projects mood={mood} setAlert={setAlert} />}
                       />
@@ -311,6 +319,24 @@ function App() {
                       <Route
                         path="/payout"
                         element={<Payout mood={mood} setAlert={setAlert} />}
+                      />
+                      <Route
+                        path="/plot-transfer"
+                        element={
+                          <PlotTransfer mood={mood} setAlert={setAlert} />
+                        }
+                      />
+                      <Route
+                        path="/payments-transfer"
+                        element={
+                          <PaymentTransfer mood={mood} setAlert={setAlert} />
+                        }
+                      />
+                      <Route
+                        path="/associate-transfer"
+                        element={
+                          <AgentTransfer mood={mood} setAlert={setAlert} />
+                        }
                       />
                     </Routes>
                   </div>

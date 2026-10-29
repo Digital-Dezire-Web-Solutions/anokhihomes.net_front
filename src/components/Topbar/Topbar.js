@@ -25,6 +25,8 @@ import NiDrawr from "../../icons/ni-drawr";
 import Floating from "../LandingPage/Floating";
 import { LuChartNoAxesGantt, LuX } from "react-icons/lu";
 import PosterView from "./PosterView";
+import axios from "axios";
+import Host from "../../Host/Host";
 
 function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
   const dispatch = useDispatch();
@@ -86,6 +88,21 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
     dispatch(getNotificationsCount());
   };
 
+  const handleReadAll = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${Host}/api/notification/read-all`,
+        {},
+        { headers: { "auth-token": token } },
+      );
+      dispatch(getNotifications());
+      dispatch(getNotificationsCount());
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const createSlug = (name) =>
     name
       .toLowerCase()
@@ -145,6 +162,8 @@ function Topbar({ dark, setDark, setMobileOpen, mood, setMood }) {
             <NotificationModal
               notifications={notifications}
               handleRead={handleRead}
+              handleReadAll={handleReadAll}
+              onClose={() => setOpenNotif(false)}
             />
           )}
         </div>

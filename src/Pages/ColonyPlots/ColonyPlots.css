@@ -1,0 +1,21 @@
+.plots-scroll {
+  overflow-x: auto;
+}
+
+.table.plots-table {
+  min-width: 1400px;
+}
+
+.table.plots-table .table-head,
+.table.plots-table .table-row {
+  display: grid;
+  grid-template-columns: 50px 100px 130px 150px 110px 150px 150px 120px 120px 120px 60px;
+  gap: 12px;
+  align-items: center;
+}
+
+.plots-table small {
+  display: block;
+  color: #777;
+  font-size: 0.75rem;
+}

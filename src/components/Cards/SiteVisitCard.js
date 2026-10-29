@@ -472,7 +472,7 @@ const SiteVisitCard = ({
         <div className="user-card-bottom-right">
           <p>{formatDate(item?.createdAt)}</p>
           <p>{item.customer.phone}</p>
-          {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
+          {mood !== "agent" && <p>{item.agent?.name || "-"} <small>({item.agent?.referralId || "-"})</small></p>}
           <p>
             {" "}
             {item.colonies?.length}, {item?.location?.name}
@@ -734,9 +734,9 @@ const SiteVisitCard = ({
           <div className="user-card-bottom-right">
             <p>{formatDate(item?.createdAt)}</p>
             <p>{item.customer.phone}</p>
-            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
-            <p>{item.customer.phone}</p>
-            {mood !== "agent" && <p>{item.agent?.name || "-"}</p>}
+            {mood !== "agent" && <p>{item.agent?.name || "-"} ({item.agent?.referralId || "-"})</p>}
+            {/* <p>{item.customer.phone}</p> */}
+            {/* {mood !== "agent" && <p>{item.agent?.name || "-"} ({item.agent?.referralId || "-"})</p>} */}
             <p>
               {" "}
               {item.colonies?.map((i) => (

@@ -1,0 +1,90 @@
+.transfer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .transfer-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.transfer-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.transfer-card h4,
+.transfer-history h4 {
+  margin: 0;
+}
+
+.transfer-note {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.transfer-warn {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.transfer-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.transfer-pay-list,
+.transfer-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.transfer-pay-item,
+.transfer-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.transfer-pay-item.active,
+.transfer-radio.active {
+  border-color: var(--mood-color, #a50000);
+}
+
+.transfer-pay-item .grow {
+  flex: 1;
+}
+
+.transfer-pay-item small {
+  display: block;
+  opacity: 0.7;
+}
+
+.transfer-radio.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transfer-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

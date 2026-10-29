@@ -573,6 +573,24 @@ const Income = ({ mood, setAlert }) => {
           <h2>Income</h2>
           <Breadcrumb />
         </div>
+        <div className="page-tools">
+          <div className="searchItem">
+            <NiSearch />
+
+            <input
+              placeholder="Search name / phone / email / referral ID"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <button className="add-button" onClick={() => setExportOpen(true)}>
+            <Download size={18} />
+            Export
+          </button>
+        </div>
       </div>
       <div className="dashboard-container">
         <div className="dashboard-wrapper">
@@ -629,21 +647,31 @@ const Income = ({ mood, setAlert }) => {
               icons={<NiPayments />}
             />
           </div>
-          <h4>Income History</h4>
-          <div className="filter-grid page-tools table-filters">
-            {/* SEARCH */}
-            <div className="searchItem">
-              <NiSearch />
-
-              <input
-                placeholder="Search name / phone / email / referral ID"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-              />
+          <div className="table-filters">
+            <div className="page-head-title">
+              <h4>Income History</h4>
             </div>
+            <div className="page-tools">
+              <div className="searchItem">
+                <NiSearch />
+
+                <input
+                  placeholder="Search name / phone / email / referral ID"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <button className="add-button" onClick={() => setExportOpen(true)}>
+                <Download size={18} />
+                Export
+              </button>
+            </div>
+          </div>
+          {/* <h4>Income History</h4> */}
+          <div className="filter-grid page-tools table-filters">
 
             {/* DESIGNATION FILTER */}
             <CustomSelect
@@ -678,80 +706,7 @@ const Income = ({ mood, setAlert }) => {
                 })),
               ]}
             />
-            {/* <div className="searchItem">
-              <select
-                value={designationFilter}
-                onChange={(e) => {
-                  setDesignationFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">All Designations</option>
 
-                <option value="Sales Executive">Sales Executive</option>
-
-                <option value="Senior Sales Executive">
-                  Senior Sales Executive
-                </option>
-
-                <option value="Team Leader">Team Leader</option>
-
-                <option value="Senior Team Leader">Senior Team Leader</option>
-
-                <option value="Assistant Manager">Assistant Manager</option>
-
-                <option value="Sales Manager">Sales Manager</option>
-
-                <option value="Senior Sales Manager">
-                  Senior Sales Manager
-                </option>
-
-                <option value="Assistant General Manager (AGM)">
-                  Assistant General Manager (AGM)
-                </option>
-
-                <option value="General Manager (GM)">
-                  General Manager (GM)
-                </option>
-
-                <option value="Assistant Vice President (AVP)">
-                  Assistant Vice President (AVP)
-                </option>
-
-                <option value="Vice President (VP)">Vice President (VP)</option>
-
-                <option value="Senior Vice President (SVP)">
-                  Senior Vice President (SVP)
-                </option>
-
-                <option value="Associate Director">Associate Director</option>
-
-                <option value="Deputy Director">Deputy Director</option>
-
-                <option value="Director">Director</option>
-
-                <option value="Executive Director">Executive Director</option>
-              </select>
-            </div> */}
-
-            {/* STATUS FILTER */}
-            {/* <div className="searchItem">
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">All Status</option>
-
-                <option value="credited">Credited</option>
-
-                <option value="pending">Pending</option>
-
-                <option value="failed">Failed</option>
-              </select>
-            </div> */}
             <div className="searchItem">
               <label>From</label>
               <input
@@ -775,10 +730,7 @@ const Income = ({ mood, setAlert }) => {
                 }}
               />
             </div>
-            <button className="add-button" onClick={() => setExportOpen(true)}>
-              <Download size={18} />
-              Export
-            </button>
+
           </div>
           <div className="income-tabs">
             <button
@@ -832,6 +784,7 @@ const Income = ({ mood, setAlert }) => {
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
                       {tabActive === "other" ?
+                      item.type === "best_performance_income" ? <span></span> :
                         <span>{item?.payment?.booking?.plot?.plotNumber},{item?.payment?.booking?.colony?.name} {""}{tabActive === "other" ? <span
                           className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
                             ? "active"

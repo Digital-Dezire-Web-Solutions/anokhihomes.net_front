@@ -115,6 +115,7 @@
 .status.active {
   background: #e6f7e6;
   color: #34bb53;
+  border: none;
 }
 
 /* Actions */
@@ -362,5 +363,15 @@
   }
   .filter-buttons {
     overflow: auto;
+  }
+  .pagination button{
+    padding: 6px 8px;
+    border-radius: 20px;
+    border: none;
+    background: transparent;
+    color: #9f9f9f;
+    cursor: pointer;
+    border: 1px solid #9f9f9f;
+    font-size: 10px;
   }
 }

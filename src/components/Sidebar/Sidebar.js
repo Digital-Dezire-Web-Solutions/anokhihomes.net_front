@@ -20,6 +20,9 @@ import { FaXTwitter } from "react-icons/fa6";
 import NiIncome from "../../icons/ni-income";
 import { FiChevronDown, FiChevronRight } from "react-icons/fi";
 import NiAccount from "../../icons/ni-account";
+import NiTransfer from "../../icons/ni-transfer";
+import NiPlottransfer from "../../icons/ni-plottransfer";
+import NiPlotlist from "../../icons/ni-plotlist";
 
 function Sidebar({ closeMobile, mood }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -47,6 +50,7 @@ function Sidebar({ closeMobile, mood }) {
       { path: "/management", label: "Lead Mgnt.", icon: <NiManagement /> },
       { path: "/site-visits", label: "Site Visits", icon: <NiSitevisit /> },
       { path: "/plot", label: "Plots", icon: <NiTool /> },
+      { path: "/colony-plots", label: "Plots List", icon: <NiPlotlist /> },
       { path: "/holdplot", label: "Hold Plots", icon: <NiTool /> },
       { path: "/bookings", label: "Bookings", icon: <NiBooking /> },
 
@@ -79,6 +83,28 @@ function Sidebar({ closeMobile, mood }) {
             path: "/account",
             label: "Accounts",
             icon: <NiAccount />,
+          },
+        ],
+      },
+      {
+        label: "Transfer",
+        icon: <NiTransfer />,
+        key: "transfer",
+        children: [
+          {
+            path: "/plot-transfer",
+            label: "Plot Transfer",
+            icon: <NiPlottransfer />,
+          },
+          {
+            path: "/payments-transfer",
+            label: "Payments Transfer",
+            icon: <NiIncome />,
+          },
+          {
+            path: "/associate-transfer",
+            label: "Associate Transfer",
+            icon: <NiTeams />,
           },
         ],
       },

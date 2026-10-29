@@ -110,6 +110,46 @@
   color: #888;
 }
 
+.notif-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notif-markall {
+  border: none;
+  background: transparent;
+  color: var(--mood-color, #a50000);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.notif-markall:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.notif-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.notif-tabs button {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #f3f3f3;
+  cursor: pointer;
+}
+
+.notif-tabs button.active {
+  background: var(--mood-color, #a50000);
+  color: #fff;
+}
+
 /* Search */
 .search-modal {
   position: fixed;

@@ -197,3 +197,25 @@
 .fullscreen-toggle-btn:hover {
   background: #f1f5f9;
 }
+
+
+.plot-edit-btn {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--mood-color, #a50000);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plot-edit-btn.cancel {
+  background: #6b7280;
+}

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Maximize, Minimize } from "lucide-react";
+import { Maximize, Minimize, Pencil, X } from "lucide-react";
 import AdminPanel from "../PlotDraw/AdminPanel";
 import PlotCanvas from "../PlotDraw/PlotCanvas";
 import { TOOLS } from "../PlotDraw/Tools";
@@ -11,6 +11,9 @@ import PlotModal from "../../PlotDraw/PlotModal";
 const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
   const isAdmin = mood === "admin";
 
+  const [editMode, setEditMode] = useState(false);
+  const canEdit = isAdmin && editMode; // tools + canvas editing only while editing
+
   const [tool, setTool] = useState(TOOLS.SELECT);
   const [plots, setPlots] = useState([]);
   const [mainPlot, setMainPlot] = useState(null);
@@ -20,6 +23,9 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
   const [snapSize, setSnapSize] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const wrapperRef = useRef(null);
+
+  // last saved layout: what "Cancel" goes back to
+  const savedLayout = useRef({ mainPlot: null, plots: [] });
 
   const toggleFullscreen = useCallback(() => {
     if (!wrapperRef.current) return;
@@ -40,9 +46,41 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
 
   useEffect(() => {
     if (!projectId || !data) return;
-    setMainPlot(data.mainPlot || null);
-    setPlots(data.plots || []);
+    const layout = {
+      mainPlot: data.mainPlot || null,
+      plots: data.plots || [],
+    };
+    savedLayout.current = layout;
+    setMainPlot(layout.mainPlot);
+    setPlots(layout.plots);
   }, [data, projectId]);
+
+  // switching to another colony always goes back to view mode
+  useEffect(() => {
+    setEditMode(false);
+    setTool(TOOLS.SELECT);
+    setSelectedPlot(null);
+    setBg(null);
+  }, [projectId]);
+
+  const leaveEditMode = () => {
+    setTool(TOOLS.SELECT);
+    setSelectedPlot(null);
+    setBg(null);
+    setEditMode(false);
+  };
+
+  const cancelEdit = () => {
+    const changed =
+      JSON.stringify({ mainPlot, plots }) !==
+      JSON.stringify(savedLayout.current);
+
+    if (changed && !window.confirm("Discard unsaved changes?")) return;
+
+    setMainPlot(savedLayout.current.mainPlot);
+    setPlots(savedLayout.current.plots);
+    leaveEditMode();
+  };
 
   const handleBackgroundImage = (file) => {
     const reader = new FileReader();
@@ -90,12 +128,28 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
         },
       );
 
-      console.log("Layout Saved", res.data);
+      // use what the server saved: new plots now carry their real _id
+      const saved = Array.isArray(res.data?.plots)
+        ? {
+            mainPlot: res.data.mainPlot || null,
+            plots: res.data.plots,
+          }
+        : { mainPlot, plots: cleanedPlots };
+
+      savedLayout.current = saved;
+      setMainPlot(saved.mainPlot);
+      setPlots(saved.plots);
+
       setAlert({ message: "Plot Saved successfully!", status: "Success" });
       setTimeout(() => setAlert(null), 3000);
+
+      leaveEditMode(); // back to the read-only view
     } catch (error) {
       console.error(error);
-      setAlert({ message: "Failed To Save Plot!", status: "Error" });
+      setAlert({
+        message: error.response?.data?.message || "Failed To Save Plot!",
+        status: "Error",
+      });
       setTimeout(() => setAlert(null), 3000);
     }
   };
@@ -127,7 +181,7 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
           };
         }
 
-        // 🔥 sync selected plot
+        // sync selected plot
         if (selectedPlot?._id === id) {
           setSelectedPlot(updatedPlot);
         }
@@ -137,11 +191,12 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
     );
   };
 
-  console.log(selectedPlot,"selectedPlot")
-
   return (
-    <div ref={wrapperRef} className={`plot-draw-wrapper ${isFullscreen ? "is-fullscreen" : ""}`}>
-      {isAdmin && (
+    <div
+      ref={wrapperRef}
+      className={`plot-draw-wrapper ${isFullscreen ? "is-fullscreen" : ""}`}
+    >
+      {canEdit && (
         <AdminPanel
           mood={mood}
           tool={tool}
@@ -164,6 +219,17 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
         />
       )}
 
+      {isAdmin &&
+        (canEdit ? (
+          <button className="plot-edit-btn cancel" onClick={cancelEdit}>
+            <X size={16} /> Cancel
+          </button>
+        ) : (
+          <button className="plot-edit-btn" onClick={() => setEditMode(true)}>
+            <Pencil size={16} /> Edit
+          </button>
+        ))}
+
       <button
         className="fullscreen-toggle-btn"
         title={isFullscreen ? "Exit full screen" : "Full screen"}
@@ -174,7 +240,7 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
 
       <PlotCanvas
         mood={mood}
-        isAdmin={isAdmin}
+        isAdmin={canEdit}
         tool={tool}
         setTool={setTool}
         mainPlot={mainPlot}
@@ -188,10 +254,12 @@ const PlotDrawCard = ({ data, mood, setAlert, projectId }) => {
         snapSize={snapSize}
         fullscreen={isFullscreen}
       />
+
       {selectedPlot && (
         <PlotModal
           plot={selectedPlot}
           mood={mood}
+          readOnly={!canEdit}
           updatePlot={updatePlot}
           onClose={() => setSelectedPlot(null)}
           setAlert={setAlert}

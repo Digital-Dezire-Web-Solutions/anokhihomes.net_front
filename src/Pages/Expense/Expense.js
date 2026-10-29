@@ -493,48 +493,53 @@ const Expense = ({ mood, setAlert }) => {
           <h2>Expense</h2>
           <Breadcrumb />
         </div>
+        <div className="page-tools">
+          <button
+            className="add-button"
+            onClick={() => {
+              setSelectedExpense(null);
+              setSelectedColonies(null);
+              setIsEditMode(false);
+
+              setFormData({
+                expenseDate: "",
+                type: "",
+                project: "",
+                name: "",
+                amount: "",
+                paymentMode: "",
+                transactionId: "",
+                chequeNumber: "",
+                attachment: "",
+                remark: "",
+              });
+
+              setOpen(true);
+            }}
+          >
+            <LucidePlus /> Add
+          </button>
+          <div className="searchItem">
+            <NiSearch />
+
+            <input
+              placeholder="Search Project.... "
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <button className="add-button" onClick={() => setExportOpen(true)}>
+            <Download size={18} />
+            Export
+          </button>
+        </div>
       </div>
       <div className="dashboard-container">
         <div className="dashboard-wrapper">
           <div className="filter-grid page-tools table-filters">
-            <button
-              className="add-button"
-              onClick={() => {
-                setSelectedExpense(null);
-                setSelectedColonies(null);
-                setIsEditMode(false);
-
-                setFormData({
-                  expenseDate: "",
-                  type: "",
-                  project: "",
-                  name: "",
-                  amount: "",
-                  paymentMode: "",
-                  transactionId: "",
-                  chequeNumber: "",
-                  attachment: "",
-                  remark: "",
-                });
-
-                setOpen(true);
-              }}
-            >
-              <LucidePlus /> Add
-            </button>
-            <div className="searchItem">
-              <NiSearch />
-
-              <input
-                placeholder="Search Project.... "
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
-
             {/* <div className="searchItem">
               <select
                 value={typeFilter}
@@ -552,7 +557,7 @@ const Expense = ({ mood, setAlert }) => {
                 ))}
               </select>
             </div> */}
-             <CustomSelect
+            <CustomSelect
               className="cs-filter"
               value={typeFilter}
               onChange={(v) => {
@@ -585,23 +590,6 @@ const Expense = ({ mood, setAlert }) => {
                 onChange={(e) => setToDate(e.target.value)}
               />
             </div>
-            <div className="searchItem">
-              <select
-                value={projectFilter}
-                onChange={(e) => {
-                  setProjectFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">All Projects</option>
-
-                {allColonies?.map((project) => (
-                  <option key={project._id} value={project._id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
             <CustomSelect
               className="cs-filter"
               value={projectFilter}
@@ -618,10 +606,6 @@ const Expense = ({ mood, setAlert }) => {
                 })),
               ]}
             />
-            <button className="add-button" onClick={() => setExportOpen(true)}>
-              <Download size={18} />
-              Export
-            </button>
           </div>
           <div className="card table-box">
             <div className="table expense-table">
