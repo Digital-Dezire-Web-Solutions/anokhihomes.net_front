@@ -199,7 +199,7 @@ const PaymentTransfer = ({ mood, setAlert }) => {
                 <p className="transfer-note">No approved payments found.</p>
               ) : (
                 <div className="transfer-pay-list">
-                  <label className="transfer-pay-item">
+                  <label className="transfer-radio">
                     <input
                       type="checkbox"
                       checked={allSelected}
@@ -215,7 +215,7 @@ const PaymentTransfer = ({ mood, setAlert }) => {
                   {payments.map((p) => (
                     <label
                       key={p._id}
-                      className={`transfer-pay-item ${selected.includes(p._id) ? "active" : ""}`}
+                      className={`transfer-radio ${selected.includes(p._id) ? "active" : ""}`}
                     >
                       <input
                         type="checkbox"

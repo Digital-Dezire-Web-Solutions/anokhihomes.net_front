@@ -317,6 +317,7 @@ const ManagementCard = ({
         customer: item.customer,
         location: selectedColonies[0]?.locationId?._id,
         colonies: selectedColonies.map((c) => c._id),
+        visiters: formData.visiters,
         visitDate:
           formData.visitHour +
           " " +
@@ -363,7 +364,7 @@ const ManagementCard = ({
     return text?.toLowerCase().includes("accepted by");
   };
 
-  console.log(item, "item")
+  console.log(item, "item");
   // console.log(selectedProjects, "allCoselectedProjectslonies")
   return (
     <div className="user-card card" onClick={dashboard || undefined}>
@@ -378,7 +379,6 @@ const ManagementCard = ({
               >
                 {item?.status}
               </span>
-              
             </h4>
             {/* <p>{item.id}</p> */}
           </div>
@@ -421,13 +421,15 @@ const ManagementCard = ({
       </div>
       <div className="user-card-bottom">
         <div className="user-card-bottom-left">
-          <p style={{color: "#a70304", fontWeight: "bold"}}>Current Status</p>
+          <p style={{ color: "#a70304", fontWeight: "bold" }}>Current Status</p>
           <p>Date</p>
           <p>Phone No.</p>
           {mood !== "agent" && <p>Associate</p>}
         </div>
         <div className="user-card-bottom-right">
-          <p style={{color: "#a70304", fontWeight: "bold"}}>{item.currentStep.step} ({item.currentStep.status})</p>
+          <p style={{ color: "#a70304", fontWeight: "bold" }}>
+            {item.currentStep.step} ({item.currentStep.status})
+          </p>
           <p>{formatDate(item?.createdAt)}</p>
           <p>{item?.phone}</p>
           {mood !== "agent" && <p>{item?.agent?.name || ""}</p>}
@@ -851,6 +853,22 @@ const ManagementCard = ({
                   <option value="">Select Period (AM / PM)</option>
                   <option value="AM">AM</option>
                   <option value="PM">PM</option>
+                </select>
+                <select
+                  value={formData.visiters || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, visiters: e.target.value })
+                  }
+                >
+                  <option value="">No. of Visiters</option>
+                  {[...Array(10)].map((_, i) => {
+                    const hour = i + 1;
+                    return (
+                      <option key={hour} value={hour}>
+                        {hour}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="field">

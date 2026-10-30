@@ -23,6 +23,7 @@ import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import NiReceipt from "../../icons/ni-receipt";
 import { printPayoutStatement } from "../../components/Utils/printpayoutstatement";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
+import Loader from "../../components/Loader/Loader";
 
 const STATUS_OPTIONS = ["released", "paid", "cancelled"];
 const PAYABLE_STATUSES = ["released"];
@@ -367,8 +368,8 @@ const Payout = ({ mood, setAlert }) => {
         AdminCharge: fmt2(item?.adminChargeAmount),
         Net: fmt2(item?.netAmount),
         Status: item?.status,
-        PaymentMode: item?.paymentMode || "-",
-        TransactionId: item?.transactionId || "-",
+        // PaymentMode: item?.paymentMode || "-",
+        // TransactionId: item?.transactionId || "-",
       };
     });
   };
@@ -507,8 +508,8 @@ const Payout = ({ mood, setAlert }) => {
       AdminCharge: 18,
       Net: 18,
       Status: 15,
-      PaymentMode: 18,
-      TransactionId: 30,
+      // PaymentMode: 18,
+      // TransactionId: 30,
     };
 
     const margin = { top: 27, left: 5, right: 5, bottom: 8 };
@@ -590,7 +591,7 @@ const Payout = ({ mood, setAlert }) => {
     return payableTotalsByUser[myId] || 0;
   }, [payableTotalsByUser, userDetail]);
 
-  console.log(expenseDetail, "payCategory");
+  // console.log(expenseDetail, "payCategory");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -764,9 +765,7 @@ const Payout = ({ mood, setAlert }) => {
                 <span>Action</span>
               </div>
               {paginated?.length === 0 ? (
-                <div>
-                  <span>No Payout Found</span>
-                </div>
+                <Loader />
               ) : (
                 paginated?.map((item, index) => (
                   <div className="table-row" key={item._id}>
@@ -812,18 +811,7 @@ const Payout = ({ mood, setAlert }) => {
                       >
                         <NiOpenEye />
                       </span>
-                      {mood === "admin" && (
-                        <div className="modal-actions">
-                          {canPay(item) && (
-                            <button
-                              className="table-btn"
-                              onClick={() => openDirectPay(item)}
-                            >
-                              Pay
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      
                       {/* {item.status === "paid" && ( */}
                       <span
                         role="button"
@@ -851,6 +839,18 @@ const Payout = ({ mood, setAlert }) => {
                       >
                         <NiReceipt />
                       </span>
+                      {mood === "admin" && (
+                        <div className="modal-actions">
+                          {canPay(item) && (
+                            <button
+                              className="table-btn"
+                              onClick={() => openDirectPay(item)}
+                            >
+                              Pay
+                            </button>
+                          )}
+                        </div>
+                      )}
                       {/* )} */}
                     </div>
                   </div>

@@ -17,6 +17,7 @@ import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import TeamGraph from "./TeamGraph";
 import NiList from "../../icons/ni-list";
 import NiCard from "../../icons/ni-card";
+import Loader from "../../components/Loader/Loader";
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -233,7 +234,7 @@ const Teams = () => {
               <TeamGraph member={currentData} />
             )
           ) : (
-            <p>No Team Found</p>
+            <Loader />
           )}
         </div>
       </div>

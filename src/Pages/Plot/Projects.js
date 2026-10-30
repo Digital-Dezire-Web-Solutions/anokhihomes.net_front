@@ -13,6 +13,9 @@ import { getCashback, getProjects } from "../../Redux/Slices/AppSlices";
 import Host from "../../Host/Host";
 import axios from "axios";
 import { uploadImage } from "../LandingSetting/LandingApi";
+import NiList from "../../icons/ni-list";
+import NiCard from "../../icons/ni-card";
+import ColonyPlots from "../ColonyPlots/ColonyPlots";
 
 const Projects = ({ mood, setAlert }) => {
   const location = useLocation();
@@ -39,6 +42,7 @@ const Projects = ({ mood, setAlert }) => {
     priceRange: "",
     category: "",
   });
+  const [viewItem, setViewItem] = useState(false);
 
   useEffect(() => {
     if (selectedProject) {
@@ -255,59 +259,76 @@ const Projects = ({ mood, setAlert }) => {
               <LucidePlus /> Add
             </button>
           )}
+          <div className="page-toggle">
+            <span
+              className={`${viewItem === false ? "active" : ""}`}
+              onClick={() => setViewItem(false)}
+            >
+              <NiCard />
+            </span>
+            <span
+              className={`${viewItem === true ? "active" : ""}`}
+              onClick={() => setViewItem(true)}
+            >
+              <NiList />
+            </span>
+          </div>
         </div>
       </div>
+      {viewItem === false ? (
+        <div className="plot-grid ">
+          {projects?.length === 0 ? (
+            <div className="no-data">
+              <p>No Colony Found</p>
+            </div>
+          ) : (
+            projects
 
-      <div className="plot-grid ">
-        {projects?.length === 0 ? (
-          <div className="no-data">
-            <p>No Colony Found</p>
-          </div>
-        ) : (
-          projects
+              ?.filter((p) =>
+                p?.name?.toLowerCase().includes(search?.toLowerCase() || ""),
+              )
 
-            ?.filter((p) =>
-              p?.name?.toLowerCase().includes(search?.toLowerCase() || ""),
-            )
+              .map((p) => {
+                const cashback = cashbackData?.find(
+                  (c) => c.colonyId?._id === p._id,
+                );
 
-            .map((p) => {
-              const cashback = cashbackData?.find(
-                (c) => c.colonyId?._id === p._id,
-              );
-
-              return (
-                <PlotCard
-                  key={p._id}
-                  p={p}
-                  cashback={cashback}
-                  mood={mood}
-                  setSelectedProject={setSelectedProject}
-                  setIsEditMode={setIsEditMode}
-                  setOpen={setOpen}
-                  setAlert={setAlert}
-                  onDelete={handleDeleteProject}
-                  plotData={plotData}
-                  saving={saving}
-                />
-              );
-            })
-          // ?.filter((p) =>
-          //   p?.name?.toLowerCase().includes(search?.toLowerCase() || ""),
-          // )
-          // .map((p) => (
-          //   <PlotCard
-          //     p={p}
-          //     plotId={plotId}
-          //     mood={mood}
-          //     setSelectedProject={setSelectedProject}
-          //     setIsEditMode={setIsEditMode}
-          //     setOpen={setOpen}
-          //     setAlert={setAlert}
-          //     onDelete={handleDeleteProject}
-          //   />
-          // ))
-        )}
-      </div>
+                return (
+                  <PlotCard
+                    key={p._id}
+                    p={p}
+                    cashback={cashback}
+                    mood={mood}
+                    setSelectedProject={setSelectedProject}
+                    setIsEditMode={setIsEditMode}
+                    setOpen={setOpen}
+                    setAlert={setAlert}
+                    onDelete={handleDeleteProject}
+                    plotData={plotData}
+                    saving={saving}
+                  />
+                );
+              })
+            // ?.filter((p) =>
+            //   p?.name?.toLowerCase().includes(search?.toLowerCase() || ""),
+            // )
+            // .map((p) => (
+            //   <PlotCard
+            //     p={p}
+            //     plotId={plotId}
+            //     mood={mood}
+            //     setSelectedProject={setSelectedProject}
+            //     setIsEditMode={setIsEditMode}
+            //     setOpen={setOpen}
+            //     setAlert={setAlert}
+            //     onDelete={handleDeleteProject}
+            //   />
+            // ))
+          )}
+        </div>
+      ) : (
+        <ColonyPlots />
+      )}
 
       {/* ADD PLOT MODAL */}
       <AddLocationModal

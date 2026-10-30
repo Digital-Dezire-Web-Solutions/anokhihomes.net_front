@@ -50,10 +50,33 @@ function Sidebar({ closeMobile, mood }) {
       { path: "/management", label: "Lead Mgnt.", icon: <NiManagement /> },
       { path: "/site-visits", label: "Site Visits", icon: <NiSitevisit /> },
       { path: "/plot", label: "Plots", icon: <NiTool /> },
-      { path: "/colony-plots", label: "Plots List", icon: <NiPlotlist /> },
+      // { path: "/colony-plots", label: "Plots List", icon: <NiPlotlist /> },
       { path: "/holdplot", label: "Hold Plots", icon: <NiTool /> },
       { path: "/bookings", label: "Bookings", icon: <NiBooking /> },
 
+
+      {
+        label: "Transfer",
+        icon: <NiTransfer />,
+        key: "transfer",
+        children: [
+          {
+            path: "/plot-transfer",
+            label: "Plot Transfer",
+            icon: <NiPlottransfer />,
+          },
+          {
+            path: "/payments-transfer",
+            label: "Payments Transfer",
+            icon: <NiIncome />,
+          },
+          {
+            path: "/associate-transfer",
+            label: "Associate Transfer",
+            icon: <NiTeams />,
+          },
+        ],
+      },
       {
         label: "Transactions",
         icon: <NiPayments />,
@@ -86,29 +109,6 @@ function Sidebar({ closeMobile, mood }) {
           },
         ],
       },
-      {
-        label: "Transfer",
-        icon: <NiTransfer />,
-        key: "transfer",
-        children: [
-          {
-            path: "/plot-transfer",
-            label: "Plot Transfer",
-            icon: <NiPlottransfer />,
-          },
-          {
-            path: "/payments-transfer",
-            label: "Payments Transfer",
-            icon: <NiIncome />,
-          },
-          {
-            path: "/associate-transfer",
-            label: "Associate Transfer",
-            icon: <NiTeams />,
-          },
-        ],
-      },
-
       { path: "/user", label: "Users", icon: <NiUser /> },
       { path: "/teams", label: "Teams", icon: <NiTeams /> },
       { path: "/commission", label: "Commission", icon: <NiCommission /> },

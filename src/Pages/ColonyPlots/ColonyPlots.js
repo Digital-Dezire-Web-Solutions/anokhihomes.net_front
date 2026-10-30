@@ -16,6 +16,7 @@ import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import { getAllColonies } from "../../Redux/Slices/AppSlices";
 import NiEdit from "../../icons/ni-edit";
 import PlotModal from "../../components/PlotDraw/PlotModal";
+import Loader from "../../components/Loader/Loader";
 
 const ITEMS_PER_PAGE = 25;
 
@@ -36,7 +37,7 @@ const BOOKING_STATUS_CLASS = {
 
 const FILTER_OPTIONS = [
     { value: "", label: "All Plots" },
-    { value: "booked", label: "Booked" },
+    // { value: "booked", label: "Booked" },
     { value: "FOR_SALE", label: "For Sale" },
     { value: "HOLD", label: "Hold" },
     { value: "PENDING", label: "Pending" },
@@ -125,7 +126,7 @@ const ColonyPlots = ({ mood, setAlert }) => {
 
     const stats = useMemo(() => {
         const s = {
-            total: plots.length,
+            total: 0,
             booked: 0,
             forSale: 0,
             hold: 0,
@@ -135,11 +136,14 @@ const ColonyPlots = ({ mood, setAlert }) => {
             remaining: 0,
             hasDetails: false,
         };
+
         plots.forEach((p) => {
-            if (p.isBooked) s.booked += 1;
-            if (p.plotType === "FOR_SALE") s.forSale += 1;
-            if (p.plotType === "HOLD") s.hold += 1;
+            // every plot is counted once: sold > booked > hold > for sale
             if (p.plotType === "SOLD") s.sold += 1;
+            else if (p.isBooked) s.booked += 1;
+            else if (p.plotType === "HOLD") s.hold += 1;
+            else if (p.plotType === "FOR_SALE") s.forSale += 1;
+
             if (p.booking) {
                 s.hasDetails = true;
                 s.amount += p.booking.totalAmount || 0;
@@ -147,6 +151,8 @@ const ColonyPlots = ({ mood, setAlert }) => {
                 s.remaining += p.booking.remaining || 0;
             }
         });
+
+        s.total = s.forSale + s.booked + s.hold + s.sold;
         return s;
     }, [plots]);
 
@@ -214,286 +220,286 @@ const ColonyPlots = ({ mood, setAlert }) => {
     const handleEditPlot = (plot) => {
         setSelectedPlot(plot)
     }
-    console.log(selected,"selected")
+    // console.log(selected,"selected")
     return (
-        <div className="plot-container">
-            <div className="table-filters">
-                <div className="page-head-title">
-                    <h2>Colony Plots</h2>
-                    <Breadcrumb />
+        // <div className="plot-container">
+        //     <div className="table-filters">
+        //         <div className="page-head-title">
+        //             <h2>Colony Plots</h2>
+        //             <Breadcrumb />
+        //         </div>
+        //     </div>
+
+        <div className="dashboard-container">
+            <div className="dashboard-wrapper">
+                <div className="filter-grid page-tools table-filters">
+                    <CustomSelect
+                        className="cs-filter"
+                        value={colonyId}
+                        onChange={(v) => {
+                            setColonyId(v);
+                            setFilter("");
+                            setSearch("");
+                            setPage(1);
+                        }}
+                        placeholder="Select Colony"
+                        options={colonyOptions}
+                    />
+
+                    <div className="searchItem">
+                        <NiSearch />
+                        <input
+                            placeholder="Search plot / customer / associate"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
+
+                    <CustomSelect
+                        className="cs-filter"
+                        value={filter}
+                        onChange={(v) => {
+                            setFilter(v);
+                            setPage(1);
+                        }}
+                        placeholder="All Plots"
+                        options={FILTER_OPTIONS}
+                    />
                 </div>
-            </div>
 
-            <div className="dashboard-container">
-                <div className="dashboard-wrapper">
-                    <div className="filter-grid page-tools table-filters">
-                        <CustomSelect
-                            className="cs-filter"
-                            value={colonyId}
-                            onChange={(v) => {
-                                setColonyId(v);
-                                setFilter("");
-                                setSearch("");
-                                setPage(1);
-                            }}
-                            placeholder="Select Colony"
-                            options={colonyOptions}
-                        />
-
-                        <div className="searchItem">
-                            <NiSearch />
-                            <input
-                                placeholder="Search plot / customer / associate"
-                                value={search}
-                                onChange={(e) => {
-                                    setSearch(e.target.value);
-                                    setPage(1);
-                                }}
+                <div className="dashboard-grid">
+                    <DashboardCard title="Total Plots" value={stats.total} icons={<NiPayments />} />
+                    <DashboardCard title="Booked" value={stats.booked} icons={<NiPayments />} />
+                    <DashboardCard title="For Sale" value={stats.forSale} icons={<NiPayments />} />
+                    <DashboardCard title="Hold" value={stats.hold} icons={<NiPayments />} />
+                    <DashboardCard title="Sold" value={stats.sold} icons={<NiPayments />} />
+                    {stats.hasDetails && (
+                        <>
+                            <DashboardCard
+                                title="Booking Amount"
+                                value={`₹${formatCurrency(stats.amount)}`}
+                                icons={<NiPayments />}
                             />
-                        </div>
+                            <DashboardCard
+                                title="Received"
+                                value={`₹${formatCurrency(stats.paid)}`}
+                                icons={<NiPayments />}
+                            />
+                            <DashboardCard
+                                title="Remaining"
+                                value={`₹${formatCurrency(stats.remaining)}`}
+                                icons={<NiPayments />}
+                            />
+                        </>
+                    )}
+                </div>
 
-                        <CustomSelect
-                            className="cs-filter"
-                            value={filter}
-                            onChange={(v) => {
-                                setFilter(v);
-                                setPage(1);
-                            }}
-                            placeholder="All Plots"
-                            options={FILTER_OPTIONS}
-                        />
-                    </div>
+                <h4 style={{ margin: "20px 0 10px 0" }}>{data?.colony?.name || "Plots"}</h4>
 
-                    <div className="dashboard-grid">
-                        <DashboardCard title="Total Plots" value={stats.total} icons={<NiPayments />} />
-                        <DashboardCard title="Booked" value={stats.booked} icons={<NiPayments />} />
-                        <DashboardCard title="For Sale" value={stats.forSale} icons={<NiPayments />} />
-                        <DashboardCard title="Hold" value={stats.hold} icons={<NiPayments />} />
-                        <DashboardCard title="Sold" value={stats.sold} icons={<NiPayments />} />
-                        {stats.hasDetails && (
-                            <>
-                                <DashboardCard
-                                    title="Booking Amount"
-                                    value={`₹${formatCurrency(stats.amount)}`}
-                                    icons={<NiPayments />}
-                                />
-                                <DashboardCard
-                                    title="Received"
-                                    value={`₹${formatCurrency(stats.paid)}`}
-                                    icons={<NiPayments />}
-                                />
-                                <DashboardCard
-                                    title="Remaining"
-                                    value={`₹${formatCurrency(stats.remaining)}`}
-                                    icons={<NiPayments />}
-                                />
-                            </>
-                        )}
-                    </div>
+                <div className="card table-box">
+                    <div className="plots-scroll">
+                        <div className="table plots-table">
+                            <div className="table-head">
+                                <span>S.No</span>
+                                <span>Plot</span>
+                                <span>Area</span>
+                                <span>Rate</span>
+                                <span>Status</span>
+                                <span>Customer</span>
+                                <span>Associate</span>
+                                <span>Total</span>
+                                <span>Paid</span>
+                                <span>Remaining</span>
+                                <span>Action</span>
+                            </div>
 
-                    <h4>{data?.colony?.name || "Plots"}</h4>
-
-                    <div className="card table-box">
-                        <div className="plots-scroll">
-                            <div className="table plots-table">
-                                <div className="table-head">
-                                    <span>S.No</span>
-                                    <span>Plot</span>
-                                    <span>Area</span>
-                                    <span>Rate</span>
-                                    <span>Status</span>
-                                    <span>Customer</span>
-                                    <span>Associate</span>
-                                    <span>Total</span>
-                                    <span>Paid</span>
-                                    <span>Remaining</span>
-                                    <span>Action</span>
+                            {loading ? (
+                                <Loader />
+                            ) : !colonyId ? (
+                                <div>
+                                    <span>Select a colony</span>
                                 </div>
+                            ) : paginated.length === 0 ? (
+                                <div>
+                                    <span>No Plots Found</span>
+                                </div>
+                            ) : (
+                                paginated.map((p, index) => {
+                                    const b = p.booking;
+                                    const st = PLOT_STATUS[p.plotType] || {
+                                        label: p.plotType,
+                                        className: "",
+                                    };
 
-                                {loading ? (
-                                    <div>
-                                        <span>Loading...</span>
-                                    </div>
-                                ) : !colonyId ? (
-                                    <div>
-                                        <span>Select a colony</span>
-                                    </div>
-                                ) : paginated.length === 0 ? (
-                                    <div>
-                                        <span>No Plots Found</span>
-                                    </div>
-                                ) : (
-                                    paginated.map((p, index) => {
-                                        const b = p.booking;
-                                        const st = PLOT_STATUS[p.plotType] || {
-                                            label: p.plotType,
-                                            className: "",
-                                        };
-
-                                        return (
-                                            <div className="table-row" key={p._id}>
-                                                <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
-                                                <span>{p.plotNumber}</span>
-                                                <span>{formatCurrency(p.area)} sqft</span>
-                                                <span>₹{formatCurrency(b?.ratePerSqft ?? p.price)}/sqft</span>
-                                                <span>
-                                                    <span className={`status ${st.className}`}>{st.label}</span>
-                                                </span>
-                                                <span>
-                                                    {b?.customer ? (
-                                                        <>
-                                                            {b.customer.name}
-                                                            <small>{b.customer.phone}</small>
-                                                        </>
-                                                    ) : (
-                                                        "-"
-                                                    )}
-                                                </span>
-                                                <span>
-                                                    {b?.agent ? (
-                                                        <>
-                                                            {b.agent.name}
-                                                            <small>{b.agent.referralId}</small>
-                                                        </>
-                                                    ) : (
-                                                        "-"
-                                                    )}
-                                                </span>
-                                                <span>{b ? `₹${formatCurrency(b.totalAmount)}` : "-"}</span>
-                                                <span>{b ? `₹${formatCurrency(b.amountPaid)}` : "-"}</span>
-                                                <span>{b ? `₹${formatCurrency(b.remaining)}` : "-"}</span>
-                                                <div className="dots">
-                                                    {b && (
-                                                        <span onClick={() => setSelected(p)}>
-                                                            <NiOpenEye />
-                                                        </span>
-                                                    )}
+                                    return (
+                                        <div className="table-row" key={p._id}>
+                                            <span>{(page - 1) * ITEMS_PER_PAGE + index + 1}</span>
+                                            <span>{p.plotNumber}</span>
+                                            <span>{formatCurrency(p.area)} sqft</span>
+                                            <span>₹{formatCurrency(b?.ratePerSqft ?? p.price)}/sqft</span>
+                                            <span>
+                                                <span className={`status ${st.className}`}>{st.label}</span>
+                                            </span>
+                                            <span>
+                                                {b?.customer ? (
+                                                    <>
+                                                        {b.customer.name}
+                                                        <small>{b.customer.phone}</small>
+                                                    </>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </span>
+                                            <span>
+                                                {b?.agent ? (
+                                                    <>
+                                                        {b.agent.name}
+                                                        <small>{b.agent.referralId}</small>
+                                                    </>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </span>
+                                            <span>{b ? `₹${formatCurrency(b.totalAmount)}` : "-"}</span>
+                                            <span>{b ? `₹${formatCurrency(b.amountPaid)}` : "-"}</span>
+                                            <span>{b ? `₹${formatCurrency(b.remaining)}` : "-"}</span>
+                                            <div className="dots">
+                                                {st.label !== "Sold" &&
                                                     <span onClick={() => handleEditPlot(p)}>
                                                         <NiEdit />
                                                     </span>
-                                                </div>
+                                                }
+                                                {b && (
+                                                    <span onClick={() => setSelected(p)}>
+                                                        <NiOpenEye />
+                                                    </span>
+                                                )}
                                             </div>
-                                        );
-                                    })
-                                )}
-                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
-
-                    {totalPages > 1 && (
-                        <Pagination page={page} totalPages={totalPages} setPage={setPage} />
-                    )}
                 </div>
 
-                <ViewModal
-                    open={!!selected}
-                    onClose={() => setSelected(null)}
-                    title={`Plot ${selected?.plotNumber || ""}`}
-                >
-                    {sb && (
-                        <div className="report-view-box-right active">
-                            {/* <h4>Plot</h4> */}
-                            <p>
-                                <strong>Colony :</strong>
-                                {data?.colony?.name}
-                            </p>
-                            <p>
-                                <strong>Plot No :</strong>
-                                {selected.plotNumber}
-                            </p>
-                            <p>
-                                <strong>Area :</strong>
-                                {formatCurrency(sb.plotArea || selected.area)} sqft
-                            </p>
-                            <p>
-                                <strong>Status :</strong>
-                                <span className={`status ${sStatus?.className || ""}`}>
-                                    {sStatus?.label || selected.plotType}
-                                </span>
-                            </p>
-
-                            <h4>Customer</h4>
-                            <p>
-                                <strong>Name :</strong>
-                                {sb.customer?.name || "-"}
-                            </p>
-                            <p>
-                                <strong>Phone :</strong>
-                                {sb.customer?.phone || "-"}
-                            </p>
-
-                            <h4>Associate</h4>
-                            <p>
-                                <strong>Name :</strong>
-                                {sb.agent?.name || "-"}
-                            </p>
-                            <p>
-                                <strong>Referral ID :</strong>
-                                {sb.agent?.referralId || "-"}
-                            </p>
-                            <p>
-                                <strong>Phone :</strong>
-                                {sb.agent?.phone || "-"}
-                            </p>
-
-                            <h4>Booking</h4>
-                            <p>
-                                <strong>Status :</strong>
-                                <span
-                                    style={{ textTransform: "capitalize" }}
-                                    className={`status ${BOOKING_STATUS_CLASS[sb.status] || ""}`}
-                                >
-                                    {sb.status}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>Booked On :</strong>
-                                {formatDate(sb.bookedOn)}
-                            </p>
-                            <p>
-                                <strong>Rate :</strong>₹{formatCurrency(sb.ratePerSqft)}/sqft
-                            </p>
-                            {sb.plcPercent > 0 && (
-                                <p>
-                                    <strong>PLC ({sb.plcPercent}%) :</strong>₹
-                                    {formatCurrency(sb.plcAmount)}
-                                </p>
-                            )}
-                            <p>
-                                <strong>Total Amount :</strong>₹{formatCurrency(sb.totalAmount)}
-                            </p>
-                            <p>
-                                <strong>Paid :</strong>₹{formatCurrency(sb.amountPaid)}
-                            </p>
-                            <p>
-                                <strong>Remaining :</strong>₹{formatCurrency(sb.remaining)}
-                            </p>
-
-                            <div className="payment-progress">
-                                <h5>Payment Progress</h5>
-                                <div className="progress-bar">
-                                    <div
-                                        className="progress-fill"
-                                        style={{ width: `${sProgress}%` }}
-                                    />
-                                </div>
-                                <p>{Math.floor(sProgress)}% Paid</p>
-                            </div>
-                        </div>
-                    )}
-                </ViewModal>
-                {selectedPlot && (
-                    <PlotModal
-                        plot={selectedPlot}
-                        mood={mood}
-                        updatePlot={updatePlot}
-                        onClose={() => setSelectedPlot(null)}
-                        setAlert={setAlert}
-                        projectId={selectedPlot._id}
-                    />
+                {totalPages > 1 && (
+                    <Pagination page={page} totalPages={totalPages} setPage={setPage} />
                 )}
             </div>
+
+            <ViewModal
+                open={!!selected}
+                onClose={() => setSelected(null)}
+                title={`Plot ${selected?.plotNumber || ""}`}
+            >
+                {sb && (
+                    <div className="report-view-box-right active">
+                        {/* <h4>Plot</h4> */}
+                        <p>
+                            <strong>Colony :</strong>
+                            {data?.colony?.name}
+                        </p>
+                        <p>
+                            <strong>Plot No :</strong>
+                            {selected.plotNumber}
+                        </p>
+                        <p>
+                            <strong>Area :</strong>
+                            {formatCurrency(sb.plotArea || selected.area)} sqft
+                        </p>
+                        <p>
+                            <strong>Status :</strong>
+                            <span className={`status ${sStatus?.className || ""}`}>
+                                {sStatus?.label || selected.plotType}
+                            </span>
+                        </p>
+
+                        <h4>Customer</h4>
+                        <p>
+                            <strong>Name :</strong>
+                            {sb.customer?.name || "-"}
+                        </p>
+                        <p>
+                            <strong>Phone :</strong>
+                            {sb.customer?.phone || "-"}
+                        </p>
+
+                        <h4>Associate</h4>
+                        <p>
+                            <strong>Name :</strong>
+                            {sb.agent?.name || "-"}
+                        </p>
+                        <p>
+                            <strong>Referral ID :</strong>
+                            {sb.agent?.referralId || "-"}
+                        </p>
+                        <p>
+                            <strong>Phone :</strong>
+                            {sb.agent?.phone || "-"}
+                        </p>
+
+                        <h4>Booking</h4>
+                        <p>
+                            <strong>Status :</strong>
+                            <span
+                                style={{ textTransform: "capitalize" }}
+                                className={`status ${BOOKING_STATUS_CLASS[sb.status] || ""}`}
+                            >
+                                {sb.status}
+                            </span>
+                        </p>
+                        <p>
+                            <strong>Booked On :</strong>
+                            {formatDate(sb.bookedOn)}
+                        </p>
+                        <p>
+                            <strong>Rate :</strong>₹{formatCurrency(sb.ratePerSqft)}/sqft
+                        </p>
+                        {sb.plcPercent > 0 && (
+                            <p>
+                                <strong>PLC ({sb.plcPercent}%) :</strong>₹
+                                {formatCurrency(sb.plcAmount)}
+                            </p>
+                        )}
+                        <p>
+                            <strong>Total Amount :</strong>₹{formatCurrency(sb.totalAmount)}
+                        </p>
+                        <p>
+                            <strong>Paid :</strong>₹{formatCurrency(sb.amountPaid)}
+                        </p>
+                        <p>
+                            <strong>Remaining :</strong>₹{formatCurrency(sb.remaining)}
+                        </p>
+
+                        <div className="payment-progress">
+                            <h5>Payment Progress</h5>
+                            <div className="progress-bar">
+                                <div
+                                    className="progress-fill"
+                                    style={{ width: `${sProgress}%` }}
+                                />
+                            </div>
+                            <p>{Math.floor(sProgress)}% Paid</p>
+                        </div>
+                    </div>
+                )}
+            </ViewModal>
+            {selectedPlot && (
+                <PlotModal
+                    plot={selectedPlot}
+                    mood={mood}
+                    updatePlot={updatePlot}
+                    onClose={() => setSelectedPlot(null)}
+                    setAlert={setAlert}
+                    projectId={selectedPlot._id}
+                />
+            )}
         </div>
+        // </div>
     );
 };
 

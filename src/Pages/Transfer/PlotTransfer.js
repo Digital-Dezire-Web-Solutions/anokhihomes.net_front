@@ -132,7 +132,7 @@ const PlotTransfer = ({ mood, setAlert }) => {
         <div className="card transfer-card plot-modal">
           <h4>1. Select booking</h4>
           <BookingSelect
-            label="Pending booking"
+            label=""
             filter={pending}
             value={booking}
             onChange={setBooking}

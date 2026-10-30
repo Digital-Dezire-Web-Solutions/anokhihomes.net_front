@@ -749,6 +749,7 @@ const Other = ({ mood, setAlert, data }) => {
 
                 {(((item.status !== "approval" && mood === "admin") ||
                   (item.status !== "approval" && mood === "staff")) && (
+                    <span>
                     <label className="switch">
                       <input
                         type="checkbox"
@@ -757,6 +758,7 @@ const Other = ({ mood, setAlert, data }) => {
                       />
                       <span className="slider"></span>
                     </label>
+                    </span>
                   )) || (
                     <span
                       className={`status ${item.status === "approval" ? "pending" : item.status}`}

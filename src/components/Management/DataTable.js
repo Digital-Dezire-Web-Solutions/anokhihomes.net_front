@@ -23,6 +23,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../CustomSelect/CustomSelect";
+import Loader from "../Loader/Loader";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["new", "assigned", "unassigned", "converted", "lost"];
@@ -558,11 +559,11 @@ const DataTable = ({ data, mood, setAlert }) => {
         </button>
       </div>
 
-      <div className="user-card-box">
-        {paginatedData.length === 0 ? (
-          <p>No Leads Found</p>
-        ) : (
-          paginatedData.map((item) => (
+      {paginatedData.length === 0 ? (
+        <Loader />
+      ) : (
+        <div className="user-card-box">
+          {paginatedData.map((item) => (
             <ManagementCard
               item={item}
               setSelectedLead={setSelectedLead}
@@ -572,9 +573,9 @@ const DataTable = ({ data, mood, setAlert }) => {
               setAlert={setAlert}
               agentsList={agentsList}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       <AddLocationModal
         open={open}

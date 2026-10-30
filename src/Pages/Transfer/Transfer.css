@@ -64,6 +64,10 @@
   cursor: pointer;
 }
 
+.transfer-radio input {
+  width: 3%;
+}
+
 .transfer-pay-item.active,
 .transfer-radio.active {
   border-color: var(--mood-color, #a50000);

@@ -125,9 +125,12 @@
   color: var(--mood-color);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  /* justify-content: center; */
+  gap: 5px;
   position: relative;
+}
+.dots span{
+  border: none;
 }
 
 .app.dark .card {

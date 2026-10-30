@@ -19,6 +19,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../CustomSelect/CustomSelect";
+import Loader from "../Loader/Loader";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["pending", "approved", "rejected"];
@@ -467,22 +468,22 @@ const PaymentTable = ({ data, mood, setAlert }) => {
             <option value="rejected">Rejected</option>
           </select>
         </div> */}
-         <CustomSelect
-            className="cs-filter"
-            value={statusFilter}
-            onChange={(v) => {
-              setStatusFilter(v);
-              setPage(1);
-            }}
-            placeholder="All Status"
-            options={[
-              { value: "", label: "All Status" },
-              ...STATUS_OPTIONS.map((s) => ({
-                value: s,
-                label: s.charAt(0).toUpperCase() + s.slice(1),
-              })),
-            ]}
-          />
+        <CustomSelect
+          className="cs-filter"
+          value={statusFilter}
+          onChange={(v) => {
+            setStatusFilter(v);
+            setPage(1);
+          }}
+          placeholder="All Status"
+          options={[
+            { value: "", label: "All Status" },
+            ...STATUS_OPTIONS.map((s) => ({
+              value: s,
+              label: s.charAt(0).toUpperCase() + s.slice(1),
+            })),
+          ]}
+        />
         <div className="searchItem">
           <label>From</label>
 
@@ -513,11 +514,11 @@ const PaymentTable = ({ data, mood, setAlert }) => {
           Export
         </button>
       </div>
-      <div className="user-card-box">
-        {paginated.length === 0 ? (
-          <p>No Payment Found</p>
-        ) : (
-          paginated.map((item) => (
+      {paginated.length === 0 ? (
+        <Loader />
+      ) : (
+        <div className="user-card-box">
+          {paginated.map((item) => (
             <PaymentCard
               item={item}
               setSelectedPayment={setSelectedPayment}
@@ -526,9 +527,9 @@ const PaymentTable = ({ data, mood, setAlert }) => {
               mood={mood}
               setAlert={setAlert}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       <AddLocationModal
         open={open}

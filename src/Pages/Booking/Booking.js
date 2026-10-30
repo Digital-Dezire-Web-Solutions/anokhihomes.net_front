@@ -30,6 +30,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../../components/DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
+import Loader from "../../components/Loader/Loader";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["all", "confirmed", "pending", "approval", "rejected"];
@@ -546,11 +547,11 @@ const Booking = ({ mood, setAlert, landingPage }) => {
         </div>
       </div>
 
-      <div className="user-card-box">
-        {currentData.length === 0 ? (
-          <p>No Bookings Found</p>
-        ) : (
-          currentData.map((item) => (
+      {currentData.length === 0 ? (
+        <Loader />
+      ) : (
+        <div className="user-card-box">
+          {currentData.map((item) => (
             <BookingCard
               item={item}
               setSelectedBooking={setSelectedBooking}
@@ -559,9 +560,9 @@ const Booking = ({ mood, setAlert, landingPage }) => {
               mood={mood}
               setAlert={setAlert}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
       {/* Pagination */}
       {totalPages > 1 && (
         <Pagination

@@ -468,6 +468,7 @@ const SiteVisitCard = ({
           {mood !== "agent" && <p>Associate</p>}
           <p>Site</p>
           <p>Visit Date</p>
+          <p>Visiters</p>
         </div>
         <div className="user-card-bottom-right">
           <p>{formatDate(item?.createdAt)}</p>
@@ -478,6 +479,7 @@ const SiteVisitCard = ({
             {item.colonies?.length}, {item?.location?.name}
           </p>
           <p>{item.visitDate}</p>
+          <p>{item?.visiters}</p>
         </div>
       </div>
       {(mood === "admin" || mood === "staff") && item.status === "approval" && (
@@ -729,6 +731,7 @@ const SiteVisitCard = ({
             {mood !== "agent" && <p>Associate</p>}
             <p>Site</p>
             <p>Visit Date</p>
+            <p>No. of Visiters</p>
             {/* <p>Notes</p> */}
           </div>
           <div className="user-card-bottom-right">
@@ -745,6 +748,7 @@ const SiteVisitCard = ({
               , {item?.location?.name}
             </p>
             <p>{item.visitDate}</p>
+            <p>{item?.visiters}</p>
             <div className="table-filters">
               <button
                 className={`view-report-btn ${showReport ? "active" : ""}`}

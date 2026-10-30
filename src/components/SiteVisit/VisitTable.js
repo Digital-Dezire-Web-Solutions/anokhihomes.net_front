@@ -25,6 +25,7 @@ import autoTable from "jspdf-autotable";
 import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../CustomSelect/CustomSelect";
+import Loader from "../Loader/Loader";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["Approval", "Scheduled", "Completed", "cancelled"];
@@ -457,11 +458,11 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
           Export
         </button>
       </div>
-      <div className="user-card-box">
-        {paginated.length === 0 ? (
-          <p>No Site Visits Found</p>
-        ) : (
-          paginated.map((item) => (
+      {paginated.length === 0 ? (
+        <Loader />
+      ) : (
+        <div className="user-card-box">
+          {paginated.map((item) => (
             <SiteVisitCard
               item={item}
               setSelectedVisit={setSelectedVisit}
@@ -471,9 +472,9 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
               setAlert={setAlert}
               landingPage={landingPage}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       <AddLocationModal
         open={open}

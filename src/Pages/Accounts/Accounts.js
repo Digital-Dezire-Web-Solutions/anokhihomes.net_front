@@ -39,6 +39,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
+import Loader from "../../components/Loader/Loader";
 
 const Accounts = ({ mood, setAlert }) => {
     const dispatch = useDispatch();
@@ -461,9 +462,7 @@ const Accounts = ({ mood, setAlert }) => {
                                 <span>Action</span>
                             </div>
                             {paginated?.length === 0 ? (
-                                <div>
-                                    <span>No Expense Found</span>
-                                </div>
+                                <Loader />
                             ) : (
                                 paginated?.map((item, index) => (
                                     <div className="table-row" key={index}>

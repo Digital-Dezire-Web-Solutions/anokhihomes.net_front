@@ -14,6 +14,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import Loader from "../../components/Loader/Loader";
 
 const ITEMS_PER_PAGE = 30;
 
@@ -272,7 +273,7 @@ const Commission = ({ mood, setAlert }) => {
           </div>
 
           {paginatedData.length === 0 ? (
-            <p>No Commission Found</p>
+            <Loader />
           ) : (
             paginatedData.map((item, index) => (
               <CommissionTable

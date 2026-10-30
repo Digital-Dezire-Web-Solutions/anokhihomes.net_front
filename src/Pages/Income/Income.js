@@ -20,6 +20,7 @@ import autoTable from "jspdf-autotable";
 import AddLocationModal from "../../components/Modals/AddLocationModal";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
+import Loader from "../../components/Loader/Loader";
 
 const EXPORT_COLUMNS = [
   "S.No",
@@ -80,6 +81,7 @@ const Income = ({ mood, setAlert }) => {
   const [saving, setSaving] = useState(false);
   // Which agent's FULL history to export ("" = use current filtered/table results)
   const [exportAgentId, setExportAgentId] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     dispatch(getAccountDetails());
@@ -565,7 +567,6 @@ const Income = ({ mood, setAlert }) => {
 
   const currentCycleLabel = formatCycleLabel(currentCycleStart, currentCycleEnd);
   const previousCycleLabel = formatCycleLabel(prevCycleStart, prevCycleEnd);
-  console.log(selectedIncome, "selectedIncome")
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -768,9 +769,7 @@ const Income = ({ mood, setAlert }) => {
                 </div>
 
                 {paginated?.length === 0 ? (
-                  <div>
-                    <span>No Income Found</span>
-                  </div>
+                  <Loader />
                 ) : (
                   paginated?.map((item, index) => (
                     <div className="table-row" key={item._id}>
@@ -784,17 +783,17 @@ const Income = ({ mood, setAlert }) => {
                       </span>
                       <span>₹{formatCurrency(item.amount)}</span>
                       {tabActive === "other" ?
-                      item.type === "best_performance_income" ? <span></span> :
-                        <span>{item?.payment?.booking?.plot?.plotNumber},{item?.payment?.booking?.colony?.name} {""}{tabActive === "other" ? <span
-                          className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
-                            ? "active"
-                            : "pending2"
-                            }`}
-                        >
-                          {item?.payment?.booking?.colony?.category === "Anokhi Homes"
-                            ? "AH"
-                            : "PP"}
-                        </span> : ""}</span> :
+                        item.type === "best_performance_income" ? <span></span> :
+                          <span>{item?.payment?.booking?.plot?.plotNumber},{item?.payment?.booking?.colony?.name} {""}{tabActive === "other" ? <span
+                            className={`status ${item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                              ? "active"
+                              : "pending2"
+                              }`}
+                          >
+                            {item?.payment?.booking?.colony?.category === "Anokhi Homes"
+                              ? "AH"
+                              : "PP"}
+                          </span> : ""}</span> :
                         <span>{!item?.fromUser ?
                           `${item?.payment?.customer?.name ? item?.payment?.customer?.name : "Anokhi Homes"} (Payment)` || "-" :
                           `${item?.fromUser?.name} (${item?.fromUser?.referralId})`} {""}{tabActive === "other" ? <span
@@ -808,11 +807,13 @@ const Income = ({ mood, setAlert }) => {
                               : "PP"}
                           </span> : ""}</span>
                       }
-                      <span
-                        className={`status ${item.status === "credited" ? "active" : "pending"
-                          }`}
-                      >
-                        {item.status}
+                      <span>
+                        <span
+                          className={`status ${item.status === "credited" ? "active" : "pending"
+                            }`}
+                        >
+                          {item.status}
+                        </span>
                       </span>
                       <span
                         onClick={(e) => {
