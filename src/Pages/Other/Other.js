@@ -34,16 +34,26 @@ import Stars from "../../components/Utils/Stars";
 import UserForm from "../../components/UserForm/UserForm";
 import Pagination from "../../components/Pagination/Pagination";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
+import { ShieldAlert } from "lucide-react";
+import Loader from "../../components/Loader/Loader";
 
 const ITEMS_PER_PAGE = 25;
 const Other = ({ mood, setAlert, data }) => {
   const dispatch = useDispatch();
   const { users, staffRoles } = useSelector((state) => state.app);
+  const canView = mood === "admin" || mood === "staff";
 
   useEffect(() => {
+    if (!canView) return;
     dispatch(getUser());
     dispatch(getStaffRoles());
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView]);
+
+  // useEffect(() => {
+  //   dispatch(getUser());
+  //   dispatch(getStaffRoles());
+  // }, []);
 
   // console.log(staffRoles, "staffRoles")
   const navigate = useNavigate();
@@ -588,6 +598,37 @@ const Other = ({ mood, setAlert, data }) => {
     setExportOpen(false);
   };
 
+  // role not known yet (user is still being loaded)
+  if (!mood) {
+    return (
+      <div className="plot-container">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (!canView) {
+    return (
+      <div className="plot-container">
+        <div className="table-filters">
+          <div className="page-head-title">
+            <h2>Users</h2>
+            <Breadcrumb />
+          </div>
+        </div>
+
+        <div className="card not-allowed-box">
+          <ShieldAlert size={42} />
+          <h3>Not Allowed</h3>
+          <p>You do not have permission to view this page.</p>
+          <div className="modal-actions">
+          <button  onClick={() => navigate("/dashboard")}>Go to Dashboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="plot-container user-table-box">
       {/* Filters */}
@@ -750,14 +791,14 @@ const Other = ({ mood, setAlert, data }) => {
                 {(((item.status !== "approval" && mood === "admin") ||
                   (item.status !== "approval" && mood === "staff")) && (
                     <span>
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={item.status === "active"}
-                        onChange={() => handleStatusToggle(item)}
-                      />
-                      <span className="slider"></span>
-                    </label>
+                      <label className="switch">
+                        <input
+                          type="checkbox"
+                          checked={item.status === "active"}
+                          onChange={() => handleStatusToggle(item)}
+                        />
+                        <span className="slider"></span>
+                      </label>
                     </span>
                   )) || (
                     <span

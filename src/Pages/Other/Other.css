@@ -348,6 +348,25 @@
   background: white;
 }
 
+
+.not-allowed-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.not-allowed-box h3,
+.not-allowed-box p {
+  margin: 0;
+}
+
+.not-allowed-box svg {
+  color: var(--mood-color, #a50000);
+}
+
 @media (max-width: 768px) {
   .user-table-box {
     width: 100%;

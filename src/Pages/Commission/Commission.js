@@ -15,6 +15,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import Loader from "../../components/Loader/Loader";
+import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 
 const ITEMS_PER_PAGE = 30;
 
@@ -234,6 +235,10 @@ const Commission = ({ mood, setAlert }) => {
   return (
     <div className="plot-container">
       <div className="table-filters">
+        <div className="page-head-title">
+          <h2>Commission</h2>
+          <Breadcrumb />
+        </div>
         <div className="page-tools">
           <div className="searchItem">
             <NiSearch />
