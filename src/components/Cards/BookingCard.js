@@ -519,6 +519,7 @@ const BookingCard = ({
 
   // console.log(paymentSummary, "paymentSummary");
   // console.log(bookingPaid, "bookingPaid")
+  console.log(item,"item")
   return (
     <>
       {/* ================= CARD ================= */}

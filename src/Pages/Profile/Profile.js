@@ -29,11 +29,11 @@ const Profile = ({ mood, currentUser, setAlert }) => {
   const navigate = useNavigate();
   const userId = location.state;
   const dispatch = useDispatch();
-  const { userDetail,incomeHistory, incomeSummary, userById } = useSelector((state) => state.app);
+  const { userDetail, incomeHistory, incomeSummary, userById } = useSelector((state) => state.app);
   useEffect(() => {
     dispatch(getAccountDetails());
     dispatch(getIncome());
-     dispatch(getIncomeSummary());
+    dispatch(getIncomeSummary());
     if (userId) {
       dispatch(getUserById(userId));
     }
@@ -262,7 +262,13 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         return (
           <>
             <h4>Performance Report</h4>
-            <Report userData={userData} incomeHistory={incomeHistory} incomeSummary={incomeSummary}/>
+            <Report
+              userData={userData}
+              incomeHistory={incomeHistory}
+              incomeSummary={incomeSummary}
+              mood={mood}
+              setAlert={setAlert}
+            />
           </>
         );
 
@@ -285,7 +291,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
                 </label>
               )}
             </div>
-            <Overview userData={userData} mood={mood} setAlert={setAlert}/>
+            <Overview userData={userData} mood={mood} setAlert={setAlert} />
           </>
         );
     }

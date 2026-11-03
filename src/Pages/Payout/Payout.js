@@ -811,7 +811,7 @@ const Payout = ({ mood, setAlert }) => {
                       >
                         <NiOpenEye />
                       </span>
-                      
+
                       {/* {item.status === "paid" && ( */}
                       <span
                         role="button"
@@ -839,7 +839,19 @@ const Payout = ({ mood, setAlert }) => {
                       >
                         <NiReceipt />
                       </span>
-                      {mood === "admin" && (
+                      {item.netAmount >= 1000 && item.status !== "paid" &&(
+                        <div className="modal-actions">
+                          {/* {canPay(item) && ( */}
+                            <button
+                              className="table-btn"
+                              onClick={() => openDirectPay(item)}
+                            >
+                              Pay
+                            </button>
+                          {/* )} */}
+                        </div>
+                      )}
+                      {/* {mood === "admin" && (
                         <div className="modal-actions">
                           {canPay(item) && (
                             <button
@@ -850,7 +862,7 @@ const Payout = ({ mood, setAlert }) => {
                             </button>
                           )}
                         </div>
-                      )}
+                      )} */}
                       {/* )} */}
                     </div>
                   </div>

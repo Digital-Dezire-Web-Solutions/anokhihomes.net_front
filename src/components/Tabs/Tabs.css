@@ -69,8 +69,32 @@
   gap: 10px;
 }
 
+.report-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  /* margin-top: 20px; */
+}
+
+.card-filter{
+  justify-content: flex-start !important;
+}
+
+.user-card-box.report-card-box{
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+
 @media (max-width: 768px) {
   .report-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .report-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    /* margin-top: 20px; */
+  }
+  .user-card-box.report-card-box{
+    grid-template-columns: repeat(1, 1fr) !important;
+}
 }
