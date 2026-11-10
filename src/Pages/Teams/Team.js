@@ -18,6 +18,8 @@ import TeamGraph from "./TeamGraph";
 import NiList from "../../icons/ni-list";
 import NiCard from "../../icons/ni-card";
 import Loader from "../../components/Loader/Loader";
+import { LuTable } from "react-icons/lu";
+import TeamTable from "./TeamTable";
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -59,7 +61,7 @@ const Teams = () => {
     (item) => item._id === currentData?._id,
   );
 
-  console.log(currentData,"currentData")
+  console.log(currentData, "currentData");
   return (
     <div className="plot-container">
       <div className="table-filters">
@@ -114,7 +116,7 @@ const Teams = () => {
                     {currentData?.position || "N/A"})
                   </p>
                   <p>
-                    <strong>Left Team:</strong> {currentData.totalLeftTeam|| 0}
+                    <strong>Left Team:</strong> {currentData.totalLeftTeam || 0}
                   </p>
                   <p>
                     <strong>Team Members:</strong> {currentData.totalTeam || 0}
@@ -135,7 +137,8 @@ const Teams = () => {
                     {formatCurrency(currentData.totalIncome || 0)}
                   </p>
                   <p>
-                    <strong>Right Team:</strong> {currentData.totalRightTeam || 0}
+                    <strong>Right Team:</strong>{" "}
+                    {currentData.totalRightTeam || 0}
                   </p>
                   <p>
                     <strong>Self Business:</strong> ₹
@@ -198,6 +201,12 @@ const Teams = () => {
             >
               <NiCard />
             </span>
+            <span
+              className={`${teamView === "table" ? "active" : ""}`}
+              onClick={() => setTeamView("table")}
+            >
+              <LuTable />
+            </span>
           </div>
           {/* <div className="team-view-buttons">
             <button
@@ -230,6 +239,11 @@ const Teams = () => {
           {currentData ? (
             teamView === "node" ? (
               <TeamNode member={currentData} />
+            ) : teamView === "table" ? (
+              <TeamTable
+                member={currentData}
+                onView={(referralId) => dispatch(getTeamTree(referralId))}
+              />
             ) : (
               <TeamGraph member={currentData} />
             )

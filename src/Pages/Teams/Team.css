@@ -103,10 +103,6 @@
   background: var(--mood-color);
 }
 
-.team-tree-container {
-  padding: 20px 0 20px 20px;
-}
-
 .tree-node {
   position: relative;
 }
@@ -172,6 +168,75 @@
   justify-content: space-between;
   margin-top: 1rem;
 }
+
+.team-table-wrap { width: 100%; }
+
+.team-table-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.team-table-tools input {
+  padding: 8px 12px;
+  border: 1px solid #d6d3c8;
+  border-radius: 8px;
+  min-width: 240px;
+  font-size: 13px;
+}
+.team-table-tabs { display: flex; gap: 6px; }
+.team-table-tabs button {
+  padding: 6px 12px;
+  border: 1px solid #d6d3c8;
+  background: transparent;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.team-table-tabs button.active {
+  background: var(--mood-color);
+  color: #fff;
+  border-color: var(--mood-color);
+}
+
+.team-table-scroll { overflow-x: auto; }
+.team-table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.team-table th,
+.team-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e3e2e2;
+  white-space: nowrap;
+  border-right: 1px solid #e3e2e2;
+}
+.team-table th { font-weight: 600; color: #7a7a7a; }
+.team-table tr.clickable { cursor: pointer; }
+.team-table tr.clickable:hover { background: color-mix(in oklab, var(--mood-color) 6%, transparent); }
+.team-table-empty { text-align: center !important; color: #9f9f9f; padding: 24px !important; }
+
+.team-table-pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.team-table-pager button {
+  padding: 6px 12px;
+  border: 1px solid #d6d3c8;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.team-table-pager button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (max-width: 768px) {
   .tree-card-top {

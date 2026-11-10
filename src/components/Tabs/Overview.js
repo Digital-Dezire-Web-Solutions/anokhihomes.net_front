@@ -171,6 +171,11 @@ const Overview = ({ userData, mood, setAlert }) => {
 
   if (!localUser) return null;
 
+  const isOwnProfile = userDetail?._id === localUser._id;
+  // only admin and agent, and only on their OWN profile
+const canChangePassword =
+  isOwnProfile && (mood === "admin" || mood === "agent");
+
   const isBankDetailsComplete =
     Boolean(localUser.bankName?.trim()) &&
     Boolean(localUser.accountNumber?.trim()) &&
@@ -186,11 +191,15 @@ const Overview = ({ userData, mood, setAlert }) => {
   // Agent can edit only while details are incomplete.
   const canEditBank =
     mood === "admin" ||
-    (mood === "agent" && localUser.role === "agent" && !isBankDetailsComplete);
+    (mood === "agent" &&
+      isOwnProfile &&
+      localUser.role === "agent" &&
+      !isBankDetailsComplete);
 
   const canEditNominee =
     mood === "admin" ||
     (mood === "agent" &&
+      isOwnProfile &&
       localUser.role === "agent" &&
       !isNomineeDetailsComplete);
 
@@ -572,8 +581,6 @@ const Overview = ({ userData, mood, setAlert }) => {
       setSaving(false);
     }
   };
-
-  const isOwnProfile = userDetail?._id === localUser._id;
 
   const isAdminPwValid =
     adminPw.newPassword.length >= 6 &&
@@ -1031,6 +1038,7 @@ const Overview = ({ userData, mood, setAlert }) => {
                 </span>
               )}
               {mood === "agent" &&
+                isOwnProfile &&
                 localUser.role === "agent" &&
                 isBankDetailsComplete && (
                   <span
@@ -1150,8 +1158,9 @@ const Overview = ({ userData, mood, setAlert }) => {
                 </span>
               )}
               {mood === "agent" &&
+                isOwnProfile &&
                 localUser.role === "agent" &&
-                isNomineeDetailsComplete && (
+                isBankDetailsComplete && (
                   <span
                     style={{
                       marginLeft: 8,
@@ -1481,7 +1490,7 @@ const Overview = ({ userData, mood, setAlert }) => {
           </div>
         </div>
       )}
-      {mood !== "admin" && (
+      {canChangePassword && (
         <div className="modal-actions">
           <button disabled={saving} onClick={() => setPasswordModalOpen(true)}>
             {saving ? "Changing" : "Change Password"}
