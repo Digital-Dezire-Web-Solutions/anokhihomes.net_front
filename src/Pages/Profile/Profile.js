@@ -277,19 +277,22 @@ const Profile = ({ mood, currentUser, setAlert }) => {
           <>
             <div className="dashboard-title-box">
               <h4>Overview</h4>
-              {userData.status !== "approval" && (
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={userData.status === "active"}
-                    onChange={() => {
-                      userData.status =
-                        userData.status === "active" ? "inactive" : "active";
-                    }}
-                  />
-                  <span className="slider"></span>
-                </label>
+              {mood === "admin" && (
+                userData.status !== "approval" && (
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={userData.status === "active"}
+                      onChange={() => {
+                        userData.status =
+                          userData.status === "active" ? "inactive" : "active";
+                      }}
+                    />
+                    <span className="slider"></span>
+                  </label>
+                )
               )}
+
             </div>
             <Overview userData={userData} mood={mood} setAlert={setAlert} />
           </>
