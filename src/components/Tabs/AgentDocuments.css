@@ -1,0 +1,544 @@
+.ad-locked { padding: 24px; text-align: center; color: #9f9f9f; }
+/* ---------- WATERMARK (all documents) ---------- */
+.wm {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  opacity: 0.07;          /* raise to 0.1 for a stronger watermark */
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.wl-wm  { width: 700px; }   /* letter */
+.idc-wm { width: 300px; }   /* ID card front and back */
+.ac-wm  { width: 550px; }   /* certificate */
+
+/* let the watermark show through the filled boxes */
+.wl-table td:first-child { background: rgba(255, 250, 240, 0.6); }
+.idc-details { background: rgba(255, 250, 240, 0.7); }
+
+.ad-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ad-tabs, .ad-actions { display: flex; gap: 8px; }
+.ad-tabs button,
+.ad-actions button {
+  padding: 8px 14px;
+  border: 1px solid #d6d3c8;
+  background: transparent;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ad-tabs button.active,
+.ad-actions button {
+  background: var(--mood-color);
+  color: #fff;
+  border-color: var(--mood-color);
+}
+.ad-actions button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ad-preview {
+  overflow: auto;
+  background: #ecebe6;
+  padding: 16px;
+  border-radius: 12px;
+}
+.ad-hint { font-size: 12px; color: #9f9f9f; margin-top: 8px; }
+
+/* ---------- LETTER (A4 = 794 x 1123 px) ---------- */
+/* ---------- WELCOME LETTER (A4 portrait = 794 x 1123 px) ---------- */
+.wl {
+  width: 794px;
+  height: 1123px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #222;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* corner art */
+.wl-corner { position: absolute; top: 0; width: 130px; height: auto; }
+.wl-corner.l { left: 0; }
+.wl-corner.r { right: 0; transform: scaleX(-1); }
+
+/* header: logo - title - logo */
+.wl-head {
+  position: absolute;
+  top: 38px;
+  left: 92px;
+  right: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.wl-logo { width: 84px; height: 84px; object-fit: contain; flex-shrink: 0; }
+.wl-title { flex: 1; text-align: center; color: #0b4a22; }
+.wl-title h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+.wl-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 30px;
+  background: #0b4a22;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 2px solid #d4af37;
+  border-radius: 10px;
+}
+
+/* body text area (sits between header and footer art) */
+.wl-body {
+  position: absolute;
+  top: 160px;
+  left: 70px;
+  right: 70px;
+  bottom: 170px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #222;
+}
+.wl-body p { margin: 0 0 11px; text-align: justify; }
+
+.wl-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b4a22;
+}
+
+.wl-to { text-align: left !important; line-height: 1.5; }
+
+.wl-subject {
+  font-weight: 800;
+  color: #0b4a22;
+  text-decoration: underline;
+  text-align: left !important;
+}
+
+/* details table */
+.wl-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 14px;
+  font-size: 13px;
+}
+.wl-table td {
+  padding: 6px 10px;
+  border: 1px solid #e2c56b;
+  vertical-align: middle;
+}
+.wl-table td:first-child {
+  width: 38%;
+  font-weight: 700;
+  color: #0b4a22;
+  background: #fffaf0;
+}
+
+/* signature */
+.wl-sign { margin-top: 16px; }
+.wl-sign p { margin: 0 0 4px; text-align: left; }
+.wl-sign i {
+  display: block;
+  width: 170px;
+  height: 2px;
+  margin: 34px 0 6px;
+  background: #d4af37;
+}
+.wl-sign strong { color: #0b4a22; }
+
+/* website | email line above the footer art */
+.wl-contact {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 128px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b4a22;
+  letter-spacing: 0.3px;
+}
+
+/* footer art */
+.wl-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+}
+.wl-foot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- ID CARD, portrait CR80 (54 x 85.6 mm) ---------- */
+.ad-cards { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+
+.idc {
+  width: 340px;
+  height: 539px;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0b4a22;
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.idc-corner { position: absolute; top: 0; width: 100px; height: auto; }
+.idc-corner.l { left: 0; }
+.idc-corner.r { right: 0; transform: scaleX(-1); }
+
+.idc-slot {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 13px;
+  border-radius: 10px;
+  background: #e7e7e7;
+  border: 1px solid #cfcfcf;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.idc-logo {
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 70px;
+  width: auto;
+}
+
+.idc-title {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  height: 32px;
+  line-height: 28px;
+  text-align: center;
+  background: #0b4a22;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 2px solid #d4af37;
+  border-radius: 18px;
+  box-sizing: border-box;
+}
+
+.idc-photo-wrap {
+  position: absolute;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 140px;
+  padding: 3px;
+  background: #0b4a22;
+  border: 3px solid #d4af37;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+.idc-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+  display: block;
+}
+.idc-photo-empty {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  background: #f3ecd6;
+  color: #0b4a22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.idc-name {
+  position: absolute;
+  top: 300px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-weight: 800;
+  line-height: 30px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.idc-desig {
+  position: absolute;
+  top: 335px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 28px;
+  line-height: 24px;
+  padding: 0 26px;
+  background: #0b4a22;
+  color: #fff;
+  border: 2px solid #d4af37;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.idc-details {
+  position: absolute;
+  top: 370px;
+  left: 22px;
+  right: 22px;
+  height: 80px;
+  padding: 0 14px;
+  border: 1.5px solid #e2c56b;
+  border-radius: 12px;
+  background: #fffaf0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.idc-row {
+  display: flex;
+  align-items: center;
+  height: 25px;
+  border-bottom: 1px solid #ecd9a0;
+  font-size: 13.5px;
+}
+.idc-row:last-child { border-bottom: none; }
+.idc-row svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: #0b4a22;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.idc-row b { width: 58px; margin-left: 10px; font-weight: 800; }
+.idc-row em { font-style: normal; margin-right: 8px; }
+.idc-row span { color: #222; font-weight: 500; }
+
+/* bottom art */
+.idc-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; }
+.idc-foot svg { display: block; }
+.idc-foot-text {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.idc-foot-text i { flex: 1; height: 1px; background: #d4af37; }
+
+/* back side */
+.idc-back-body {
+  position: absolute;
+  top: 152px;
+  left: 26px;
+  right: 26px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #222;
+}
+.idc-back-body p { margin: 0 0 8px; word-break: break-word; }
+.idc-back-body b { color: #0b4a22; }
+.idc-terms { color: #555; font-style: italic; }
+.idc-back-sign {
+  position: absolute;
+  right: 26px;
+  bottom: 92px;
+  width: 130px;
+  border-top: 1px solid #888;
+  padding-top: 3px;
+  text-align: center;
+  font-size: 11px;
+  color: #222;
+}
+
+/* ---------- CERTIFICATE (A4 landscape = 1123 x 794 px) ---------- */
+.ac-cert {
+  width: 1123px;
+  height: 794px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0b4a22;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ac-corner { position: absolute; top: 0; width: 170px; height: 120px; }
+.ac-tl { left: 0; }
+.ac-tr { right: 0; transform: scaleX(-1); }
+
+.ac-seal {
+  position: absolute;
+  top: 60px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ac-seal img { max-width: 100%; max-height: 100%; }
+.ac-seal-l { left: 70px; }
+.ac-seal-r { right: 70px; }
+
+.ac-main {
+  position: absolute;
+  top: 54px;
+  left: 230px;
+  right: 230px;
+  text-align: center;
+}
+.ac-main h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.ac-badge {
+  display: inline-block;
+  margin: 10px 0 30px;
+  padding: 7px 52px;
+  background: #0b4a22;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  border: 3px solid #d4af37;
+  border-radius: 12px;
+}
+.ac-certify {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 21px;
+  color: #333;
+}
+.ac-certify i { flex: 1; height: 2px; background: #d4af37; }
+
+.ac-name {
+  margin: 20px 0 8px;
+  font-size: 60px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.ac-pill {
+  display: inline-block;
+  padding: 6px 36px;
+  background: #fbf5e6;
+  border: 2px solid #d4af37;
+  border-radius: 40px;
+  font-size: 19px;
+  font-weight: 700;
+}
+/* wider than the title block so each line stays on one line */
+.ac-text {
+  margin: 14px -130px 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #333;
+  white-space: nowrap;
+}
+.ac-thanks {
+  margin: 20px -130px 0;
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* signatures + medal */
+.ac-foot {
+  position: absolute;
+  left: 100px;
+  right: 100px;
+  bottom: 160px;
+  height: 120px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.ac-sign {
+  width: 280px;
+  margin-top: 66px;       /* puts both lines at the same height */
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #222;
+}
+.ac-sign i {
+  display: block;
+  height: 2px;
+  background: #d4af37;
+  margin-bottom: 8px;
+}
+
+/* bottom band */
+.ac-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 150px;
+  background: #0b4a22;
+}
+.ac-city { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 100%; }
+.ac-bottom p {
+  position: absolute;
+  left: 0; right: 0; bottom: 22px;
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}

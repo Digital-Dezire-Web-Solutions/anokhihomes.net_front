@@ -23,8 +23,9 @@ import NiEdit from "../../icons/ni-edit";
 import NiDelete from "../../icons/ni-delete";
 import NiTick from "../../icons/ni-tick";
 import NiCross from "../../icons/ni-cross";
+import AgentDocuments from "../../components/Tabs/AgentDocuments";
 
-const Profile = ({ mood, currentUser, setAlert }) => {
+const Profile = ({ mood, currentUser, setAlert, data }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const userId = location.state;
@@ -207,7 +208,7 @@ const Profile = ({ mood, currentUser, setAlert }) => {
         mood === "staff" ||
         (mood === "agent" && isOwnProfile)
       ) {
-        tabs.push("Overview", "Report");
+        tabs.push("Overview", "Report", "Documents");
       }
     }
 
@@ -269,6 +270,13 @@ const Profile = ({ mood, currentUser, setAlert }) => {
               mood={mood}
               setAlert={setAlert}
             />
+          </>
+        );
+      case "Documents":
+        return (
+          <>
+            <h4>Welcome Letter & ID Card</h4>
+            <AgentDocuments userData={userData} setAlert={setAlert} data={data}/>
           </>
         );
 

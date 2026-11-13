@@ -3,6 +3,7 @@ import { formatCurrency } from "../../components/Utils/FormatCurrency";
 import Pagination from "../../components/Pagination/Pagination";
 import { useNavigate } from "react-router-dom";
 import NiOpenEye from "../../icons/ni-openEye";
+import formatDate from "../../components/DateFormate/DateFormate";
 
 // walks the nested tree and returns one flat row per member
 const flattenTree = (root) => {
@@ -41,8 +42,16 @@ const TeamTable = ({ member, onView }) => {
   const [side, setSide] = useState("all");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [order, setOrder] = useState("desc"); // "desc" = newest first
   console.log(member, "member");
-  const rows = useMemo(() => flattenTree(member), [member]);
+  const rows = useMemo(() => {
+    const list = flattenTree(member);
+
+    return list.sort((a, b) => {
+      const diff = new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      return order === "asc" ? diff : -diff;
+    });
+  }, [member, order]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -131,6 +140,16 @@ const TeamTable = ({ member, onView }) => {
               <th>Self Business</th>
               <th>Total Business</th>
               <th>Team</th>
+              <th
+                style={{ cursor: "pointer", userSelect: "none" }}
+                onClick={() => {
+                  setOrder(order === "desc" ? "asc" : "desc");
+                  setPage(1);
+                }}
+                title="Sort by joining date"
+              >
+                Joined On {order === "desc" ? "↓" : "↑"}
+              </th>
               <th>Action</th>
             </tr>
           </thead>
@@ -162,7 +181,8 @@ const TeamTable = ({ member, onView }) => {
                   <td>{r.designation || "-"}</td>
                   <td>{r.phone || "-"}</td>
                   <td>
-                    <span style={{textTransform:"capitalize"}}
+                    <span
+                      style={{ textTransform: "capitalize" }}
                       className={`status ${r.status === "active" ? "success" : "warning"}`}
                     >
                       {r.status}
@@ -171,6 +191,7 @@ const TeamTable = ({ member, onView }) => {
                   <td>₹{formatCurrency(r.selfBusiness || 0)}</td>
                   <td>₹{formatCurrency(r.totalBusiness || 0)}</td>
                   <td>{r.totalTeam || 0}</td>
+                  <td>{r.createdAt ? formatDate(r.createdAt) : "-"}</td>
                   <td>
                     <div className="dots">
                       <span

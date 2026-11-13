@@ -280,7 +280,7 @@ function App() {
                       />
                       <Route
                         path="/user/:id"
-                        element={<Profile mood={mood} setAlert={setAlert} />}
+                        element={<Profile mood={mood} setAlert={setAlert} data={landingPage}/>}
                       />
                       <Route
                         path="/plot"
