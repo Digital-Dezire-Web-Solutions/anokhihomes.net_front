@@ -31,6 +31,7 @@ import formatDate from "../../components/DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import Loader from "../../components/Loader/Loader";
+import { saveWorkbook } from "../../components/Utils/saveFile";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["all", "confirmed", "pending", "approval", "rejected"];
@@ -319,7 +320,7 @@ const Booking = ({ mood, setAlert, landingPage }) => {
   /* =====================================================
    EXPORT EXCEL
 ===================================================== */
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const rows = getExportRows();
 
     if (!rows.length) {
@@ -344,12 +345,13 @@ const Booking = ({ mood, setAlert, landingPage }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
 
     XLSX.writeFile(workbook, "bookings-report.xlsx");
+    // was: XLSX.writeFile(workbook, fileName);
+    await saveWorkbook(workbook, "Bookings");
 
     setAlert({ message: "Excel exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);
     setExportOpen(false);
   };
-
   /* =====================================================
    EXPORT PDF
 ===================================================== */

@@ -12,6 +12,7 @@ const SearchSelect = ({
   searchKeys = ["name"],
   renderOption,
   noResultComponent,
+  loading = false,
 }) => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -87,7 +88,11 @@ const SearchSelect = ({
 
       {open && (
         <div className="ss-dropdown">
-          {filteredOptions.length === 0 ? (
+          {loading ? (
+            <div className="ss-item no-result ss-loading">
+              <span className="ss-spinner" /> Loading...
+            </div>
+          ) : filteredOptions.length === 0 ? (
             noResultComponent ? (
               noResultComponent
             ) : (

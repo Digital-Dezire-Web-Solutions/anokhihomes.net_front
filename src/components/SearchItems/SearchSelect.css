@@ -46,8 +46,26 @@
   cursor: default;
 }
 
-@media (max-width: 768px) {
+.ss-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ss-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ddd;
+  border-top-color: #a80000;
+  border-radius: 50%;
+  animation: ss-spin 0.7s linear infinite;
+}
+@keyframes ss-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
+@media (max-width: 768px) {
   .ss-dropdown {
     width: 80%;
   }

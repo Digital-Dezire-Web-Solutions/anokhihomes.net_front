@@ -26,6 +26,7 @@ import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../CustomSelect/CustomSelect";
 import Loader from "../Loader/Loader";
+import { savePdf, saveWorkbook } from "../Utils/saveFile";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["Approval", "Scheduled", "Completed", "cancelled"];
@@ -230,7 +231,7 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
   /* =====================================================
    EXPORT EXCEL
 ===================================================== */
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const rows = getExportRows();
 
     if (!rows.length) {
@@ -255,6 +256,8 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Site Visits");
 
     XLSX.writeFile(workbook, "site-visits-report.xlsx");
+    // was: XLSX.writeFile(workbook, fileName);
+    await saveWorkbook(workbook, "Site Visit");
 
     setAlert({ message: "Excel exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);
@@ -365,6 +368,8 @@ const VisitTable = ({ data, mood, setAlert, landingPage }) => {
     });
 
     doc.save("site-visits-report.pdf");
+    // was: doc.save(fileName);
+    await savePdf(doc, "SiteVisit");
 
     setAlert({ message: "PDF exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);

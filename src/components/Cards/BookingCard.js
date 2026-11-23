@@ -863,6 +863,11 @@ const BookingCard = ({
             <p>Total</p>
             <p>Paid</p>
             <p>Remaining</p>
+            {item?.previousAgent && (
+              <p>
+                Previous Associate
+              </p>
+            )}
 
             {/* {item.status === "confirmed" ||
               (item.status === "pending" && (
@@ -895,6 +900,11 @@ const BookingCard = ({
             <p>₹{formatCurrency(item?.finalAmount)}</p>
             <p>₹{formatCurrency(paid)}</p>
             <p>₹{formatCurrency(remaining)}</p>
+            {item?.previousAgent && (
+              <p>
+                {item?.previousAgent?.name} <small>({item.previousAgent?.referralId})</small>
+              </p>
+            )}
 
             {/* {item.status === "confirmed" ||
               (item.status === "pending" && (

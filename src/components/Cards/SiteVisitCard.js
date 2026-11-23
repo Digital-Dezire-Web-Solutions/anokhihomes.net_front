@@ -67,6 +67,10 @@ const SiteVisitCard = ({
   const [saving, setSaving] = useState(false);
   const [selectedColony, setSelectedColony] = useState(null);
   const [type, setType] = useState("FREE");
+  const [agentOptions, setAgentOptions] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [baseAgentId, setBaseAgentId] = useState(null);
+  const [agentsLoading, setAgentsLoading] = useState(false);
   const isAdminOrStaff = mood !== "agent" && mood !== "user";
   const showPlc = isAdminOrStaff && !!selectedPlot?.plc;
 
@@ -82,6 +86,42 @@ const SiteVisitCard = ({
       setShowReport(false);
     }
   }, [viewOpen]);
+
+  useEffect(() => {
+    if (!viewOpen || panelMode !== "booking") {
+      setAgentsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    setAgentsLoading(true);
+    setAgentOptions([]);
+    setSelectedAgent(null);
+
+    axios
+      .get(`${Host}/api/booking/agent-options`, {
+        params: { sitevisitId: item._id },
+        headers: { "auth-token": localStorage.getItem("token") },
+      })
+      .then((res) => {
+        if (cancelled) return;
+        const agents = res.data.agents || [];
+        setAgentOptions(agents);
+        setBaseAgentId(res.data.baseAgent);
+        setSelectedAgent(
+          agents.find((a) => a._id === res.data.baseAgent) || null,
+        );
+      })
+      .catch((err) => console.error(err))
+      .finally(() => {
+        if (!cancelled) setAgentsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [viewOpen, panelMode, item._id]);
 
   const handleVisitAction = async (visitId, action, extraData = {}) => {
     try {
@@ -285,6 +325,7 @@ const SiteVisitCard = ({
           location: item.location?._id,
           colony: selectedColony._id,
           plot: selectedPlot._id, // 🔥 IMPORTANT
+          agent: selectedAgent?._id,
 
           requestAmount: formData.requestAmount,
           plcPercent: showPlc ? Number(formData.plcPercent) : undefined,
@@ -407,7 +448,7 @@ const SiteVisitCard = ({
     }
   };
 
-  // console.log(item, "item")
+  console.log(agentOptions, "agentOptions");
   return (
     <div className="user-card card" onClick={dashboard || undefined}>
       <div className="user-card-top">
@@ -473,7 +514,12 @@ const SiteVisitCard = ({
         <div className="user-card-bottom-right">
           <p>{formatDate(item?.createdAt)}</p>
           <p>{item.customer.phone}</p>
-          {mood !== "agent" && <p>{item.agent?.name || "-"} <small>({item.agent?.referralId || "-"})</small></p>}
+          {mood !== "agent" && (
+            <p>
+              {item.agent?.name || "-"}{" "}
+              <small>({item.agent?.referralId || "-"})</small>
+            </p>
+          )}
           <p>
             {" "}
             {item.colonies?.length}, {item?.location?.name}
@@ -737,7 +783,11 @@ const SiteVisitCard = ({
           <div className="user-card-bottom-right">
             <p>{formatDate(item?.createdAt)}</p>
             <p>{item.customer.phone}</p>
-            {mood !== "agent" && <p>{item.agent?.name || "-"} ({item.agent?.referralId || "-"})</p>}
+            {mood !== "agent" && (
+              <p>
+                {item.agent?.name || "-"} ({item.agent?.referralId || "-"})
+              </p>
+            )}
             {/* <p>{item.customer.phone}</p> */}
             {/* {mood !== "agent" && <p>{item.agent?.name || "-"} ({item.agent?.referralId || "-"})</p>} */}
             <p>
@@ -790,6 +840,37 @@ const SiteVisitCard = ({
           {panelMode === "booking" && (
             <>
               <h4>Request Booking</h4>
+              {/* {agentOptions.length > 1 && ( */}
+                <div className="field">
+                  <SearchSelect
+                    label="Associate"
+                    placeholder="Search Associate by Name or Number"
+                    value={selectedAgent}
+                    options={agentOptions}
+                    onChange={(selected) => setSelectedAgent(selected)}
+                    displayKey="name"
+                    loading={agentsLoading}
+                    searchKeys={["name", "phone", "referralId"]}
+                    renderOption={(a) => (
+                      <div>
+                        <b>{a.name}</b> ({a.referralId || a.phone})
+                        {a._id === baseAgentId && (
+                          <small style={{ marginLeft: 6, color: "green" }}>
+                            Current
+                          </small>
+                        )}
+                      </div>
+                    )}
+                  />
+                  {selectedAgent && selectedAgent._id !== baseAgentId && (
+                    <small style={{ color: "#ff6969" }}>
+                      This booking will be assigned to {selectedAgent.name}. The
+                      current associate is saved as the previous associate.
+                    </small>
+                  )}
+                </div>
+              {/* )} */}
+
               <div className="field">
                 <label>Colony</label>
 

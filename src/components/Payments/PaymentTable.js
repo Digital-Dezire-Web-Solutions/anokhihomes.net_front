@@ -20,6 +20,7 @@ import formatDate from "../DateFormate/DateFormate";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../CustomSelect/CustomSelect";
 import Loader from "../Loader/Loader";
+import { savePdf, saveWorkbook } from "../Utils/saveFile";
 
 const ITEMS_PER_PAGE = 15;
 const STATUS_OPTIONS = ["pending", "approved", "rejected"];
@@ -289,7 +290,7 @@ const PaymentTable = ({ data, mood, setAlert }) => {
   /* =====================================================
        EXPORT EXCEL
     ===================================================== */
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const sourceRecords = getExportSourceRecords();
     const rows = getExportRows(sourceRecords);
 
@@ -315,6 +316,8 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payment");
 
     XLSX.writeFile(workbook, `${buildExportFileBaseName()}.xlsx`);
+    // was: XLSX.writeFile(workbook, fileName);
+    await saveWorkbook(workbook, "Payment");
 
     setAlert({ message: "Excel exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);
@@ -414,6 +417,8 @@ const PaymentTable = ({ data, mood, setAlert }) => {
     });
 
     doc.save(`${buildExportFileBaseName()}.pdf`);
+    // was: doc.save(fileName);
+    await savePdf(doc, "Payment");
 
     setAlert({ message: "PDF exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);

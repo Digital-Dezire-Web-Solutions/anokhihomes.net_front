@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import DashboardCard from "../../components/Cards/DashboardCard";
 import NiPayments from "../../icons/ni-payments";
@@ -24,6 +24,7 @@ import NiReceipt from "../../icons/ni-receipt";
 import { printPayoutStatement } from "../../components/Utils/printpayoutstatement";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import Loader from "../../components/Loader/Loader";
+import { savePdf, saveWorkbook } from "../../components/Utils/saveFile";
 
 const STATUS_OPTIONS = ["released", "paid", "cancelled"];
 const PAYABLE_STATUSES = ["released"];
@@ -118,6 +119,8 @@ const Payout = ({ mood, setAlert }) => {
         remainingByUser[id] = (remainingByUser[id] || 0) + remaining;
     });
 
+    // format in UTC so IST doesn't push 23:59:59.999Z into the next day
+
     const userTotals = Object.values(remainingByUser);
 
     return {
@@ -137,6 +140,13 @@ const Payout = ({ mood, setAlert }) => {
 
   const cycles = useMemo(() => {
     const unique = [];
+    const formatUTC = (d) => {
+      if (!d) return "";
+      const x = new Date(d);
+      const dd = String(x.getUTCDate()).padStart(2, "0");
+      const mm = String(x.getUTCMonth() + 1).padStart(2, "0");
+      return `${dd}-${mm}-${x.getUTCFullYear()}`;
+    };
 
     (payout || []).forEach((item) => {
       const value = `${item.cycleStart}_${item.cycleEnd}`;
@@ -144,13 +154,35 @@ const Payout = ({ mood, setAlert }) => {
       if (!unique.find((c) => c.value === value)) {
         unique.push({
           value,
-          label: `${formatDate(item.cycleStart)} - ${formatDate(item.cycleEnd)}`,
+          label: `${formatDate(item.cycleStart)} To ${formatUTC(item.cycleEnd)}`,
         });
       }
     });
 
     return unique;
   }, [payout]);
+
+  // most recent cycle that has already ended (today is mid-cycle, so this is the "previous" one)
+  const previousCycle = useMemo(() => {
+    if (!cycles.length) return null;
+
+    const endOf = (c) => new Date(c.value.split("_")[1]).getTime();
+    const now = Date.now();
+
+    const ended = cycles.filter((c) => endOf(c) <= now);
+    const pool = ended.length ? ended : cycles; // fallback if none has ended yet
+
+    return pool.reduce((a, b) => (endOf(b) > endOf(a) ? b : a));
+  }, [cycles]);
+
+  // apply once, so choosing "All Cycles" later is not overridden
+  const cycleDefaultApplied = useRef(false);
+
+  useEffect(() => {
+    if (cycleDefaultApplied.current || !previousCycle) return;
+    cycleDefaultApplied.current = true;
+    setCycleFilter(previousCycle.value);
+  }, [previousCycle]);
 
   const filtered = useMemo(() => {
     const base = (payout || []).filter((item) => {
@@ -378,7 +410,7 @@ const Payout = ({ mood, setAlert }) => {
      EXPORT EXCEL
   ===================================================== */
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const rows = getExportRows();
 
     if (!rows.length) {
@@ -421,6 +453,8 @@ const Payout = ({ mood, setAlert }) => {
       : "all-payouts.xlsx";
 
     XLSX.writeFile(workbook, fileName);
+    // was: XLSX.writeFile(workbook, fileName);
+    await saveWorkbook(workbook, fileName);
 
     setAlert({
       message: "Excel exported successfully",
@@ -558,6 +592,8 @@ const Payout = ({ mood, setAlert }) => {
       : "all-payouts.pdf";
 
     doc.save(fileName);
+    // was: doc.save(fileName);
+    await savePdf(doc, fileName);
 
     setAlert({
       message: "PDF exported successfully",
@@ -839,15 +875,15 @@ const Payout = ({ mood, setAlert }) => {
                       >
                         <NiReceipt />
                       </span>
-                      {item.netAmount >= 1000 && item.status !== "paid" &&(
+                      {item.netAmount >= 1000 && item.status !== "paid" && (
                         <div className="modal-actions">
                           {/* {canPay(item) && ( */}
-                            <button
-                              className="table-btn"
-                              onClick={() => openDirectPay(item)}
-                            >
-                              Pay
-                            </button>
+                          <button
+                            className="table-btn"
+                            onClick={() => openDirectPay(item)}
+                          >
+                            Pay
+                          </button>
                           {/* )} */}
                         </div>
                       )}

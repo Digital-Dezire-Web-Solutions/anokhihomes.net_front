@@ -21,6 +21,7 @@ import AddLocationModal from "../../components/Modals/AddLocationModal";
 import logo from "../../Assets/Logo/logo-anokhi-home-green.png";
 import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import Loader from "../../components/Loader/Loader";
+import { savePdf, saveWorkbook } from "../../components/Utils/saveFile";
 
 const EXPORT_COLUMNS = [
   "S.No",
@@ -323,7 +324,7 @@ const Income = ({ mood, setAlert }) => {
   /* =====================================================
      EXPORT EXCEL
   ===================================================== */
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const sourceRecords = getExportSourceRecords();
     const rows = getExportRows(sourceRecords);
 
@@ -349,6 +350,8 @@ const Income = ({ mood, setAlert }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Income");
 
     XLSX.writeFile(workbook, `${buildExportFileBaseName()}.xlsx`);
+    // was: XLSX.writeFile(workbook, fileName);
+    await saveWorkbook(workbook, "Income");
 
     setAlert({ message: "Excel exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);
@@ -474,6 +477,8 @@ const Income = ({ mood, setAlert }) => {
     });
 
     doc.save(`${buildExportFileBaseName()}.pdf`);
+    // was: doc.save(fileName);
+    await savePdf(doc, "Income");
 
     setAlert({ message: "PDF exported successfully", status: "Success" });
     setTimeout(() => setAlert(null), 3000);
